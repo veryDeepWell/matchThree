@@ -119,117 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &218657752
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 218657754}
-  - component: {fileID: 218657755}
-  - component: {fileID: 218657753}
-  m_Layer: 0
-  m_Name: Board Spawn Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &218657753
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 218657752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49aa8bc3485a41eca08fcf1e3be751cf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Content.Scripts.Board.BoardSpawnManager
-  debugFlags: 0
-  itemPrefabs:
-  - {fileID: 4777191045581077132, guid: 18e54e1af9462d944942f74236cd88a6, type: 3}
-  - {fileID: 807982906887329104, guid: 5fb67de29a3ab174dbf84b5c1ce58bc7, type: 3}
-  - {fileID: 1943133092928189224, guid: 638749cbb39b14d429a5c1808fe07a8c, type: 3}
-  - {fileID: 3830020451270705878, guid: bf016d878d53e714fbb167b5d8c956f7, type: 3}
---- !u!4 &218657754
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 218657752}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &218657755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 218657752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fcb7ea8fefd444789e19179e7296784, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BoardSpawnerSingleton
-  mySingleton: {fileID: 218657753}
---- !u!1 &280656228
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 280656229}
-  - component: {fileID: 280656230}
-  m_Layer: 0
-  m_Name: Board
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &280656229
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 280656228}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &280656230
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 280656228}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7fd815287ca285a41ad7fb476b0cc575, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Board
-  gridHeight: 6
-  gridWidth: 11
-  gridTilePrefab: {fileID: 2650635620292803331, guid: 1fdce5fc4a8768e4aaf5047dc7c8542a, type: 3}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -322,10 +211,66 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1197758850
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1197758852}
+  - component: {fileID: 1197758851}
+  m_Layer: 0
+  m_Name: GridManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1197758851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1197758850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a1be67fa5ce4be4892465f97027d17a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Grid.GridManager
+  Sprites:
+  - {fileID: 21300000, guid: 0e0542c3cb716d74a893887300d017e1, type: 3}
+  - {fileID: 21300000, guid: 0e63240ae04fb99469c4678fea5083f4, type: 3}
+  - {fileID: 21300000, guid: b6b2d26f9cfda574c88f0ac242a8ce04, type: 3}
+  - {fileID: 21300000, guid: d040b050f5607a04286bec63ce9792e6, type: 3}
+  - {fileID: 21300000, guid: 13fd348a7b85fa6499bc4fadc56c1c45, type: 3}
+  - {fileID: 21300000, guid: 76d9abe6fb9fae94ea2d725d1fae8966, type: 3}
+  - {fileID: 21300000, guid: 57257b64f5c907b498befd520d7053e5, type: 3}
+  - {fileID: 21300000, guid: 140ff89889c0f314c957dc73a67e5032, type: 3}
+  - {fileID: 21300000, guid: 62f0270b8d0c8c34b9eda510d290afae, type: 3}
+  TilePrefab: {fileID: 8240428727968202350, guid: f88fdfb5b07bf054c96fcaabd6a9cdb9, type: 3}
+  GridDimension: 8
+  Distance: 1.1
+--- !u!4 &1197758852
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1197758850}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 519420032}
-  - {fileID: 280656229}
-  - {fileID: 218657754}
+  - {fileID: 1197758852}
