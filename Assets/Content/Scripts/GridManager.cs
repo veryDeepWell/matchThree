@@ -13,6 +13,9 @@ public class GridManager : MonoBehaviour
 
     public static GridManager Instance;
 
+    public int GridDimensionX;
+    public int GridDimensionY;
+
     private void Awake()
     {
         Instance = this;
