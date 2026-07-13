@@ -162,6 +162,7 @@ public class GridManager : MonoBehaviour
             {
                 break;
             }
+
             result.Add(nextColumn);
         }
 
@@ -179,6 +180,7 @@ public class GridManager : MonoBehaviour
             {
                 break;
             }
+
             result.Add(nextRow);
         }
 
@@ -205,6 +207,7 @@ public class GridManager : MonoBehaviour
                             currentFiller.sprite = nextFiller.sprite;
                         }
                     }
+
                     SpriteRenderer last = GetSpriteRendererAt(column, GridDimension - 1);
                     if (last != null)
                     {
