@@ -22,7 +22,6 @@ public class Tile : MonoBehaviour
     }
 
     private void OnMouseDown()
-
     {
         if (selected != null)
         {

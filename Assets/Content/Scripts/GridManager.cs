@@ -13,6 +13,9 @@ public class GridManager : MonoBehaviour
 
     public static GridManager Instance;
 
+    public int GridDimensionX;
+    public int GridDimensionY;
+
     private void Awake()
     {
         Instance = this;
@@ -159,6 +162,7 @@ public class GridManager : MonoBehaviour
             {
                 break;
             }
+
             result.Add(nextColumn);
         }
 
@@ -176,6 +180,7 @@ public class GridManager : MonoBehaviour
             {
                 break;
             }
+
             result.Add(nextRow);
         }
 
@@ -202,6 +207,7 @@ public class GridManager : MonoBehaviour
                             currentFiller.sprite = nextFiller.sprite;
                         }
                     }
+
                     SpriteRenderer last = GetSpriteRendererAt(column, GridDimension - 1);
                     if (last != null)
                     {
