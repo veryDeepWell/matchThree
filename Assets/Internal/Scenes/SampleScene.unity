@@ -145,7 +145,7 @@ Transform:
   m_GameObject: {fileID: 339209808}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -3.5, y: -3.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -163,9 +163,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79140587d5df5864cae42ca7c4580742, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Board
-  width: 5
-  height: 5
+  width: 7
+  height: 7
   _tilePrefab: {fileID: 170917415711285555, guid: d4dfcd7ac21749c4baf2aa47c398a3fe, type: 3}
+  _dotsPrefabs:
+  - {fileID: 1919115339449239105, guid: 8961f2d5662c8a64d8a1fc29d6216fb7, type: 3}
+  - {fileID: 3676990338910873319, guid: 2d56bc79b82054143a45e14fe43dcf68, type: 3}
+  - {fileID: 7317272983574135880, guid: d3c309ce5e6b5694ea4d3d50e8ef9932, type: 3}
+  - {fileID: 1097271149028431070, guid: c675cab8bbb3af34884cca18ac8d47dc, type: 3}
+  - {fileID: 852867307340618259, guid: 1221d6756a4ea6748a23447904ab6420, type: 3}
+  - {fileID: 3314107066453653585, guid: 3a52f1ae294ffd342afce59f5d26dd35, type: 3}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0

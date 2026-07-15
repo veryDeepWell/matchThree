@@ -1,17 +1,22 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Board : MonoBehaviour
 {
     public int width;
     public int height;
-    private TileBackground[,] _allTiles;
+    public TileBackground[,] _allTiles;
+    public GameObject[,] _allItems;
     
     [SerializeField] private GameObject _tilePrefab;
+    [SerializeField] private GameObject[] _dotsPrefabs;
     
     void Start()
     {
         _allTiles = new TileBackground[width, height];
-        transform.position = new Vector3(width / -2, height / -2, 0);
+        _allItems = new GameObject[width, height];
+        
         Setup();
     }
 
@@ -22,9 +27,39 @@ public class Board : MonoBehaviour
             for (int j = 0; j < height; j++)
             {
                 Vector2 tilePos = new Vector2(i, j);
+                
+                // Создаём фон
                 GameObject newTile = Instantiate(_tilePrefab, tilePos, Quaternion.identity, transform);
-                newTile.name = "(" + i + "," + j + ")";
+                newTile.name = "Tile(" + i + "," + j + ")";
+                
+                // Создаём предмет
+                int dotToUse = Random.Range(0, _dotsPrefabs.Length);
+                GameObject newDot = Instantiate(_dotsPrefabs[dotToUse], tilePos, Quaternion.identity, newTile.transform);
+                newDot.name = "Item(" + i + "," + j + ")";
+                
+                // Получаем компонент Item и устанавливаем координаты
+                Item itemComponent = newDot.GetComponent<Item>();
+                if (itemComponent != null)
+                {
+                    itemComponent.column = i;
+                    itemComponent.row = j;
+                    itemComponent.board = this;
+                }
+                else
+                {
+                    Debug.LogError($"Item component not found on {newDot.name}");
+                }
+                
+                // Сохраняем в массив
+                _allItems[i, j] = newDot;
             }
         }
+    }
+    
+    // Метод для проверки совпадений (заглушка)
+    public void CheckMatches()
+    {
+        // TODO: Реализовать логику проверки совпадений
+        Debug.Log("Checking matches...");
     }
 }

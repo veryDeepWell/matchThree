@@ -104,10 +104,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbe428019fb01a441972857345d8da97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TileBackground
-  _dotsPrefabs:
-  - {fileID: 852867307340618259, guid: 1221d6756a4ea6748a23447904ab6420, type: 3}
-  - {fileID: 7317272983574135880, guid: d3c309ce5e6b5694ea4d3d50e8ef9932, type: 3}
-  - {fileID: 1919115339449239105, guid: 8961f2d5662c8a64d8a1fc29d6216fb7, type: 3}
-  - {fileID: 3676990338910873319, guid: 2d56bc79b82054143a45e14fe43dcf68, type: 3}
-  - {fileID: 1097271149028431070, guid: c675cab8bbb3af34884cca18ac8d47dc, type: 3}
-  - {fileID: 3314107066453653585, guid: 3a52f1ae294ffd342afce59f5d26dd35, type: 3}
