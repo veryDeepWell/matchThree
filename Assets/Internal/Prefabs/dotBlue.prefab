@@ -146,3 +146,4 @@ MonoBehaviour:
   board: {fileID: 0}
   _moveDuration: 0.15
   _minSwipeDistance: 0.5
+  _itemType: 1

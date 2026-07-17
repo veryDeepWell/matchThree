@@ -7,7 +7,7 @@ public class Board : MonoBehaviour
     public int width;
     public int height;
     public TileBackground[,] _allTiles;
-    public GameObject[,] _allItems;
+    public Item[,] _allItems;
     
     [SerializeField] private GameObject _tilePrefab;
     [SerializeField] private GameObject[] _dotsPrefabs;
@@ -15,7 +15,7 @@ public class Board : MonoBehaviour
     void Start()
     {
         _allTiles = new TileBackground[width, height];
-        _allItems = new GameObject[width, height];
+        _allItems = new Item[width, height];
         
         Setup();
         
@@ -53,7 +53,7 @@ public class Board : MonoBehaviour
                 }
                 
                 // Сохраняем в массив
-                _allItems[i, j] = newDot;
+                _allItems[i, j] = itemComponent;
             }
         }
     }
@@ -64,7 +64,9 @@ public class Board : MonoBehaviour
         if (dotToCheck.column < 0 || dotToCheck.column >= width) { return; }
         
         Item leftDot1 = _allItems[dotToCheck.column - 1, dotToCheck.row].GetComponent<Item>();
-        if (leftDot1._itemType) {}fg
+        if (leftDot1._itemType != dotToCheck._itemType) { return; }
+        
         Item leftDot2 = _allItems[dotToCheck.column - 2, dotToCheck.row].GetComponent<Item>();
+        if (leftDot2._itemType != dotToCheck._itemType) { return; }
     }
 }
