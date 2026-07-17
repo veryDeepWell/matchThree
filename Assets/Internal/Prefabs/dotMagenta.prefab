@@ -147,3 +147,4 @@ MonoBehaviour:
   _moveDuration: 0.15
   _minSwipeDistance: 0.5
   _itemType: 4
+  _specialType: 0

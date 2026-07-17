@@ -7,3 +7,17 @@
     DotMagenta,
     DotYellow
 }
+
+public enum SpecialItemTypes
+{
+    None,
+    Bomb,
+    ColumnSweeper,
+    LineSweeper,
+    CrossSweeper,
+    Magnet,
+    MagnetBomb,
+    MagnetColumnSweeper,
+    MagnetLineSweeper,
+    Nuke
+}

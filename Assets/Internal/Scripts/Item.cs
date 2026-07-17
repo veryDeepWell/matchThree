@@ -18,10 +18,11 @@ public class Item : MonoBehaviour
 
     [Header("Movement Settings")] 
     [SerializeField] private float _moveDuration = 0.15f;
-    [SerializeField] private float _minSwipeDistance = 20f;
+    [SerializeField] private float _minSwipeDistance = 0.2f;
     
     [Header("Type")]
     public ItemTypes _itemType;
+    public SpecialItemTypes _specialType = SpecialItemTypes.None;
 
     private void Start()
     {
@@ -68,57 +69,43 @@ public class Item : MonoBehaviour
 
         if (_swipeAngle > -45 && _swipeAngle <= 45)
         {
-            // Вправо
             if (column < board.width - 1)
-            {
                 targetColumn = column + 1;
-            }
-            else { return; }
+            else return;
         }
         else if (_swipeAngle > 45 && _swipeAngle <= 135)
         {
-            // Вверх
             if (row < board.height - 1)
-            {
                 targetRow = row + 1;
-            }
-            else { return; }
+            else return;
         }
         else if ((_swipeAngle > 135 || _swipeAngle <= -135))
         {
-            // Влево
             if (column > 0)
-            {
                 targetColumn = column - 1;
-            }
-            else { return; }
+            else return;
         }
         else if (_swipeAngle < -45 && _swipeAngle >= -135)
         {
-            // Вниз
             if (row > 0)
-            {
                 targetRow = row - 1;
-            }
-            else { return; }
+            else return;
         }
-        else
-        {
-            return;
-        }
+        else return;
         
-        if (targetColumn == column && targetRow == row) { return; }
+        if (targetColumn == column && targetRow == row) return;
 
         TrySwap(targetColumn, targetRow);
     }
 
     private void TrySwap(int targetColumn, int targetRow)
     {
-        if (targetColumn < 0 || targetColumn >= board.width || targetRow < 0 || targetRow >= board.height) { return; }
+        if (targetColumn < 0 || targetColumn >= board.width || targetRow < 0 || targetRow >= board.height) return;
         
-        Item otherItem = board._allItems[targetColumn, targetRow].GetComponent<Item>();
+        Item otherItem = board._allItems[targetColumn, targetRow];
+        if (otherItem == null) return;
         
-        if (otherItem._isMoving) { return; }
+        if (otherItem._isMoving) return;
 
         int thisOldColumn = column;
         int thisOldRow = row;
@@ -126,7 +113,7 @@ public class Item : MonoBehaviour
         int otherOldRow = otherItem.row;
         
         board._allItems[thisOldColumn, thisOldRow] = otherItem;
-        board._allItems[otherOldColumn, otherOldRow] = this.gameObject.GetComponent<Item>();
+        board._allItems[otherOldColumn, otherOldRow] = this;
         
         column = otherOldColumn;
         row = otherOldRow;
@@ -136,8 +123,7 @@ public class Item : MonoBehaviour
         StartCoroutine(SwapAnimation(otherItem, otherOldColumn, otherOldRow, thisOldColumn, thisOldRow));
     }
 
-    private IEnumerator SwapAnimation(Item otherItem, int thisTargetCol, int thisTargetRow, int otherTargetCol,
-        int otherTargetRow)
+    private IEnumerator SwapAnimation(Item otherItem, int thisTargetCol, int thisTargetRow, int otherTargetCol, int otherTargetRow)
     {
         _isMoving = true;
         otherItem._isMoving = true;
@@ -153,7 +139,7 @@ public class Item : MonoBehaviour
         
         if (board != null)
         {
-            board.CheckMatches(this);
+            board.CheckMatches();
         }
     }
 
@@ -175,7 +161,6 @@ public class Item : MonoBehaviour
         }
 
         transform.position = targetPos;
-
         column = targetColumn;
         row = targetRow;
     }
@@ -187,10 +172,7 @@ public class Item : MonoBehaviour
         transform.position = new Vector2(targetColumn, targetRow);
     }
 
-    public bool IsMoving()
-    {
-        return _isMoving;
-    }
+    public bool IsMoving() => _isMoving;
 
     public void CancelMovement()
     {
