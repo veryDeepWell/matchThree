@@ -19,6 +19,9 @@ public class Item : MonoBehaviour
     [Header("Movement Settings")] 
     [SerializeField] private float _moveDuration = 0.15f;
     [SerializeField] private float _minSwipeDistance = 20f;
+    
+    [Header("Type")]
+    public ItemTypes _itemType;
 
     private void Start()
     {

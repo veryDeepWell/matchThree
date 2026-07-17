@@ -61,7 +61,10 @@ public class Board : MonoBehaviour
     // Метод для проверки совпадений (заглушка)
     public void CheckMatches(Item dotToCheck)
     {
-        GameObject leftDot1 = _allItems[dotToCheck.column - 1, dotToCheck.row];
-        GameObject leftDot2 = _allItems[dotToCheck.column - 2, dotToCheck.row];
+        if (dotToCheck.column < 0 || dotToCheck.column >= width) { return; }
+        
+        Item leftDot1 = _allItems[dotToCheck.column - 1, dotToCheck.row].GetComponent<Item>();
+        if (leftDot1._itemType) {}fg
+        Item leftDot2 = _allItems[dotToCheck.column - 2, dotToCheck.row].GetComponent<Item>();
     }
 }
