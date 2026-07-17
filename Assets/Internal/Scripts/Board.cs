@@ -18,6 +18,8 @@ public class Board : MonoBehaviour
         _allItems = new GameObject[width, height];
         
         Setup();
+        
+        //transform.position = new Vector3(-width / 2, -height / 2, 0);
     }
 
     private void Setup()
@@ -57,9 +59,9 @@ public class Board : MonoBehaviour
     }
     
     // Метод для проверки совпадений (заглушка)
-    public void CheckMatches()
+    public void CheckMatches(Item dotToCheck)
     {
-        // TODO: Реализовать логику проверки совпадений
-        Debug.Log("Checking matches...");
+        GameObject leftDot1 = _allItems[dotToCheck.column - 1, dotToCheck.row];
+        GameObject leftDot2 = _allItems[dotToCheck.column - 2, dotToCheck.row];
     }
 }
