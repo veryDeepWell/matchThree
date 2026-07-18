@@ -5,6 +5,8 @@ using Random = UnityEngine.Random;
 
 public class ItemGenerator : MonoBehaviour
 {
+    private Administrator _administrator;
+    
     private Board _board;
     private Item[,] _allItems;
     private bool _isInitialized;
@@ -12,21 +14,16 @@ public class ItemGenerator : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject _tilePrefab;
     [SerializeField] private GameObject[] _dotsPrefabs;
-    
-    [Header("Prefabs")]
-    [SerializeField] private MatchesHandler _matchesHandler;
 
     private void Start()
     {
-        if (_matchesHandler == null)
-        {
-            _matchesHandler = FindAnyObjectByType<MatchesHandler>().GetComponent<MatchesHandler>();
-        }
+        _administrator = FindAnyObjectByType<Administrator>().GetComponent<Administrator>();
     }
 
     public void Initialization(Item[,] itemsArray)
     {
         _allItems = itemsArray;
+        _board = _administrator.board;
         _isInitialized = true;
     }
     
@@ -35,6 +32,7 @@ public class ItemGenerator : MonoBehaviour
         if (!_isInitialized) { RawdogInitialization(); }
 
         Setup();
+        ClearInitialMatches();
     }
 
     private void RawdogInitialization()
@@ -65,6 +63,7 @@ public class ItemGenerator : MonoBehaviour
                     itemComponent.column = i;
                     itemComponent.row = j;
                     itemComponent.board = _board;
+                    itemComponent._itemType = (ItemTypes)dotToUse;
                 }
                 
                 _allItems[i, j] = itemComponent;
@@ -83,7 +82,10 @@ public class ItemGenerator : MonoBehaviour
             attempts++;
             hasMatches = false;
             
-            HashSet<Item> matches = _matchesHandler.FindMatches(_allItems, _board.width, _board.height);
+            // Обновляем ссылку на массив в MatchesHandler
+            _administrator.matchesHandler.VariablesEstablishment();
+            
+            HashSet<Item> matches = _administrator.matchesHandler.FindMatches();
             
             if (matches.Count > 0)
             {
@@ -98,21 +100,20 @@ public class ItemGenerator : MonoBehaviour
                 }
             }
         }
+        
+        Debug.Log($"Initial matches cleared after {attempts} attempts");
     }
 
-    // Замена предмета на новый с другим типом
     private void ReplaceItem(Item oldItem)
     {
         int col = oldItem.column;
         int row = oldItem.row;
         
-        // Сохраняем родительский объект (Tile)
         Transform parent = oldItem.transform.parent;
         
-        // Удаляем старый предмет
-        Destroy(oldItem.gameObject);
+        // Используем DestroyImmediate для синхронного удаления
+        DestroyImmediate(oldItem.gameObject);
         
-        // Создаем новый предмет другого типа
         int newDotIndex;
         int attempts = 0;
         do
@@ -132,18 +133,16 @@ public class ItemGenerator : MonoBehaviour
             newItem.column = col;
             newItem.row = row;
             newItem.board = _board;
+            newItem._itemType = (ItemTypes)newDotIndex;
         }
         
         _allItems[col, row] = newItem;
     }
 
-    // Проверка, создаст ли новый тип комбинацию
     private bool WillCreateMatch(int col, int row, ItemTypes type)
     {
-        // Проверяем горизонталь
         int count = 1;
         
-        // Влево
         for (int x = col - 1; x >= 0; x--)
         {
             if (_allItems[x, row] != null && _allItems[x, row]._itemType == type)
@@ -151,7 +150,6 @@ public class ItemGenerator : MonoBehaviour
             else break;
         }
         
-        // Вправо
         for (int x = col + 1; x < _board.width; x++)
         {
             if (_allItems[x, row] != null && _allItems[x, row]._itemType == type)
@@ -161,10 +159,8 @@ public class ItemGenerator : MonoBehaviour
         
         if (count >= 3) return true;
         
-        // Проверяем вертикаль
         count = 1;
         
-        // Вниз
         for (int y = row - 1; y >= 0; y--)
         {
             if (_allItems[col, y] != null && _allItems[col, y]._itemType == type)
@@ -172,7 +168,6 @@ public class ItemGenerator : MonoBehaviour
             else break;
         }
         
-        // Вверх
         for (int y = row + 1; y < _board.height; y++)
         {
             if (_allItems[col, y] != null && _allItems[col, y]._itemType == type)

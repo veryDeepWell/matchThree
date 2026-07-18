@@ -10,16 +10,20 @@ public class Board : MonoBehaviour
     public int height;
     public Item[,] _allItems;
     
-
+    private Administrator _administrator;
 
     void Start()
     {
+        _administrator = FindAnyObjectByType<Administrator>().GetComponent<Administrator>();
+        
         _allItems = new Item[width, height];
         
+        _administrator.itemGenerator.Initialization(_allItems);
+        _administrator.itemGenerator.GetItems();
     }
 
     public void CheckMatches()
     {
-        StartCoroutine(ProcessMatches());
+        _administrator.matchesHandler.ProcessMatches();
     }
 }
