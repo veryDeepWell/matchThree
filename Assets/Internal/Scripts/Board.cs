@@ -17,9 +17,6 @@ public class Board : MonoBehaviour
         _administrator = FindAnyObjectByType<Administrator>().GetComponent<Administrator>();
         
         _allItems = new Item[width, height];
-        
-        _administrator.itemGenerator.Initialization(_allItems);
-        _administrator.itemGenerator.GetItems();
     }
 
     public void CheckMatches()

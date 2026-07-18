@@ -7,7 +7,7 @@ public class MatchesHandler : MonoBehaviour
 {
     private Administrator _administrator;
     private Board _board;
-    
+
     private float _moveDuration = 0.15f;
     private bool _isProcessing = false;
 
@@ -19,8 +19,7 @@ public class MatchesHandler : MonoBehaviour
     {
         _administrator = FindAnyObjectByType<Administrator>().GetComponent<Administrator>();
         _board = _administrator.board;
-        
-        // Инициализируем данные сразу
+
         VariablesEstablishment();
     }
 
@@ -36,12 +35,11 @@ public class MatchesHandler : MonoBehaviour
 
     public HashSet<Item> FindMatches()
     {
-        // Проверяем, что данные актуальны
         if (_allItems == null || _allItems.Length == 0)
         {
             VariablesEstablishment();
         }
-        
+
         HashSet<Item> itemsToRemove = new HashSet<Item>();
 
         // Горизонтальные совпадения
@@ -52,8 +50,7 @@ public class MatchesHandler : MonoBehaviour
                 Item current = _allItems[x, y];
                 if (current == null) continue;
 
-                if (_allItems[x + 1, y] != null &&
-                    _allItems[x + 2, y] != null &&
+                if (_allItems[x + 1, y] != null && _allItems[x + 2, y] != null &&
                     _allItems[x + 1, y]._itemType == current._itemType &&
                     _allItems[x + 2, y]._itemType == current._itemType)
                 {
@@ -84,8 +81,7 @@ public class MatchesHandler : MonoBehaviour
                 Item current = _allItems[x, y];
                 if (current == null) continue;
 
-                if (_allItems[x, y + 1] != null &&
-                    _allItems[x, y + 2] != null &&
+                if (_allItems[x, y + 1] != null && _allItems[x, y + 2] != null &&
                     _allItems[x, y + 1]._itemType == current._itemType &&
                     _allItems[x, y + 2]._itemType == current._itemType)
                 {
@@ -131,17 +127,16 @@ public class MatchesHandler : MonoBehaviour
 
         RemoveItems(itemsToRemove);
         yield return new WaitForSeconds(0.05f);
-        
+
         DropItems();
         yield return new WaitForSeconds(_moveDuration + 0.1f);
 
         _isProcessing = false;
-        
-        // Рекурсивная проверка
+
         _board.CheckMatches();
     }
 
-    private void RemoveItems(HashSet<Item> itemsToRemove)
+    public void RemoveItems(HashSet<Item> itemsToRemove)
     {
         foreach (Item item in itemsToRemove)
         {
@@ -153,7 +148,7 @@ public class MatchesHandler : MonoBehaviour
         }
     }
 
-    private void DropItems()
+    public void DropItems()
     {
         bool hasDropped = false;
 
@@ -182,19 +177,24 @@ public class MatchesHandler : MonoBehaviour
             }
         }
     }
-    
+
     public void UpdateReferences()
     {
         if (_administrator == null)
         {
             _administrator = FindAnyObjectByType<Administrator>();
         }
-    
+
         if (_board == null)
         {
             _board = _administrator.board;
         }
-    
+
         VariablesEstablishment();
+    }
+
+    public void SpecialItemCreation(int column, int row)
+    {
+        Item itemToCreate = _allItems[column, row];
     }
 }

@@ -6,24 +6,38 @@ public class Administrator : MonoBehaviour
     public ItemGenerator itemGenerator;
     public Board board;
 
-    private void Start()
+    private void Awake()
+    {
+        InitializeDependencies();
+    }
+
+    private void InitializeDependencies()
     {
         if (matchesHandler == null)
         {
-            Debug.LogError($"{name}: No matchesHandler found!");
-            matchesHandler = FindObjectOfType<MatchesHandler>();
+            matchesHandler = FindFirstObjectByType<MatchesHandler>();
+            if (matchesHandler == null)
+            {
+                Debug.LogError($"{name}: No MatchesHandler found!");
+            }
         }
 
         if (itemGenerator == null)
         {
-            Debug.LogError($"{name}: No itemGenerator found!");
-            itemGenerator = FindObjectOfType<ItemGenerator>();
+            itemGenerator = FindFirstObjectByType<ItemGenerator>();
+            if (itemGenerator == null)
+            {
+                Debug.LogError($"{name}: No ItemGenerator found!");
+            }
         }
 
         if (board == null)
         {
-            Debug.LogError($"{name}: No board found!");
-            board = FindObjectOfType<Board>();
+            board = FindFirstObjectByType<Board>();
+            if (board == null)
+            {
+                Debug.LogError($"{name}: No Board found!");
+            }
         }
     }
 }

@@ -136,6 +136,11 @@ public class Item : MonoBehaviour
 
         _isMoving = false;
         otherItem._isMoving = false;
+
+        if (_specialType != SpecialItemTypes.None)
+        {
+            GetComponent<ISpecialItem>().TriggerSpecialItem();
+        }
         
         if (board != null)
         {

@@ -5,7 +5,8 @@
     DotGreen,
     DotCyan,
     DotMagenta,
-    DotYellow
+    DotYellow,
+    Special
 }
 
 public enum SpecialItemTypes

@@ -1,2 +1,2 @@
-﻿// Generation Manager
-// Board margin odd size fix
+﻿// Item Manager
+// Remove prefabs
