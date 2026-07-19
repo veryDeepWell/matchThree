@@ -11,7 +11,8 @@ public class ItemGenerator : MonoBehaviour
     private Item[,] _allItems;
     private bool _isInitialized;
 
-    [Header("Prefabs")] [SerializeField] private GameObject _tilePrefab;
+    [Header("Prefabs")]
+    [SerializeField] private GameObject _tilePrefab;
     [SerializeField] private GameObject[] _dotsPrefabs;
 
     private void Start()

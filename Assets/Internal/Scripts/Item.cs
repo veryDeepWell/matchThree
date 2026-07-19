@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Item : MonoBehaviour
 {
+    private Camera _camera;
+    
     [Header("Grid Position")] 
     public int column;
     public int row;
@@ -30,6 +32,8 @@ public class Item : MonoBehaviour
         {
             board = FindObjectOfType<Board>();
         }
+        
+        _camera = Camera.main;
 
         transform.position = new Vector2(column, row);
     }
@@ -39,7 +43,7 @@ public class Item : MonoBehaviour
         if (_isMoving) return;
         if (board == null) return;
 
-        _firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        _firstTouchPosition = _camera.ScreenToWorldPoint(Input.mousePosition);
     }
 
     private void OnMouseUp()
@@ -47,7 +51,7 @@ public class Item : MonoBehaviour
         if (_isMoving) return;
         if (board == null) return;
 
-        _finalTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        _finalTouchPosition = _camera.ScreenToWorldPoint(Input.mousePosition);
 
         float swipeDistance = Vector2.Distance(_firstTouchPosition, _finalTouchPosition);
 

@@ -6,7 +6,7 @@ public class Bomb : MonoBehaviour, ISpecialItem
 {
     private SpecialItemTypes _specialItemType;
     
-    private int _explosionDiameter = 3; // Диаметр взрыва
+    private int _explosionDiameter = 3;
     private int _myColumn;
     private int _myRow;
 
