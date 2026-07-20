@@ -1,3 +1,7 @@
-﻿// Item Manager
+﻿// PLANNED
 // Remove prefabs
-// Full naming rewiev
+// Full naming review
+// Load level - JSON?
+// Tweak level editor
+// Special Items
+// Cheat mode
