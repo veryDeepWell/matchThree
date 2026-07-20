@@ -8,9 +8,9 @@ public class Board : MonoBehaviour
 {
     public int width;
     public int height;
-    public Item[,] _allItems;
-    
+
     private Administrator _administrator;
+    public Item[,] _allItems;
 
     void Start()
     {

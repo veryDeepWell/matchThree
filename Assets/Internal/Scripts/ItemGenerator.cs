@@ -5,15 +5,15 @@ using Random = UnityEngine.Random;
 
 public class ItemGenerator : MonoBehaviour
 {
-    private Administrator _administrator;
-
-    private Board _board;
-    private Item[,] _allItems;
-    private bool _isInitialized;
-
     [Header("Prefabs")]
     [SerializeField] private GameObject _tilePrefab;
+
     [SerializeField] private GameObject[] _dotsPrefabs;
+    private Administrator _administrator;
+    private Item[,] _allItems;
+
+    private Board _board;
+    private bool _isInitialized;
 
     private void Start()
     {

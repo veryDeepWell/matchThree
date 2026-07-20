@@ -4,27 +4,29 @@ using UnityEngine;
 
 public class Item : MonoBehaviour
 {
-    private Camera _camera;
-    
     [Header("Grid Position")] 
     public int column;
+
     public int row;
 
     [Header("References")] 
     public Board board;
 
-    private Vector2 _firstTouchPosition;
-    private Vector2 _finalTouchPosition;
-    private float _swipeAngle;
-    private bool _isMoving;
-
     [Header("Movement Settings")] 
     [SerializeField] private float _moveDuration = 0.15f;
+
     [SerializeField] private float _minSwipeDistance = 0.2f;
-    
+
     [Header("Type")]
     public ItemTypes _itemType;
+
     public SpecialItemTypes _specialType = SpecialItemTypes.None;
+    private Camera _camera;
+    private Vector2 _finalTouchPosition;
+
+    private Vector2 _firstTouchPosition;
+    private bool _isMoving;
+    private float _swipeAngle;
 
     private void Start()
     {
@@ -62,6 +64,13 @@ public class Item : MonoBehaviour
 
         CalculateAngleAndMove();
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        gameObject.name = $"Item({column},{row})";
+    }
+#endif
 
     private void CalculateAngleAndMove()
     {
@@ -188,11 +197,4 @@ public class Item : MonoBehaviour
         StopAllCoroutines();
         _isMoving = false;
     }
-
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        gameObject.name = $"Item({column},{row})";
-    }
-#endif
 }

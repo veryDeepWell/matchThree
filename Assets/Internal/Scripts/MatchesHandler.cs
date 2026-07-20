@@ -6,14 +6,14 @@ using UnityEngine;
 public class MatchesHandler : MonoBehaviour
 {
     private Administrator _administrator;
+    private Item[,] _allItems;
     private Board _board;
-
-    private float _moveDuration = 0.15f;
+    private int _height;
     private bool _isProcessing = false;
 
+    private float _moveDuration = 0.15f;
+
     private int _width;
-    private int _height;
-    private Item[,] _allItems;
 
     private void Start()
     {

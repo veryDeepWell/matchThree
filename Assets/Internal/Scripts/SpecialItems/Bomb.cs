@@ -4,13 +4,12 @@ using UnityEngine;
 
 public class Bomb : MonoBehaviour, ISpecialItem
 {
-    private SpecialItemTypes _specialItemType;
-    
+    private Administrator _administrator;
+
     private int _explosionDiameter = 3;
     private int _myColumn;
     private int _myRow;
-
-    private Administrator _administrator;
+    private SpecialItemTypes _specialItemType;
 
     private void Start()
     {
