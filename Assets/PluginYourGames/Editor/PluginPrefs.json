@@ -1,0 +1,15 @@
+{
+    "stringPrefs": [
+        {
+            "key": "SelectModuleToggle_YG2",
+            "value": "RewardedAdv;InterstitialAdv"
+        }
+    ],
+    "intPrefs": [
+        {
+            "key": "FirstStartup_YG2",
+            "value": 2
+        }
+    ],
+    "floatPrefs": []
+}
