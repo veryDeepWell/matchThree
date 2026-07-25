@@ -165,6 +165,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Board
   width: 7
   height: 7
+  currentLevel: {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
+  startLevelIndex: 0
 --- !u!1 &419259455
 GameObject:
   m_ObjectHideFlags: 0
@@ -197,6 +199,9 @@ Transform:
   - {fileID: 1859707322}
   - {fileID: 1133386712}
   - {fileID: 1917519482}
+  - {fileID: 671067076}
+  - {fileID: 2109019611}
+  - {fileID: 1066047838}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
@@ -291,6 +296,105 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &671067075
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 671067076}
+  - component: {fileID: 671067077}
+  m_Layer: 0
+  m_Name: ItemHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &671067076
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 671067075}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 419259456}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &671067077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 671067075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1600f3629a344faea4f3bcaa3068e2d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemHandler
+  itemSprites:
+  - {fileID: 21300000, guid: 4ab3fdc94a8b11f4db502af1f99ca2d9, type: 3}
+  - {fileID: 21300000, guid: c81d170edcbf32849ac22ac58643879f, type: 3}
+  - {fileID: 21300000, guid: a965d9ef87e4673409a33dd8298bcff7, type: 3}
+  - {fileID: 21300000, guid: 1b7df27f9161894448ea34eb06881b47, type: 3}
+  - {fileID: 21300000, guid: 193324b58573af549859733f491e9dbe, type: 3}
+  - {fileID: 21300000, guid: c0fdf2eb10f550848819a2f71dd88092, type: 3}
+  itemPrefab: {fileID: 1919115339449239105, guid: 8961f2d5662c8a64d8a1fc29d6216fb7, type: 3}
+--- !u!1 &1066047837
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1066047838}
+  - component: {fileID: 1066047839}
+  m_Layer: 0
+  m_Name: LevelManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1066047838
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1066047837}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.3348999, y: -0.08411001, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 419259456}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1066047839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1066047837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8efa0f2badd7f14ea041c7a01213625, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelManager
+  _levels:
+  - {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
+  lastLevel: 0
 --- !u!1 &1133386711
 GameObject:
   m_ObjectHideFlags: 0
@@ -382,6 +486,9 @@ MonoBehaviour:
   matchesHandler: {fileID: 1133386713}
   itemGenerator: {fileID: 1917519483}
   board: {fileID: 339209810}
+  itemHandler: {fileID: 671067077}
+  specialItemHandler: {fileID: 2109019612}
+  levelManager: {fileID: 1066047839}
 --- !u!1 &1917519481
 GameObject:
   m_ObjectHideFlags: 0
@@ -427,13 +534,52 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemGenerator
   _tilePrefab: {fileID: 170917415711285555, guid: d4dfcd7ac21749c4baf2aa47c398a3fe, type: 3}
-  _dotsPrefabs:
-  - {fileID: 852867307340618259, guid: 1221d6756a4ea6748a23447904ab6420, type: 3}
-  - {fileID: 7317272983574135880, guid: d3c309ce5e6b5694ea4d3d50e8ef9932, type: 3}
-  - {fileID: 1919115339449239105, guid: 8961f2d5662c8a64d8a1fc29d6216fb7, type: 3}
-  - {fileID: 3676990338910873319, guid: 2d56bc79b82054143a45e14fe43dcf68, type: 3}
-  - {fileID: 1097271149028431070, guid: c675cab8bbb3af34884cca18ac8d47dc, type: 3}
-  - {fileID: 3314107066453653585, guid: 3a52f1ae294ffd342afce59f5d26dd35, type: 3}
+--- !u!1 &2109019610
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2109019611}
+  - component: {fileID: 2109019612}
+  m_Layer: 0
+  m_Name: SpecialItemHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2109019611
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2109019610}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.3348999, y: -0.08411001, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 419259456}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2109019612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2109019610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d818826628054bccb81b15688ad1a844, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpecialItemHandler
+  specialSprites: []
+  specialItemPrefab: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
