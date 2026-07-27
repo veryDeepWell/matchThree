@@ -6,7 +6,7 @@ public class Board : MonoBehaviour
     [Header("=== Board Settings ===")]
     [SerializeField] private bool _useRandomLevel = false;
     [SerializeField] private LevelData _testLevel;
-    
+    // change
     [Header("=== Grid Info (Read Only) ===")]
     public int width;
     public int height;
