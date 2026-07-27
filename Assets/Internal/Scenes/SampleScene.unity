@@ -163,10 +163,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79140587d5df5864cae42ca7c4580742, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Board
+  _useRandomLevel: 0
+  _testLevel: {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
   width: 7
   height: 7
   currentLevel: {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
-  startLevelIndex: 0
 --- !u!1 &419259455
 GameObject:
   m_ObjectHideFlags: 0
