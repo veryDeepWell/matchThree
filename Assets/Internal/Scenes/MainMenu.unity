@@ -771,8 +771,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 889849493}
-        m_TargetAssemblyTypeName: AdManager, Assembly-CSharp
-        m_MethodName: ShowRewardedAd
+        m_TargetAssemblyTypeName: PaintingAdProgress, Assembly-CSharp
+        m_MethodName: WatchAdForPainting
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1236,7 +1236,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 889849493}
-        m_TargetAssemblyTypeName: AdManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: PaintingAdProgress, Assembly-CSharp
         m_MethodName: ResetAds
         m_Mode: 1
         m_Arguments:
@@ -1296,7 +1296,7 @@ GameObject:
   - component: {fileID: 889849492}
   - component: {fileID: 889849493}
   m_Layer: 0
-  m_Name: AdManager
+  m_Name: PaintingAdProgress
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1328,7 +1328,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4db84f9f71d90e142b86380c082e2fd9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AdManager
+  m_EditorClassIdentifier: Assembly-CSharp::PaintingAdProgress
   paintings:
   - {fileID: 591740667}
   - {fileID: 1882005125}
