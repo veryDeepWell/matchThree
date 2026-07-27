@@ -9,24 +9,20 @@ public class LevelEditorWindow : EditorWindow
     private Vector2 _scrollPosition;
     private Vector2 _gridScrollPosition;
     
-    // Выбранные индексы
     private int _selectedItemIndex = 0;
     private int _selectedSpecialItemIndex = 0;
     private int _selectedSpecialCellIndex = 0;
     
-    // Данные для UI
     private List<ItemTypes> _itemTypes = new List<ItemTypes>();
     private List<SpecialItemTypes> _specialItemTypes = new List<SpecialItemTypes>();
     private List<string> _specialCellNames = new List<string>();
     
-    // Текстуры
     private Dictionary<ItemTypes, Texture2D> _itemTextures = new Dictionary<ItemTypes, Texture2D>();
     private Dictionary<SpecialItemTypes, Texture2D> _specialItemTextures = new Dictionary<SpecialItemTypes, Texture2D>();
     private Dictionary<int, Texture2D> _specialCellTextures = new Dictionary<int, Texture2D>();
     private Texture2D _missingTexture;
     private Texture2D _inactiveTexture;
     
-    // Кэш текстур для отображения в сетке
     private Dictionary<string, Texture2D> _gridTextures = new Dictionary<string, Texture2D>();
     
     [MenuItem("Tools/Level Editor")]
@@ -156,10 +152,8 @@ public class LevelEditorWindow : EditorWindow
             
             EditorGUILayout.Space();
             
-            // ============ ТЕКСТ ВЫБРАННОГО ============
             DrawSelectedInfo();
             
-            // ============ ТРИ РЯДА КНОПОК ============
             DrawItemButtons();
             DrawSpecialItemButtons();
             DrawSpecialCellButtons();
@@ -253,13 +247,11 @@ public class LevelEditorWindow : EditorWindow
             if (label.Length > 4) label = label.Substring(0, 4);
             
             bool wasEnabled = GUI.enabled;
-            // Если выбран спец предмет (не None) - блокируем обычные предметы
             GUI.enabled = (_selectedSpecialItemIndex == 0);
             
             if (DrawPaletteButton(tex, label, isSelected, buttonSize))
             {
                 _selectedItemIndex = _itemTypes.IndexOf(type);
-                // Если выбрали None - разблокируем спец предметы, иначе сбрасываем спец предмет
                 if (type != ItemTypes.None)
                     _selectedSpecialItemIndex = 0;
             }
@@ -295,13 +287,11 @@ public class LevelEditorWindow : EditorWindow
             if (label.Length > 5) label = label.Substring(0, 5);
             
             bool wasEnabled = GUI.enabled;
-            // Special Items доступны ТОЛЬКО если выбран None в Items
             GUI.enabled = (_selectedItemIndex == 0);
             
             if (DrawPaletteButton(tex, label, isSelected, buttonSize))
             {
                 _selectedSpecialItemIndex = i;
-                // Если выбрали спец предмет (не None) - сбрасываем обычный предмет
                 if (type != SpecialItemTypes.None)
                     _selectedItemIndex = 0;
             }
@@ -358,14 +348,12 @@ public class LevelEditorWindow : EditorWindow
         bool clicked = false;
         Rect rect = GUILayoutUtility.GetRect(size, size, style);
     
-        // Рисуем рамку если выделено
         if (isSelected)
         {
             Rect borderRect = new Rect(rect.x - 2, rect.y - 2, rect.width + 4, rect.height + 4);
             EditorGUI.DrawRect(borderRect, Color.white);
         }
     
-        // Рисуем кнопку
         GUIContent content = new GUIContent(texture);
         if (GUI.Button(rect, content, style))
             clicked = true;
@@ -376,7 +364,7 @@ public class LevelEditorWindow : EditorWindow
     private void DrawGrid()
     {
         if (_currentLevel == null) return;
-        if (_currentLevel.activeCells == null || _currentLevel.items == null)
+        if (_currentLevel.items == null || _currentLevel.activeCells == null)
         {
             _currentLevel.Initialize(_currentLevel.width, _currentLevel.height);
             return;
@@ -459,17 +447,15 @@ public class LevelEditorWindow : EditorWindow
         
         if (currentEvent.button == 0 && !currentEvent.shift)
         {
-            // Если выбрана Inactive ячейка - отключаем ячейку
             if (_selectedSpecialCellIndex == 1) // Inactive
             {
-                _currentLevel.activeCells[x, y] = false;
+                _currentLevel.SetActive(x, y, false);
                 _currentLevel.SetItem(x, y, ItemTypes.None);
                 return;
             }
             
             if (isActive)
             {
-                // Ставим предмет
                 if (_selectedItemIndex == 0)
                     _currentLevel.SetItem(x, y, ItemTypes.None);
                 else
@@ -479,12 +465,12 @@ public class LevelEditorWindow : EditorWindow
         else if (currentEvent.button == 1)
         {
             _currentLevel.SetItem(x, y, ItemTypes.None);
-            _currentLevel.activeCells[x, y] = true;
+            _currentLevel.SetActive(x, y, true);
         }
         else if (currentEvent.button == 0 && currentEvent.shift)
         {
             _currentLevel.SetItem(x, y, ItemTypes.None);
-            _currentLevel.activeCells[x, y] = true;
+            _currentLevel.SetActive(x, y, true);
         }
         else if (currentEvent.button == 2 && !currentEvent.shift)
         {
@@ -641,7 +627,7 @@ public class LevelEditorWindow : EditorWindow
             for (int y = 0; y < _currentLevel.height; y++)
             {
                 _currentLevel.SetItem(x, y, ItemTypes.None);
-                _currentLevel.activeCells[x, y] = true;
+                _currentLevel.SetActive(x, y, true);
             }
     }
 }

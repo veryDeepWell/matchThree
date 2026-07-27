@@ -6,7 +6,7 @@ using UnityEngine;
 public class ItemHandler : MonoBehaviour
 {
     [SerializeField] private List<Sprite> itemSprites;
-    [SerializeField] private GameObject itemPrefab; // Базовый префаб с компонентом Item
+    [SerializeField] private GameObject itemPrefab;
     
     private Dictionary<ItemTypes, Sprite> _spriteDictionary;
     private List<GameObject> _itemPrefabs;
@@ -21,11 +21,16 @@ public class ItemHandler : MonoBehaviour
     {
         _spriteDictionary = new Dictionary<ItemTypes, Sprite>();
         
-        for (int i = 0; i < itemSprites.Count && i < Enum.GetValues(typeof(ItemTypes)).Length; i++)
+        int index = 0;
+        foreach (ItemTypes type in System.Enum.GetValues(typeof(ItemTypes)))
         {
-            if ((ItemTypes)i != ItemTypes.Special)
+            if (type != ItemTypes.None && type != ItemTypes.Special)
             {
-                _spriteDictionary[(ItemTypes)i] = itemSprites[i];
+                if (index < itemSprites.Count && itemSprites[index] != null)
+                {
+                    _spriteDictionary[type] = itemSprites[index];
+                }
+                index++;
             }
         }
     }
@@ -34,37 +39,38 @@ public class ItemHandler : MonoBehaviour
     {
         _itemPrefabs = new List<GameObject>();
         
-        foreach (var kvp in _spriteDictionary)
+        foreach (ItemTypes type in System.Enum.GetValues(typeof(ItemTypes)))
         {
+            if (type == ItemTypes.None || type == ItemTypes.Special) continue;
+            if (!_spriteDictionary.ContainsKey(type)) continue;
+            
             GameObject go = Instantiate(itemPrefab);
-            go.name = kvp.Key.ToString();
+            go.name = type.ToString();
             
             SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
             if (sr != null)
             {
-                sr.sprite = kvp.Value;
+                sr.sprite = _spriteDictionary[type];
                 sr.sortingOrder = 1;
             }
             
             Item item = go.GetComponent<Item>();
             if (item != null)
             {
-                item._itemType = kvp.Key;
+                item._itemType = type;
                 item._specialType = SpecialItemTypes.None;
             }
             
-            go.SetActive(false); // Отключаем, чтобы не отображался в сцене как префаб
+            go.SetActive(false);
             _itemPrefabs.Add(go);
         }
     }
 
-    // Возвращает список префабов для генерации
     public List<GameObject> GetItemPrefabs()
     {
         return _itemPrefabs;
     }
 
-    // Создает копию предмета по типу
     public GameObject CreateItem(ItemTypes type, Vector2 position, Transform parent)
     {
         foreach (var prefab in _itemPrefabs)

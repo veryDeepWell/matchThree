@@ -140,10 +140,4 @@ public class Board : MonoBehaviour
         if (_administrator?.matchesHandler != null)
             _administrator.matchesHandler.ProcessMatches();
     }
-
-    #if UNITY_EDITOR
-    private void OnValidate()
-    {
-    }
-    #endif
 }
