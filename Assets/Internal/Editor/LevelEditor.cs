@@ -53,20 +53,25 @@ public class LevelEditorWindow : EditorWindow
         else
             _inactiveTexture = CreateFallbackTexture(new Color(0.1f, 0.1f, 0.1f));
         
+        // Обычные предметы (None пропускаем)
         string itemFolder = texturesPath + "Items/";
         foreach (ItemTypes type in _itemTypes)
         {
+            if (type == ItemTypes.None) continue;
             string path = itemFolder + type.ToString() + ".psd";
             _itemTextures[type] = File.Exists(path) ? LoadTextureFromAsset(path) : _missingTexture;
         }
         
+        // Специальные предметы (None пропускаем)
         string specialFolder = texturesPath + "SpecialItems/";
         foreach (SpecialItemTypes type in _specialItemTypes)
         {
+            if (type == SpecialItemTypes.None) continue;
             string path = specialFolder + type.ToString() + ".psd";
             _specialItemTextures[type] = File.Exists(path) ? LoadTextureFromAsset(path) : _missingTexture;
         }
         
+        // Специальные ячейки
         string cellFolder = texturesPath + "SpecialCells/";
         for (int i = 0; i < _specialCellNames.Count; i++)
         {
@@ -141,13 +146,13 @@ public class LevelEditorWindow : EditorWindow
             }
             
             if (_currentLevel.Items == null || _currentLevel.ActiveCells == null)
-                _currentLevel.Initialize(_currentLevel.width, _currentLevel.height);
+                _currentLevel.Initialize(_currentLevel.Width, _currentLevel.Height);
             
             EditorGUILayout.Space();
             
-            int newWidth = EditorGUILayout.IntField("Width", _currentLevel.width);
-            int newHeight = EditorGUILayout.IntField("Height", _currentLevel.height);
-            if (newWidth != _currentLevel.width || newHeight != _currentLevel.height)
+            int newWidth = EditorGUILayout.IntField("Width", _currentLevel.Width);
+            int newHeight = EditorGUILayout.IntField("Height", _currentLevel.Height);
+            if (newWidth != _currentLevel.Width || newHeight != _currentLevel.Height)
                 ResizeGrid(newWidth, newHeight);
             
             EditorGUILayout.Space();
@@ -242,7 +247,14 @@ public class LevelEditorWindow : EditorWindow
         foreach (ItemTypes type in _itemTypes)
         {
             bool isSelected = (_selectedItemIndex == _itemTypes.IndexOf(type));
-            Texture2D tex = _itemTextures.ContainsKey(type) ? _itemTextures[type] : _missingTexture;
+            Texture2D tex;
+            if (type == ItemTypes.None)
+                tex = _missingTexture;
+            else if (_itemTextures.ContainsKey(type))
+                tex = _itemTextures[type];
+            else
+                tex = _missingTexture;
+            
             string label = type == ItemTypes.None ? "" : type.ToString().Replace("Dot", "");
             if (label.Length > 4) label = label.Substring(0, 4);
             
@@ -277,7 +289,7 @@ public class LevelEditorWindow : EditorWindow
             
             Texture2D tex;
             if (isNone)
-                tex = _itemTextures[ItemTypes.None];
+                tex = _missingTexture;
             else if (_specialItemTextures.ContainsKey(type))
                 tex = _specialItemTextures[type];
             else
@@ -314,7 +326,7 @@ public class LevelEditorWindow : EditorWindow
             bool isSelected = (_selectedSpecialCellIndex == i);
             Texture2D tex;
             if (i == 0)
-                tex = _itemTextures[ItemTypes.None];
+                tex = _missingTexture;
             else if (i == 1)
                 tex = _inactiveTexture;
             else if (_specialCellTextures.ContainsKey(i))
@@ -366,12 +378,12 @@ public class LevelEditorWindow : EditorWindow
         if (_currentLevel == null) return;
         if (_currentLevel.Items == null || _currentLevel.ActiveCells == null)
         {
-            _currentLevel.Initialize(_currentLevel.width, _currentLevel.height);
+            _currentLevel.Initialize(_currentLevel.Width, _currentLevel.Height);
             return;
         }
         
-        int width = _currentLevel.width;
-        int height = _currentLevel.height;
+        int width = _currentLevel.Width;
+        int height = _currentLevel.Height;
         float cellSize = 58f;
         
         EditorGUILayout.BeginHorizontal();
@@ -387,8 +399,9 @@ public class LevelEditorWindow : EditorWindow
             
             for (int x = 0; x < width; x++)
             {
-                bool isActive = _currentLevel.IsActive(x, y);
-                ItemTypes currentType = _currentLevel.GetItem(x, y);
+                int idx = y * width + x;
+                bool isActive = _currentLevel.ActiveCells != null && idx < _currentLevel.ActiveCells.Length && _currentLevel.ActiveCells[idx];
+                ItemTypes currentType = _currentLevel.Items != null && idx < _currentLevel.Items.Length ? _currentLevel.Items[idx] : ItemTypes.None;
                 
                 GUIStyle style = new GUIStyle(GUI.skin.button);
                 style.padding = new RectOffset(0, 0, 0, 0);
@@ -474,7 +487,8 @@ public class LevelEditorWindow : EditorWindow
         }
         else if (currentEvent.button == 2 && !currentEvent.shift)
         {
-            ItemTypes type = _currentLevel.GetItem(x, y);
+            int idx = y * _currentLevel.Width + x;
+            ItemTypes type = _currentLevel.Items != null && idx < _currentLevel.Items.Length ? _currentLevel.Items[idx] : ItemTypes.None;
             int index = _itemTypes.IndexOf(type);
             if (index >= 0)
             {
@@ -497,8 +511,8 @@ public class LevelEditorWindow : EditorWindow
         
         LevelData newLevel = CreateInstance<LevelData>();
         newLevel.Initialize(8, 8);
-        for (int x = 0; x < newLevel.width; x++)
-            for (int y = 0; y < newLevel.height; y++)
+        for (int x = 0; x < newLevel.Width; x++)
+            for (int y = 0; y < newLevel.Height; y++)
                 newLevel.SetItem(x, y, (ItemTypes)Random.Range(1, 7));
         
         AssetDatabase.CreateAsset(newLevel, path);
@@ -511,13 +525,13 @@ public class LevelEditorWindow : EditorWindow
     {
         if (newWidth <= 0 || newHeight <= 0) return;
         
-        int oldWidth = _currentLevel.width;
-        int oldHeight = _currentLevel.height;
-        bool[,] oldActive = _currentLevel.ActiveCells;
-        ItemTypes[,] oldItems = _currentLevel.Items;
+        int oldWidth = _currentLevel.Width;
+        int oldHeight = _currentLevel.Height;
+        var oldItems = _currentLevel.Items;
+        var oldActive = _currentLevel.ActiveCells;
         
-        bool[,] newActive = new bool[newWidth, newHeight];
-        ItemTypes[,] newItems = new ItemTypes[newWidth, newHeight];
+        ItemTypes[] newItems = new ItemTypes[newWidth * newHeight];
+        bool[] newActive = new bool[newWidth * newHeight];
         
         int minWidth = Mathf.Min(newWidth, oldWidth);
         int minHeight = Mathf.Min(newHeight, oldHeight);
@@ -525,20 +539,23 @@ public class LevelEditorWindow : EditorWindow
         for (int x = 0; x < minWidth; x++)
             for (int y = 0; y < minHeight; y++)
             {
-                newActive[x, y] = oldActive[x, y];
-                newItems[x, y] = oldItems[x, y];
+                int oldIdx = y * oldWidth + x;
+                int newIdx = y * newWidth + x;
+                newActive[newIdx] = oldActive != null && oldIdx < oldActive.Length && oldActive[oldIdx];
+                newItems[newIdx] = oldItems != null && oldIdx < oldItems.Length ? oldItems[oldIdx] : ItemTypes.None;
             }
         
         for (int x = 0; x < newWidth; x++)
             for (int y = 0; y < newHeight; y++)
                 if (x >= minWidth || y >= minHeight)
                 {
-                    newActive[x, y] = true;
-                    newItems[x, y] = (ItemTypes)Random.Range(1, 7);
+                    int idx = y * newWidth + x;
+                    newActive[idx] = true;
+                    newItems[idx] = ItemTypes.None;
                 }
         
-        _currentLevel.width = newWidth;
-        _currentLevel.height = newHeight;
+        _currentLevel.Width = newWidth;
+        _currentLevel.Height = newHeight;
         _currentLevel.ActiveCells = newActive;
         _currentLevel.Items = newItems;
     }
@@ -546,19 +563,35 @@ public class LevelEditorWindow : EditorWindow
     private void FillSelection()
     {
         if (_currentLevel == null) return;
-        for (int x = 0; x < _currentLevel.width; x++)
-            for (int y = 0; y < _currentLevel.height; y++)
-                if (_currentLevel.IsActive(x, y) && _currentLevel.GetItem(x, y) == ItemTypes.None)
-                    _currentLevel.SetItem(x, y, _selectedItemIndex == 0 ? ItemTypes.None : _itemTypes[_selectedItemIndex]);
+        int w = _currentLevel.Width;
+        int h = _currentLevel.Height;
+        for (int x = 0; x < w; x++)
+            for (int y = 0; y < h; y++)
+            {
+                int idx = y * w + x;
+                if (_currentLevel.ActiveCells != null && idx < _currentLevel.ActiveCells.Length && _currentLevel.ActiveCells[idx])
+                {
+                    if (_currentLevel.Items != null && idx < _currentLevel.Items.Length && _currentLevel.Items[idx] == ItemTypes.None)
+                        _currentLevel.SetItem(x, y, _selectedItemIndex == 0 ? ItemTypes.None : _itemTypes[_selectedItemIndex]);
+                }
+            }
     }
     
     private void FillRandom()
     {
         if (_currentLevel == null) return;
-        for (int x = 0; x < _currentLevel.width; x++)
-            for (int y = 0; y < _currentLevel.height; y++)
-                if (_currentLevel.IsActive(x, y) && _currentLevel.GetItem(x, y) == ItemTypes.None)
-                    _currentLevel.SetItem(x, y, (ItemTypes)Random.Range(1, 7));
+        int w = _currentLevel.Width;
+        int h = _currentLevel.Height;
+        for (int x = 0; x < w; x++)
+            for (int y = 0; y < h; y++)
+            {
+                int idx = y * w + x;
+                if (_currentLevel.ActiveCells != null && idx < _currentLevel.ActiveCells.Length && _currentLevel.ActiveCells[idx])
+                {
+                    if (_currentLevel.Items != null && idx < _currentLevel.Items.Length && _currentLevel.Items[idx] == ItemTypes.None)
+                        _currentLevel.SetItem(x, y, (ItemTypes)Random.Range(1, 7));
+                }
+            }
     }
     
     private void RemoveMatches()
@@ -574,39 +607,20 @@ public class LevelEditorWindow : EditorWindow
             attempts++;
             hasMatches = false;
             
-            for (int x = 0; x < _currentLevel.width - 2; x++)
-                for (int y = 0; y < _currentLevel.height; y++)
-                {
-                    if (!_currentLevel.IsActive(x, y)) continue;
-                    ItemTypes type = _currentLevel.GetItem(x, y);
-                    if (type == ItemTypes.None) continue;
-                    
-                    if (_currentLevel.IsActive(x + 1, y) && _currentLevel.IsActive(x + 2, y) &&
-                        _currentLevel.GetItem(x + 1, y) == type && _currentLevel.GetItem(x + 2, y) == type)
-                    {
-                        hasMatches = true;
-                        _currentLevel.SetItem(x, y, (ItemTypes)Random.Range(1, 7));
-                        _currentLevel.SetItem(x + 1, y, (ItemTypes)Random.Range(1, 7));
-                        _currentLevel.SetItem(x + 2, y, (ItemTypes)Random.Range(1, 7));
-                    }
-                }
+            var tempData = _currentLevel.ToBoardData();
+            var matches = MatchFinder.FindMatches(tempData);
             
-            for (int x = 0; x < _currentLevel.width; x++)
-                for (int y = 0; y < _currentLevel.height - 2; y++)
+            if (matches.Count > 0)
+            {
+                hasMatches = true;
+                int w = _currentLevel.Width;
+                foreach (int idx in matches)
                 {
-                    if (!_currentLevel.IsActive(x, y)) continue;
-                    ItemTypes type = _currentLevel.GetItem(x, y);
-                    if (type == ItemTypes.None) continue;
-                    
-                    if (_currentLevel.IsActive(x, y + 1) && _currentLevel.IsActive(x, y + 2) &&
-                        _currentLevel.GetItem(x, y + 1) == type && _currentLevel.GetItem(x, y + 2) == type)
-                    {
-                        hasMatches = true;
-                        _currentLevel.SetItem(x, y, (ItemTypes)Random.Range(1, 7));
-                        _currentLevel.SetItem(x, y + 1, (ItemTypes)Random.Range(1, 7));
-                        _currentLevel.SetItem(x, y + 2, (ItemTypes)Random.Range(1, 7));
-                    }
+                    int x = idx % w;
+                    int y = idx / w;
+                    _currentLevel.SetItem(x, y, (ItemTypes)Random.Range(1, 7));
                 }
+            }
         }
         
         Debug.Log($"Matches removed after {attempts} attempts");
@@ -623,8 +637,8 @@ public class LevelEditorWindow : EditorWindow
     private void ClearGrid()
     {
         if (_currentLevel == null) return;
-        for (int x = 0; x < _currentLevel.width; x++)
-            for (int y = 0; y < _currentLevel.height; y++)
+        for (int x = 0; x < _currentLevel.Width; x++)
+            for (int y = 0; y < _currentLevel.Height; y++)
             {
                 _currentLevel.SetItem(x, y, ItemTypes.None);
                 _currentLevel.SetActive(x, y, true);

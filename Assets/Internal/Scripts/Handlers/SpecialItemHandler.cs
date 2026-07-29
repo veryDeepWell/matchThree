@@ -5,16 +5,14 @@ using UnityEngine;
 [DefaultExecutionOrder(-75)]
 public class SpecialItemHandler : MonoBehaviour
 {
-    [SerializeField] private List<Sprite> specialSprites;
-    [SerializeField] private GameObject specialItemPrefab; // Базовый префаб для спец. предметов
+    [SerializeField] private List<Sprite> _specialSprites;
+    [SerializeField] private GameObject _specialItemPrefab;
     
     private Dictionary<SpecialItemTypes, Sprite> _spriteDictionary;
     private Dictionary<SpecialItemTypes, GameObject> _specialPrefabs;
-    private Administrator _administrator;
 
     private void Awake()
     {
-        _administrator = FindFirstObjectByType<Administrator>();
         BuildSpriteDictionary();
         GenerateSpecialPrefabs();
     }
@@ -24,11 +22,14 @@ public class SpecialItemHandler : MonoBehaviour
         _spriteDictionary = new Dictionary<SpecialItemTypes, Sprite>();
         
         var specialTypes = Enum.GetValues(typeof(SpecialItemTypes));
-        for (int i = 0; i < specialSprites.Count && i < specialTypes.Length; i++)
+        int index = 0;
+        for (int i = 0; i < specialTypes.Length; i++)
         {
-            if ((SpecialItemTypes)specialTypes.GetValue(i) != SpecialItemTypes.None)
+            var type = (SpecialItemTypes)specialTypes.GetValue(i);
+            if (type != SpecialItemTypes.None && index < _specialSprites.Count)
             {
-                _spriteDictionary[(SpecialItemTypes)specialTypes.GetValue(i)] = specialSprites[i];
+                _spriteDictionary[type] = _specialSprites[index];
+                index++;
             }
         }
     }
@@ -39,7 +40,7 @@ public class SpecialItemHandler : MonoBehaviour
         
         foreach (var kvp in _spriteDictionary)
         {
-            GameObject go = Instantiate(specialItemPrefab);
+            GameObject go = Instantiate(_specialItemPrefab);
             go.name = kvp.Key.ToString();
             
             SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
@@ -52,11 +53,10 @@ public class SpecialItemHandler : MonoBehaviour
             Item item = go.GetComponent<Item>();
             if (item != null)
             {
-                item.itemType = ItemTypes.Special;
-                item.specialItemType = kvp.Key;
+                item.ItemType = ItemTypes.Special;      // ← исправлено: ItemType
+                item.SpecialType = kvp.Key;              // ← исправлено: SpecialType
             }
             
-            // Добавляем соответствующий компонент
             AddSpecialComponent(go, kvp.Key);
             
             go.SetActive(false);
@@ -69,13 +69,11 @@ public class SpecialItemHandler : MonoBehaviour
         switch (specialType)
         {
             case SpecialItemTypes.Bomb:
-                if (go.GetComponent<Bomb>() == null)
-                    go.AddComponent<Bomb>();
                 break;
+            // TODO: Добавить остальные типы
         }
     }
 
-    // Создает специальный предмет
     public GameObject CreateSpecialItem(SpecialItemTypes specialType, Vector2 position, Transform parent)
     {
         if (!_specialPrefabs.ContainsKey(specialType))
@@ -90,11 +88,10 @@ public class SpecialItemHandler : MonoBehaviour
         Item itemComponent = newItem.GetComponent<Item>();
         if (itemComponent != null)
         {
-            itemComponent.itemType = ItemTypes.Special;
-            itemComponent.specialItemType = specialType;
+            itemComponent.ItemType = ItemTypes.Special;   // ← исправлено: ItemType
+            itemComponent.SpecialType = specialType;       // ← исправлено: SpecialType
         }
         
-        // Вызываем CreateSpecialItem у компонента
         ISpecialItem specialComponent = newItem.GetComponent<ISpecialItem>();
         if (specialComponent != null)
         {
@@ -104,7 +101,6 @@ public class SpecialItemHandler : MonoBehaviour
         return newItem;
     }
 
-    // Проверка, является ли тип специальным
     public bool IsSpecialType(SpecialItemTypes type)
     {
         return type != SpecialItemTypes.None;

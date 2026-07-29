@@ -4,20 +4,9 @@ using UnityEngine;
 [DefaultExecutionOrder(-90)]
 public class LevelManager : MonoBehaviour
 {
-    private Administrator _administrator;
-    
     [SerializeField] private List<LevelData> levels = new List<LevelData>();
     
     public int lastLevel;
-
-    private void Awake()
-    {
-        _administrator = FindFirstObjectByType<Administrator>();
-        if (_administrator == null)
-        {
-            Debug.LogError("Administrator not found in LevelManager!");
-        }
-    }
 
     private void Start()
     {
