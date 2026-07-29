@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -7,7 +6,7 @@ using Random = UnityEngine.Random;
 public class ItemGenerator : MonoBehaviour
 {
     [Header("Prefabs")]
-    [SerializeField] private GameObject _tilePrefab;
+    [SerializeField] private GameObject tilePrefab;
     
     private Administrator _administrator;
     private ItemHandler _itemHandler;
@@ -21,7 +20,7 @@ public class ItemGenerator : MonoBehaviour
 
     private void Awake()
     {
-        _administrator = FindObjectOfType<Administrator>();
+        _administrator = FindFirstObjectByType<Administrator>();
         if (_administrator == null)
         {
             Debug.LogError("Administrator not found!");
@@ -37,7 +36,7 @@ public class ItemGenerator : MonoBehaviour
     {
         if (_administrator == null)
         {
-            _administrator = FindObjectOfType<Administrator>();
+            _administrator = FindFirstObjectByType<Administrator>();
             if (_administrator == null)
             {
                 Debug.LogError("Administrator not found in Start!");
@@ -58,7 +57,7 @@ public class ItemGenerator : MonoBehaviour
         }
         
         _board = _administrator.board;
-        _allItems = _board.allItems;
+        _allItems = _board.AllItems;
         _itemHandler = _administrator.itemHandler;
         _specialItemHandler = _administrator.specialItemHandler;
         
@@ -68,16 +67,13 @@ public class ItemGenerator : MonoBehaviour
         }
         
         _isInitialized = true;
-        
-        // НЕ вызываем GetItems() здесь - ждем пока Board загрузит уровень
-        // GetItems() будет вызван из Board после загрузки уровня
     }
 
     public void Initialization()
     {
         if (_administrator == null)
         {
-            _administrator = FindObjectOfType<Administrator>();
+            _administrator = FindFirstObjectByType<Administrator>();
             if (_administrator == null)
             {
                 Debug.LogError("Administrator not found in Initialization!");
@@ -92,7 +88,7 @@ public class ItemGenerator : MonoBehaviour
             return;
         }
         
-        _allItems = _board.allItems;
+        _allItems = _board.AllItems;
         if (_allItems == null)
         {
             Debug.LogError("Board.allItems is null in ItemGenerator.Initialization! Create array first.");
@@ -150,7 +146,7 @@ public class ItemGenerator : MonoBehaviour
             return;
         }
         
-        _allItems = _board.allItems;
+        _allItems = _board.AllItems;
         _itemHandler = FindAnyObjectByType<ItemHandler>();
         _specialItemHandler = FindAnyObjectByType<SpecialItemHandler>();
         _itemPrefabs = _itemHandler?.GetItemPrefabs();
@@ -171,7 +167,7 @@ public class ItemGenerator : MonoBehaviour
             {
                 Vector2 tilePos = new Vector2(x, y);
 
-                GameObject newTile = Instantiate(_tilePrefab, tilePos, Quaternion.identity, transform);
+                GameObject newTile = Instantiate(tilePrefab, tilePos, Quaternion.identity, transform);
                 newTile.name = "Tile(" + x + "," + y + ")";
                 
                 if (!_board.IsActiveCell(x, y))

@@ -6,13 +6,13 @@ public class LevelManager : MonoBehaviour
 {
     private Administrator _administrator;
     
-    [SerializeField] private List<LevelData> _levels = new List<LevelData>();
+    [SerializeField] private List<LevelData> levels = new List<LevelData>();
     
     public int lastLevel;
 
     private void Awake()
     {
-        _administrator = FindObjectOfType<Administrator>();
+        _administrator = FindFirstObjectByType<Administrator>();
         if (_administrator == null)
         {
             Debug.LogError("Administrator not found in LevelManager!");
@@ -21,7 +21,7 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
-        if (_levels == null || _levels.Count == 0)
+        if (levels == null || levels.Count == 0)
         {
             Debug.LogWarning("No levels added to LevelManager! Add levels in inspector.");
         }
@@ -29,19 +29,19 @@ public class LevelManager : MonoBehaviour
 
     public LevelData LoadLevel(int levelIndex)
     {
-        if (_levels == null || _levels.Count == 0)
+        if (levels == null || levels.Count == 0)
         {
             Debug.LogError($"Level list is empty! Can't load level {levelIndex}");
             return null;
         }
         
-        if (levelIndex < 0 || levelIndex >= _levels.Count)
+        if (levelIndex < 0 || levelIndex >= levels.Count)
         {
-            Debug.LogError($"Level {levelIndex} not found! Total levels: {_levels.Count}");
+            Debug.LogError($"Level {levelIndex} not found! Total levels: {levels.Count}");
             return null;
         }
 
-        LevelData levelToLoad = _levels[levelIndex];
+        LevelData levelToLoad = levels[levelIndex];
         
         if (levelToLoad == null)
         {
@@ -56,13 +56,13 @@ public class LevelManager : MonoBehaviour
     
     public LevelData LoadLevel(string levelName)
     {
-        if (_levels == null || _levels.Count == 0)
+        if (levels == null || levels.Count == 0)
         {
             Debug.LogError("Level list is empty!");
             return null;
         }
         
-        foreach (LevelData level in _levels)
+        foreach (LevelData level in levels)
         {
             if (level != null && level.name == levelName)
             {
@@ -77,6 +77,6 @@ public class LevelManager : MonoBehaviour
     
     public int GetLevelCount()
     {
-        return _levels?.Count ?? 0;
+        return levels?.Count ?? 0;
     }
 }

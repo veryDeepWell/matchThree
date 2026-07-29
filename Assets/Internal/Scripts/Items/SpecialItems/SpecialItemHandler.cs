@@ -14,7 +14,7 @@ public class SpecialItemHandler : MonoBehaviour
 
     private void Awake()
     {
-        _administrator = FindObjectOfType<Administrator>();
+        _administrator = FindFirstObjectByType<Administrator>();
         BuildSpriteDictionary();
         GenerateSpecialPrefabs();
     }

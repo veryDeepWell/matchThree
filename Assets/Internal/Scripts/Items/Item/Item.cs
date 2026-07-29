@@ -32,7 +32,7 @@ public class Item : MonoBehaviour
     {
         if (board == null)
         {
-            board = FindObjectOfType<Board>();
+            board = FindFirstObjectByType<Board>();
         }
 
         _camera = Camera.main;
@@ -109,7 +109,7 @@ public class Item : MonoBehaviour
     {
         if (targetColumn < 0 || targetColumn >= board.width || targetRow < 0 || targetRow >= board.height) return;
 
-        Item otherItem = board.allItems[targetColumn, targetRow];
+        Item otherItem = board.AllItems[targetColumn, targetRow];
         if (otherItem == null) return;
 
         if (otherItem._isMoving) return;
@@ -119,8 +119,8 @@ public class Item : MonoBehaviour
         int otherOldColumn = otherItem.column;
         int otherOldRow = otherItem.row;
 
-        board.allItems[thisOldColumn, thisOldRow] = otherItem;
-        board.allItems[otherOldColumn, otherOldRow] = this;
+        board.AllItems[thisOldColumn, thisOldRow] = otherItem;
+        board.AllItems[otherOldColumn, otherOldRow] = this;
 
         column = otherOldColumn;
         row = otherOldRow;

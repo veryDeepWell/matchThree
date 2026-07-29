@@ -4,14 +4,14 @@ using UnityEngine;
 public class Board : MonoBehaviour
 {
     [Header("=== Board Settings ===")]
-    [SerializeField] private bool _useRandomLevel = false;
-    [SerializeField] private LevelData _testLevel;
+    [SerializeField] private bool useRandomLevel;
+    [SerializeField] private LevelData testLevel;
 
     [Header("=== Grid Info (Read Only) ===")]
     public int width;
     public int height;
-    public bool[,] activeCells;
-    public Item[,] allItems;
+    public bool[,] ActiveCells;
+    public Item[,] AllItems;
     
     private Administrator _administrator;
     public LevelData currentLevel;
@@ -26,7 +26,7 @@ public class Board : MonoBehaviour
         }
         
         // Создаем массив
-        allItems = new Item[width, height];
+        AllItems = new Item[width, height];
         
         // Инициализируем генератор
         if (_administrator.itemGenerator != null)
@@ -37,7 +37,7 @@ public class Board : MonoBehaviour
         // Определяем какой уровень загружать
         LevelData levelToLoad = null;
         
-        if (_useRandomLevel)
+        if (useRandomLevel)
         {
             Debug.Log("Random mode enabled");
             CreateDefaultBoard();
@@ -48,10 +48,10 @@ public class Board : MonoBehaviour
             }
             return;
         }
-        else if (_testLevel != null)
+        else if (testLevel != null)
         {
-            levelToLoad = _testLevel;
-            Debug.Log($"Loading test level: {_testLevel.name}");
+            levelToLoad = testLevel;
+            Debug.Log($"Loading test level: {testLevel.name}");
         }
         else if (_administrator.levelManager != null)
         {
@@ -77,12 +77,12 @@ public class Board : MonoBehaviour
     {
         width = 8;
         height = 8;
-        activeCells = new bool[width, height];
-        allItems = new Item[width, height];
+        ActiveCells = new bool[width, height];
+        AllItems = new Item[width, height];
         
         for (int x = 0; x < width; x++)
         for (int y = 0; y < height; y++)
-            activeCells[x, y] = true;
+            ActiveCells[x, y] = true;
     }
 
     public void LoadLevel(LevelData level)
@@ -97,16 +97,16 @@ public class Board : MonoBehaviour
         width = level.width;
         height = level.height;
         
-        activeCells = new bool[width, height];
+        ActiveCells = new bool[width, height];
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                activeCells[x, y] = level.IsActive(x, y);
+                ActiveCells[x, y] = level.IsActive(x, y);
             }
         }
         
-        allItems = new Item[width, height];
+        AllItems = new Item[width, height];
         
         if (_administrator?.itemGenerator != null)
         {
@@ -121,7 +121,7 @@ public class Board : MonoBehaviour
 
     public bool IsActiveCell(int column, int row)
     {
-        if (activeCells == null)
+        if (ActiveCells == null)
         {
             if (currentLevel != null)
                 LoadLevel(currentLevel);
@@ -132,7 +132,7 @@ public class Board : MonoBehaviour
         if (column < 0 || column >= width || row < 0 || row >= height)
             return false;
         
-        return activeCells[column, row];
+        return ActiveCells[column, row];
     }
 
     public void CheckMatches()

@@ -40,9 +40,9 @@ public class Bomb : MonoBehaviour, ISpecialItem
             {
                 if (i >= 0 && i < board.width && j >= 0 && j < board.height)
                 {
-                    if (board.allItems[i, j] != null)
+                    if (board.AllItems[i, j] != null)
                     {
-                        itemsToRemove.Add(board.allItems[i, j]);
+                        itemsToRemove.Add(board.AllItems[i, j]);
                     }
                 }
             }

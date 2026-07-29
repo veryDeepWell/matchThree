@@ -140,7 +140,7 @@ public class LevelEditorWindow : EditorWindow
                 return;
             }
             
-            if (_currentLevel.items == null || _currentLevel.activeCells == null)
+            if (_currentLevel.Items == null || _currentLevel.ActiveCells == null)
                 _currentLevel.Initialize(_currentLevel.width, _currentLevel.height);
             
             EditorGUILayout.Space();
@@ -364,7 +364,7 @@ public class LevelEditorWindow : EditorWindow
     private void DrawGrid()
     {
         if (_currentLevel == null) return;
-        if (_currentLevel.items == null || _currentLevel.activeCells == null)
+        if (_currentLevel.Items == null || _currentLevel.ActiveCells == null)
         {
             _currentLevel.Initialize(_currentLevel.width, _currentLevel.height);
             return;
@@ -513,8 +513,8 @@ public class LevelEditorWindow : EditorWindow
         
         int oldWidth = _currentLevel.width;
         int oldHeight = _currentLevel.height;
-        bool[,] oldActive = _currentLevel.activeCells;
-        ItemTypes[,] oldItems = _currentLevel.items;
+        bool[,] oldActive = _currentLevel.ActiveCells;
+        ItemTypes[,] oldItems = _currentLevel.Items;
         
         bool[,] newActive = new bool[newWidth, newHeight];
         ItemTypes[,] newItems = new ItemTypes[newWidth, newHeight];
@@ -539,8 +539,8 @@ public class LevelEditorWindow : EditorWindow
         
         _currentLevel.width = newWidth;
         _currentLevel.height = newHeight;
-        _currentLevel.activeCells = newActive;
-        _currentLevel.items = newItems;
+        _currentLevel.ActiveCells = newActive;
+        _currentLevel.Items = newItems;
     }
     
     private void FillSelection()

@@ -163,8 +163,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79140587d5df5864cae42ca7c4580742, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Board
-  _useRandomLevel: 0
-  _testLevel: {fileID: 11400000, guid: a0cac1ee4d5897148a9da5c230c598b9, type: 2}
+  useRandomLevel: 0
+  testLevel: {fileID: 11400000, guid: a0cac1ee4d5897148a9da5c230c598b9, type: 2}
   width: 7
   height: 7
   currentLevel: {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
@@ -393,8 +393,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8efa0f2badd7f14ea041c7a01213625, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelManager
-  _levels:
+  levels:
   - {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
+  - {fileID: 11400000, guid: 30b94731c44407f4e8910d5583db4a10, type: 2}
+  - {fileID: 11400000, guid: a0cac1ee4d5897148a9da5c230c598b9, type: 2}
   lastLevel: 0
 --- !u!1 &1133386711
 GameObject:
@@ -534,7 +536,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 638bfd751f8b48a48675746d65026141, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemGenerator
-  _tilePrefab: {fileID: 170917415711285555, guid: d4dfcd7ac21749c4baf2aa47c398a3fe, type: 3}
+  tilePrefab: {fileID: 170917415711285555, guid: d4dfcd7ac21749c4baf2aa47c398a3fe, type: 3}
 --- !u!1 &2109019610
 GameObject:
   m_ObjectHideFlags: 0

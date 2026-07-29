@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,7 +10,7 @@ public class MatchesHandler : MonoBehaviour
     private Board _board;
     private int _height;
     private bool _isProcessing = false;
-    private float _moveDuration = 0.15f;
+    private float _moveDuration;
     private int _width;
 
     private void Start()
@@ -27,7 +26,7 @@ public class MatchesHandler : MonoBehaviour
         {
             _width = _board.width;
             _height = _board.height;
-            _allItems = _board.allItems;
+            _allItems = _board.AllItems;
         }
     }
 
