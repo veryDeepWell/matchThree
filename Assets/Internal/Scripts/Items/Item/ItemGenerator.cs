@@ -191,13 +191,13 @@ public class ItemGenerator : MonoBehaviour
                     if (itemType == ItemTypes.None || itemType == ItemTypes.Special)
                     {
                         int dotToUse = Random.Range(0, _itemPrefabs.Count);
-                        itemType = _itemPrefabs[dotToUse].GetComponent<Item>()._itemType;
+                        itemType = _itemPrefabs[dotToUse].GetComponent<Item>().itemType;
                     }
                 }
                 else
                 {
                     int dotToUse = Random.Range(0, _itemPrefabs.Count);
-                    itemType = _itemPrefabs[dotToUse].GetComponent<Item>()._itemType;
+                    itemType = _itemPrefabs[dotToUse].GetComponent<Item>().itemType;
                 }
                 
                 GameObject newDot = _itemHandler.CreateItem(itemType, tilePos, newTile.transform);
@@ -269,7 +269,7 @@ public class ItemGenerator : MonoBehaviour
 
         Vector2 pos = new Vector2(col, row);
         Item prefabItem = _itemPrefabs[newDotIndex].GetComponent<Item>();
-        GameObject newDot = _itemHandler.CreateItem(prefabItem._itemType, pos, parent);
+        GameObject newDot = _itemHandler.CreateItem(prefabItem.itemType, pos, parent);
         newDot.name = "Item(" + col + "," + row + ")";
 
         Item newItem = newDot.GetComponent<Item>();
@@ -292,14 +292,14 @@ public class ItemGenerator : MonoBehaviour
 
         for (int x = col - 1; x >= 0; x--)
         {
-            if (_board.IsActiveCell(x, row) && _allItems[x, row] != null && _allItems[x, row]._itemType == type)
+            if (_board.IsActiveCell(x, row) && _allItems[x, row] != null && _allItems[x, row].itemType == type)
                 count++;
             else break;
         }
 
         for (int x = col + 1; x < _board.width; x++)
         {
-            if (_board.IsActiveCell(x, row) && _allItems[x, row] != null && _allItems[x, row]._itemType == type)
+            if (_board.IsActiveCell(x, row) && _allItems[x, row] != null && _allItems[x, row].itemType == type)
                 count++;
             else break;
         }
@@ -310,14 +310,14 @@ public class ItemGenerator : MonoBehaviour
 
         for (int y = row - 1; y >= 0; y--)
         {
-            if (_board.IsActiveCell(col, y) && _allItems[col, y] != null && _allItems[col, y]._itemType == type)
+            if (_board.IsActiveCell(col, y) && _allItems[col, y] != null && _allItems[col, y].itemType == type)
                 count++;
             else break;
         }
 
         for (int y = row + 1; y < _board.height; y++)
         {
-            if (_board.IsActiveCell(col, y) && _allItems[col, y] != null && _allItems[col, y]._itemType == type)
+            if (_board.IsActiveCell(col, y) && _allItems[col, y] != null && _allItems[col, y].itemType == type)
                 count++;
             else break;
         }

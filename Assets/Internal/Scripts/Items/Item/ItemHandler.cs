@@ -57,8 +57,8 @@ public class ItemHandler : MonoBehaviour
             Item item = go.GetComponent<Item>();
             if (item != null)
             {
-                item._itemType = type;
-                item._specialType = SpecialItemTypes.None;
+                item.itemType = type;
+                item.specialItemType = SpecialItemTypes.None;
             }
             
             go.SetActive(false);
@@ -76,7 +76,7 @@ public class ItemHandler : MonoBehaviour
         foreach (var prefab in _itemPrefabs)
         {
             Item item = prefab.GetComponent<Item>();
-            if (item != null && item._itemType == type)
+            if (item != null && item.itemType == type)
             {
                 GameObject newItem = Instantiate(prefab, position, Quaternion.identity, parent);
                 newItem.SetActive(true);
@@ -84,8 +84,8 @@ public class ItemHandler : MonoBehaviour
                 Item newItemComponent = newItem.GetComponent<Item>();
                 if (newItemComponent != null)
                 {
-                    newItemComponent._itemType = type;
-                    newItemComponent._specialType = SpecialItemTypes.None;
+                    newItemComponent.itemType = type;
+                    newItemComponent.specialItemType = SpecialItemTypes.None;
                 }
                 
                 return newItem;

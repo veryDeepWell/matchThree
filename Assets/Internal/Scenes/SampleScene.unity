@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Board
   _useRandomLevel: 0
-  _testLevel: {fileID: 11400000, guid: 30b94731c44407f4e8910d5583db4a10, type: 2}
+  _testLevel: {fileID: 11400000, guid: a0cac1ee4d5897148a9da5c230c598b9, type: 2}
   width: 7
   height: 7
   currentLevel: {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}

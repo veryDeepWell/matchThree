@@ -14,7 +14,7 @@ public class Bomb : MonoBehaviour, ISpecialItem
     private void Start()
     {
         _administrator = FindFirstObjectByType<Administrator>();
-        _specialItemType = GetComponent<Item>()._specialType;
+        _specialItemType = GetComponent<Item>().specialItemType;
     }
 
     public void CreateSpecialItem(int column, int row)

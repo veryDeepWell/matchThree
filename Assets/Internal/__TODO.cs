@@ -9,7 +9,10 @@
 // Load level
 // Tweak level editor
 
+// NOT DONE
+// Special items
+
 // ### RUSH 2
 // PLANNED
 // Special Items
-// 
+// Special cells

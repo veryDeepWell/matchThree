@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -13,19 +12,21 @@ public class Item : MonoBehaviour
     public Board board;
 
     [Header("Movement Settings")]
-    [SerializeField] private float _moveDuration = 0.15f;
-    [SerializeField] private float _minSwipeDistance = 0.2f;
+    [SerializeField] private float moveDuration = 0.15f;
+    [SerializeField] private float minSwipeDistance = 0.2f;
 
     [Header("Type")]
-    public ItemTypes _itemType;
-    public SpecialItemTypes _specialType = SpecialItemTypes.None;
+    public ItemTypes itemType;
+    public SpecialItemTypes specialItemType = SpecialItemTypes.None;
     
     private Camera _camera;
-    private Vector2 _finalTouchPosition;
     private Vector2 _firstTouchPosition;
+    private Vector2 _finalTouchPosition;
     
     private bool _isMoving;
     private float _swipeAngle;
+    
+    private Transform _cachedTransform;
 
     private void Start()
     {
@@ -35,8 +36,9 @@ public class Item : MonoBehaviour
         }
 
         _camera = Camera.main;
-
-        transform.position = new Vector2(column, row);
+        
+        _cachedTransform = transform;
+        _cachedTransform.position = new Vector3(column, row, 0);
     }
 
     private void OnMouseDown()
@@ -56,7 +58,7 @@ public class Item : MonoBehaviour
 
         float swipeDistance = Vector2.Distance(_firstTouchPosition, _finalTouchPosition);
 
-        if (swipeDistance < _minSwipeDistance)
+        if (swipeDistance < minSwipeDistance)
         {
             return;
         }
@@ -143,7 +145,7 @@ public class Item : MonoBehaviour
         _isMoving = false;
         otherItem._isMoving = false;
 
-        if (_specialType != SpecialItemTypes.None)
+        if (specialItemType != SpecialItemTypes.None)
         {
             GetComponent<ISpecialItem>().TriggerSpecialItem();
         }
@@ -156,22 +158,22 @@ public class Item : MonoBehaviour
 
     public IEnumerator MoveToPosition(int targetColumn, int targetRow)
     {
-        Vector2 startPos = transform.position;
+        Vector2 startPos = _cachedTransform.position;
         Vector2 targetPos = new Vector2(targetColumn, targetRow);
 
         float elapsedTime = 0f;
 
-        while (elapsedTime < _moveDuration)
+        while (elapsedTime < moveDuration)
         {
             elapsedTime += Time.deltaTime;
-            float t = elapsedTime / _moveDuration;
+            float t = elapsedTime / moveDuration;
             float smoothT = t * t * (3f - 2f * t);
 
-            transform.position = Vector2.Lerp(startPos, targetPos, smoothT);
+            _cachedTransform.position = Vector2.Lerp(startPos, targetPos, smoothT);
             yield return null;
         }
 
-        transform.position = targetPos;
+        _cachedTransform.position = targetPos;
         column = targetColumn;
         row = targetRow;
     }
@@ -180,6 +182,6 @@ public class Item : MonoBehaviour
     {
         column = targetColumn;
         row = targetRow;
-        transform.position = new Vector2(targetColumn, targetRow);
+        _cachedTransform.position = new Vector2(targetColumn, targetRow);
     }
 }

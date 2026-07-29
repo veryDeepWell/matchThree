@@ -52,8 +52,8 @@ public class SpecialItemHandler : MonoBehaviour
             Item item = go.GetComponent<Item>();
             if (item != null)
             {
-                item._itemType = ItemTypes.Special;
-                item._specialType = kvp.Key;
+                item.itemType = ItemTypes.Special;
+                item.specialItemType = kvp.Key;
             }
             
             // Добавляем соответствующий компонент
@@ -90,8 +90,8 @@ public class SpecialItemHandler : MonoBehaviour
         Item itemComponent = newItem.GetComponent<Item>();
         if (itemComponent != null)
         {
-            itemComponent._itemType = ItemTypes.Special;
-            itemComponent._specialType = specialType;
+            itemComponent.itemType = ItemTypes.Special;
+            itemComponent.specialItemType = specialType;
         }
         
         // Вызываем CreateSpecialItem у компонента

@@ -16,7 +16,7 @@ public class MatchesHandler : MonoBehaviour
 
     private void Start()
     {
-        _administrator = FindAnyObjectByType<Administrator>().GetComponent<Administrator>();
+        _administrator = FindAnyObjectByType<Administrator>();
         _board = _administrator.board;
         VariablesEstablishment();
     }
@@ -50,14 +50,14 @@ public class MatchesHandler : MonoBehaviour
 
                 if (_board.IsActiveCell(x + 1, y) && _board.IsActiveCell(x + 2, y) &&
                     _allItems[x + 1, y] != null && _allItems[x + 2, y] != null &&
-                    _allItems[x + 1, y]._itemType == current._itemType &&
-                    _allItems[x + 2, y]._itemType == current._itemType)
+                    _allItems[x + 1, y].itemType == current.itemType &&
+                    _allItems[x + 2, y].itemType == current.itemType)
                 {
                     int endX = x + 2;
                     while (endX + 1 < _width &&
                            _board.IsActiveCell(endX + 1, y) &&
                            _allItems[endX + 1, y] != null &&
-                           _allItems[endX + 1, y]._itemType == current._itemType)
+                           _allItems[endX + 1, y].itemType == current.itemType)
                     {
                         endX++;
                     }
@@ -83,14 +83,14 @@ public class MatchesHandler : MonoBehaviour
 
                 if (_board.IsActiveCell(x, y + 1) && _board.IsActiveCell(x, y + 2) &&
                     _allItems[x, y + 1] != null && _allItems[x, y + 2] != null &&
-                    _allItems[x, y + 1]._itemType == current._itemType &&
-                    _allItems[x, y + 2]._itemType == current._itemType)
+                    _allItems[x, y + 1].itemType == current.itemType &&
+                    _allItems[x, y + 2].itemType == current.itemType)
                 {
                     int endY = y + 2;
                     while (endY + 1 < _height &&
                            _board.IsActiveCell(x, endY + 1) &&
                            _allItems[x, endY + 1] != null &&
-                           _allItems[x, endY + 1]._itemType == current._itemType)
+                           _allItems[x, endY + 1].itemType == current.itemType)
                     {
                         endY++;
                     }
