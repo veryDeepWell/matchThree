@@ -2,107 +2,65 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[DefaultExecutionOrder(-75)]
 public class SpecialItemHandler : MonoBehaviour
 {
-    [SerializeField] private List<Sprite> _specialSprites;
+    [Header("Effect Data")]
+    [SerializeField] private List<SpecialItemEffect> _allEffects;
     [SerializeField] private GameObject _specialItemPrefab;
     
-    private Dictionary<SpecialItemTypes, Sprite> _spriteDictionary;
-    private Dictionary<SpecialItemTypes, GameObject> _specialPrefabs;
-
+    [Header("Cell Data")]
+    [SerializeField] private List<SpecialCellData> _cellDataList;
+    
+    private Dictionary<string, SpecialItemEffect> _effectDictionary;
+    
+    public List<SpecialCellData> GetAllCellData() => _cellDataList;
+    
     private void Awake()
     {
-        BuildSpriteDictionary();
-        GenerateSpecialPrefabs();
+        BuildEffectDictionary();
     }
-
-    private void BuildSpriteDictionary()
+    
+    private void BuildEffectDictionary()
     {
-        _spriteDictionary = new Dictionary<SpecialItemTypes, Sprite>();
+        _effectDictionary = new Dictionary<string, SpecialItemEffect>();
         
-        var specialTypes = Enum.GetValues(typeof(SpecialItemTypes));
-        int index = 0;
-        for (int i = 0; i < specialTypes.Length; i++)
+        foreach (var effect in _allEffects)
         {
-            var type = (SpecialItemTypes)specialTypes.GetValue(i);
-            if (type != SpecialItemTypes.None && index < _specialSprites.Count)
-            {
-                _spriteDictionary[type] = _specialSprites[index];
-                index++;
-            }
+            if (effect == null) continue;
+            string id = effect.name.ToLower();
+            _effectDictionary[id] = effect;
         }
     }
-
-    private void GenerateSpecialPrefabs()
+    
+    public SpecialItemEffect GetEffect(string id)
     {
-        _specialPrefabs = new Dictionary<SpecialItemTypes, GameObject>();
-        
-        foreach (var kvp in _spriteDictionary)
-        {
-            GameObject go = Instantiate(_specialItemPrefab);
-            go.name = kvp.Key.ToString();
-            
-            SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                sr.sprite = kvp.Value;
-                sr.sortingOrder = 2;
-            }
-            
-            Item item = go.GetComponent<Item>();
-            if (item != null)
-            {
-                item.ItemType = ItemTypes.Special;      // ← исправлено: ItemType
-                item.SpecialType = kvp.Key;              // ← исправлено: SpecialType
-            }
-            
-            AddSpecialComponent(go, kvp.Key);
-            
-            go.SetActive(false);
-            _specialPrefabs[kvp.Key] = go;
-        }
+        string key = id.ToLower();
+        return _effectDictionary.ContainsKey(key) ? _effectDictionary[key] : null;
     }
-
-    private void AddSpecialComponent(GameObject go, SpecialItemTypes specialType)
+    
+    public GameObject CreateSpecialItem(string id, Vector2 position, Transform parent)
     {
-        switch (specialType)
+        var effect = GetEffect(id);
+        if (effect == null)
         {
-            case SpecialItemTypes.Bomb:
-                break;
-            // TODO: Добавить остальные типы
-        }
-    }
-
-    public GameObject CreateSpecialItem(SpecialItemTypes specialType, Vector2 position, Transform parent)
-    {
-        if (!_specialPrefabs.ContainsKey(specialType))
-        {
-            Debug.LogError($"Special item type {specialType} not found!");
+            Debug.LogError($"SpecialItemHandler: No effect found for id '{id}'!");
             return null;
         }
         
-        GameObject newItem = Instantiate(_specialPrefabs[specialType], position, Quaternion.identity, parent);
+        GameObject newItem = Instantiate(_specialItemPrefab, position, Quaternion.identity, parent);
         newItem.SetActive(true);
         
-        Item itemComponent = newItem.GetComponent<Item>();
-        if (itemComponent != null)
+        var specialItem = newItem.GetComponent<SpecialItem>();
+        if (specialItem != null)
         {
-            itemComponent.ItemType = ItemTypes.Special;   // ← исправлено: ItemType
-            itemComponent.SpecialType = specialType;       // ← исправлено: SpecialType
+            specialItem.Initialize(effect, (int)position.x, (int)position.y);
         }
-        
-        ISpecialItem specialComponent = newItem.GetComponent<ISpecialItem>();
-        if (specialComponent != null)
+        else
         {
-            specialComponent.CreateSpecialItem((int)position.x, (int)position.y);
+            Debug.LogError("SpecialItemHandler: specialItemPrefab must have SpecialItem component!");
+            return null;
         }
         
         return newItem;
-    }
-
-    public bool IsSpecialType(SpecialItemTypes type)
-    {
-        return type != SpecialItemTypes.None;
     }
 }

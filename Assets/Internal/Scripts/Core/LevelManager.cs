@@ -1,20 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[DefaultExecutionOrder(-90)]
 public class LevelManager : MonoBehaviour
 {
     [SerializeField] private List<LevelData> levels = new List<LevelData>();
     
     public int lastLevel;
-
-    private void Start()
-    {
-        if (levels == null || levels.Count == 0)
-        {
-            Debug.LogWarning("No levels added to LevelManager! Add levels in inspector.");
-        }
-    }
 
     public LevelData LoadLevel(int levelIndex)
     {

@@ -2,69 +2,153 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[DefaultExecutionOrder(-80)]
 public class ItemHandler : MonoBehaviour
 {
-    [SerializeField] private List<Sprite> _itemSprites;
+    [Header("Registry")]
+    [SerializeField] private ItemRegistry _registry;
     [SerializeField] private GameObject _itemPrefab;
-
-    private Dictionary<ItemTypes, Sprite> _spriteDictionary;
-    private List<GameObject> _itemPrefabs;
-
-    private void Awake()
+    
+    private Dictionary<string, GameObject> _prefabCache;
+    private bool _isInitialized = false;
+    
+    public ItemRegistry GetRegistry() => _registry;
+    
+    public void ForceInitialize()
     {
-        BuildDictionary();
-        GeneratePrefabs();
-    }
-
-    private void BuildDictionary()
-    {
-        _spriteDictionary = new Dictionary<ItemTypes, Sprite>();
-        int index = 0;
-        foreach (ItemTypes type in System.Enum.GetValues(typeof(ItemTypes)))
+        if (_isInitialized)
         {
-            if (type != ItemTypes.None && type != ItemTypes.Special)
-            {
-                if (index < _itemSprites.Count && _itemSprites[index] != null)
-                    _spriteDictionary[type] = _itemSprites[index];
-                index++;
-            }
+            // Если уже инициализированы — пересоздаём кеш (на случай если спрайты добавили позже)
+            RebuildCache();
+            return;
         }
-    }
-
-    private void GeneratePrefabs()
-    {
-        _itemPrefabs = new List<GameObject>();
-        foreach (ItemTypes type in System.Enum.GetValues(typeof(ItemTypes)))
+        
+        if (_registry == null)
         {
-            if (type == ItemTypes.None || type == ItemTypes.Special) continue;
-            if (!_spriteDictionary.ContainsKey(type)) continue;
-
+            Debug.LogError("ItemHandler: No ItemRegistry assigned!");
+            return;
+        }
+        
+        _registry.Initialize();
+        BuildPrefabCache();
+        _isInitialized = true;
+        
+        Debug.Log($"[ItemHandler] Initialized with {_prefabCache?.Count ?? 0} prefabs");
+    }
+    
+    private void BuildPrefabCache()
+    {
+        _prefabCache = new Dictionary<string, GameObject>();
+        
+        foreach (var def in _registry.GetNormalItems())
+        {
+            if (def == null || string.IsNullOrEmpty(def.Id)) continue;
+            
             var go = Instantiate(_itemPrefab);
-            go.name = type.ToString();
+            go.name = def.Id;
+            
             var sr = go.GetComponent<SpriteRenderer>();
-            if (sr) sr.sprite = _spriteDictionary[type];
+            if (sr != null)
+            {
+                sr.sprite = def.Icon;
+                sr.color = def.Color;
+                sr.sortingOrder = 1;
+            }
+            
             var item = go.GetComponent<Item>();
-            if (item) item.ItemType = type;
+            if (item != null)
+            {
+                item.ItemId = def.Id;
+                item.SpecialItemId = "";
+            }
+            
             go.SetActive(false);
-            _itemPrefabs.Add(go);
+            _prefabCache[def.Id] = go;
         }
     }
-
-    public List<GameObject> GetItemPrefabs() => _itemPrefabs;
-
-    public GameObject CreateItem(ItemTypes type, Vector2 position, Transform parent)
+    
+    // Пересоздаём кеш без перезагрузки всего
+    public void RebuildCache()
     {
-        foreach (var prefab in _itemPrefabs)
+        if (_registry == null)
         {
-            if (prefab.GetComponent<Item>().ItemType == type)
+            Debug.LogError("ItemHandler: No ItemRegistry assigned!");
+            return;
+        }
+        
+        // Удаляем старые префабы
+        if (_prefabCache != null)
+        {
+            foreach (var kvp in _prefabCache)
             {
-                var go = Instantiate(prefab, position, Quaternion.identity, parent);
-                go.SetActive(true);
-                return go;
+                if (kvp.Value != null)
+                    DestroyImmediate(kvp.Value);
+            }
+            _prefabCache.Clear();
+        }
+        
+        _registry.Initialize();
+        BuildPrefabCache();
+        
+        Debug.Log($"[ItemHandler] Cache rebuilt with {_prefabCache?.Count ?? 0} prefabs");
+    }
+    
+    public List<GameObject> GetItemPrefabs()
+    {
+        if (_prefabCache == null)
+        {
+            BuildPrefabCache();
+        }
+        return new List<GameObject>(_prefabCache.Values);
+    }
+    
+    public GameObject CreateItem(string id, Vector2 position, Transform parent)
+    {
+        // Если кеш пустой — пересоздаём
+        if (_prefabCache == null || _prefabCache.Count == 0)
+        {
+            BuildPrefabCache();
+        }
+        
+        if (!_prefabCache.ContainsKey(id))
+        {
+            Debug.LogError($"ItemHandler: Item with id '{id}' not found! Available: {string.Join(", ", _prefabCache.Keys)}");
+            return null;
+        }
+        
+        var prefab = _prefabCache[id];
+        var go = Instantiate(prefab, position, Quaternion.identity, parent);
+        go.SetActive(true);
+        
+        var item = go.GetComponent<Item>();
+        if (item != null)
+        {
+            item.ItemId = id;
+            item.SpecialItemId = "";
+            
+            // ОБНОВЛЯЕМ СПРАЙТ ИЗ РЕЕСТРА (на случай если префаб старый)
+            var def = _registry.Get(id);
+            if (def != null)
+            {
+                var sr = go.GetComponent<SpriteRenderer>();
+                if (sr != null)
+                {
+                    sr.sprite = def.Icon;
+                    sr.color = def.Color;
+                }
             }
         }
-        Debug.LogError($"Item type {type} not found!");
-        return null;
+        
+        return go;
+    }
+    
+    public Sprite GetSprite(string id)
+    {
+        var def = _registry.Get(id);
+        return def != null ? def.Icon : null;
+    }
+    
+    public ItemDefinition GetDefinition(string id)
+    {
+        return _registry.Get(id);
     }
 }

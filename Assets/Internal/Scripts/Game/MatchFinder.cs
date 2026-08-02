@@ -8,15 +8,15 @@ public static class MatchFinder
         int w = data.Width;
         int h = data.Height;
 
-        // Горизонтальные
         for (int y = 0; y < h; y++)
         {
             for (int x = 0; x < w - 2; x++)
             {
                 int idx = y * w + x;
-                if (!data.ActiveCells[idx]) continue;      // ← ActiveCells[idx]
-                var type = data.Items[idx];
-                if (type == ItemTypes.None) continue;
+                if (!data.ActiveCells[idx]) continue;
+                
+                string type = data.Items[idx];
+                if (string.IsNullOrEmpty(type)) continue;
 
                 if (data.Items[idx + 1] == type && data.Items[idx + 2] == type)
                 {
@@ -30,15 +30,15 @@ public static class MatchFinder
             }
         }
 
-        // Вертикальные
         for (int x = 0; x < w; x++)
         {
             for (int y = 0; y < h - 2; y++)
             {
                 int idx = y * w + x;
-                if (!data.ActiveCells[idx]) continue;      // ← ActiveCells[idx]
-                var type = data.Items[idx];
-                if (type == ItemTypes.None) continue;
+                if (!data.ActiveCells[idx]) continue;
+                
+                string type = data.Items[idx];
+                if (string.IsNullOrEmpty(type)) continue;
 
                 if (data.Items[idx + w] == type && data.Items[idx + 2 * w] == type)
                 {

@@ -6,11 +6,11 @@ public class LevelData : ScriptableObject
     public int Width = 8;
     public int Height = 8;
 
-    // Публичные поля для прямой сериализации
-    public ItemTypes[] Items;
+    public string[] Items;
     public bool[] ActiveCells;
-    public SpecialItemTypes[] SpecialItems;
+    public string[] SpecialItems;
     public int[] SpecialCells;
+    public LevelGoalData GoalData;
 
     public BoardData ToBoardData()
     {
@@ -35,9 +35,9 @@ public class LevelData : ScriptableObject
         Height = data.Height;
         int total = Width * Height;
 
-        Items = new ItemTypes[total];
+        Items = new string[total];
         ActiveCells = new bool[total];
-        SpecialItems = new SpecialItemTypes[total];
+        SpecialItems = new string[total];
         SpecialCells = new int[total];
 
         System.Array.Copy(data.Items, Items, total);
@@ -51,16 +51,16 @@ public class LevelData : ScriptableObject
         Width = w;
         Height = h;
         int total = w * h;
-        Items = new ItemTypes[total];
+        Items = new string[total];
         ActiveCells = new bool[total];
-        SpecialItems = new SpecialItemTypes[total];
+        SpecialItems = new string[total];
         SpecialCells = new int[total];
 
         for (int i = 0; i < total; i++)
         {
             ActiveCells[i] = true;
-            Items[i] = ItemTypes.None;
-            SpecialItems[i] = SpecialItemTypes.None;
+            Items[i] = "";
+            SpecialItems[i] = "";
             SpecialCells[i] = 0;
         }
     }
@@ -73,20 +73,20 @@ public class LevelData : ScriptableObject
         return ActiveCells[idx];
     }
 
-    public ItemTypes GetItem(int x, int y)
+    public string GetItem(int x, int y)
     {
-        if (Items == null) return ItemTypes.None;
+        if (Items == null) return "";
         int idx = y * Width + x;
-        if (idx < 0 || idx >= Items.Length) return ItemTypes.None;
+        if (idx < 0 || idx >= Items.Length) return "";
         return Items[idx];
     }
 
-    public void SetItem(int x, int y, ItemTypes type)
+    public void SetItem(int x, int y, string id)
     {
         if (Items == null) return;
         int idx = y * Width + x;
         if (idx >= 0 && idx < Items.Length)
-            Items[idx] = type;
+            Items[idx] = id;
     }
 
     public void SetActive(int x, int y, bool active)
