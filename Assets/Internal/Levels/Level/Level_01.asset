@@ -16,69 +16,69 @@ MonoBehaviour:
   Height: 8
   Items:
   - blue
+  - blue
   - red
   - green
   - blue
-  - green
-  - red
-  - green
-  - green
-  - green
+  - yellow
   - yellow
   - red
-  - green
-  - blue
-  - green
-  - green
   - blue
   - blue
   - red
+  - green
+  - green
   - red
-  - blue
   - red
+  - green
   - red
   - yellow
   - green
-  - red
-  - green
-  - green
-  - red
-  - red
-  - green
-  - red
   - blue
   - green
-  - blue
-  - red
-  - red
-  - yellow
-  - yellow
-  - green
-  - red
-  - green
-  - red
-  - green
-  - blue
-  - red
-  - green
-  - green
-  - yellow
-  - red
-  - green
-  - blue
   - yellow
   - blue
   - blue
   - red
   - yellow
-  - yellow
-  - yellow
-  - red
   - blue
   - green
-  - yellow
+  - blue
+  - green
   - red
   - blue
+  - yellow
+  - blue
+  - red
+  - blue
+  - yellow
+  - red
+  - green
+  - red
+  - yellow
+  - green
+  - blue
+  - yellow
+  - green
+  - yellow
+  - yellow
+  - green
+  - green
+  - yellow
+  - green
+  - green
+  - yellow
+  - yellow
+  - red
+  - red
+  - yellow
+  - green
+  - green
+  - red
+  - green
+  - blue
+  - red
+  - yellow
   ActiveCells: 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
   SpecialItems:
   - 

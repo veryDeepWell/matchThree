@@ -20,6 +20,29 @@ public class Board : MonoBehaviour
     public Item[,] Items { get; set; }
     public SpecialCell[,] SpecialCells { get; set; }
 
+    private int _lastSwapX = -1;
+    private int _lastSwapY = -1;
+    
+    private int _bombTriggerX = -1;
+    private int _bombTriggerY = -1;
+
+    public void SetBombTriggerPosition(int x, int y)
+    {
+        _bombTriggerX = x;
+        _bombTriggerY = y;
+    }
+
+    public (int x, int y) GetBombTriggerPosition()
+    {
+        return (_bombTriggerX, _bombTriggerY);
+    }
+
+    public void ClearBombTriggerPosition()
+    {
+        _bombTriggerX = -1;
+        _bombTriggerY = -1;
+    }
+
     public void ForceLoadLevel(LevelData level)
     {
         if (level == null)
@@ -115,11 +138,27 @@ public class Board : MonoBehaviour
         SpecialCells[x, y] = cell;
     }
 
+    public void CheckMatches(int swapX, int swapY)
+    {
+        _lastSwapX = swapX;
+        _lastSwapY = swapY;
+        _matchesHandler?.ProcessMatches(this);
+    }
+
     public void CheckMatches()
     {
-        if (_matchesHandler == null)
-            _matchesHandler = FindObjectOfType<MatchesHandler>();
         _matchesHandler?.ProcessMatches(this);
+    }
+
+    public (int x, int y) GetLastSwapPosition()
+    {
+        return (_lastSwapX, _lastSwapY);
+    }
+
+    public void ClearLastSwapPosition()
+    {
+        _lastSwapX = -1;
+        _lastSwapY = -1;
     }
 
     public BoardData CreateSnapshot()
@@ -130,19 +169,25 @@ public class Board : MonoBehaviour
             return null;
         }
 
-        return Data.Clone();
+        var data = Data;
+        var snapshot = new BoardData(data.Width, data.Height);
+
+        System.Array.Copy(data.Items, snapshot.Items, data.Items.Length);
+        System.Array.Copy(data.ActiveCells, snapshot.ActiveCells, data.ActiveCells.Length);
+        System.Array.Copy(data.SpecialItems, snapshot.SpecialItems, data.SpecialItems.Length);
+        System.Array.Copy(data.SpecialCells, snapshot.SpecialCells, data.SpecialCells.Length);
+
+        return snapshot;
     }
 
-    public void RestoreSnapshot(BoardData snapshot, LevelData sourceLevel = null)
+    public void RestoreSnapshot(BoardData snapshot)
     {
-        if (snapshot == null || !snapshot.IsStructurallyValid())
+        if (snapshot == null)
         {
-            Debug.LogWarning("[Board] Snapshot is null or invalid, cannot restore!");
+            Debug.LogWarning("[Board] Snapshot is null, cannot restore!");
             return;
         }
-
-        CurrentLevel = sourceLevel;
-        LoadFromData(snapshot.Clone());
+        LoadFromData(snapshot);
     }
 
     private void OnDrawGizmosSelected()

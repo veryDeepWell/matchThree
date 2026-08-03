@@ -17,4 +17,4 @@ MonoBehaviour:
   ActivationEffect: {fileID: 0}
   ActivationSound: {fileID: 0}
   TriggerOtherSpecialItems: 0
-  _radius: 3
+  _radius: 2

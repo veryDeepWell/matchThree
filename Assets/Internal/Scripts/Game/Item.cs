@@ -31,7 +31,6 @@ public class Item : MonoBehaviour
         _camera = Camera.main;
         _cachedTransform = transform;
         
-        // Пытаемся найти реестр через ItemHandler
         var handler = FindObjectOfType<ItemHandler>();
         if (handler != null)
         {
@@ -40,7 +39,6 @@ public class Item : MonoBehaviour
         
         if (_registry == null)
         {
-            // Fallback — загружаем из Resources (если там есть)
             _registry = Resources.Load<ItemRegistry>("ItemRegistry");
         }
         
@@ -92,7 +90,14 @@ public class Item : MonoBehaviour
         var other = Board.Items[targetX, targetY];
         if (other == null || other._isMoving) return;
 
-        if (!WouldCreateMatch(other, targetX, targetY)) return;
+        // Бомбы можно свапать без комбинации
+        bool isBomb = !string.IsNullOrEmpty(SpecialItemId) && SpecialItemId == "bomb";
+        bool otherIsBomb = other != null && !string.IsNullOrEmpty(other.SpecialItemId) && other.SpecialItemId == "bomb";
+    
+        if (!isBomb && !otherIsBomb)
+        {
+            if (!WouldCreateMatch(other, targetX, targetY)) return;
+        }
 
         StartCoroutine(Swap(other, targetX, targetY));
     }
@@ -131,6 +136,10 @@ public class Item : MonoBehaviour
         int otherX = other.Column;
         int otherY = other.Row;
 
+        // Сохраняем позицию свапа (этот предмет был свапнут)
+        int swapX = Column;
+        int swapY = Row;
+
         Board.Items[myX, myY] = other;
         Board.Items[otherX, otherY] = this;
 
@@ -148,14 +157,26 @@ public class Item : MonoBehaviour
         _isMoving = false;
         other._isMoving = false;
 
-        // Если есть спец-предмет — активируем
-        if (!string.IsNullOrEmpty(SpecialItemId))
-        {
-            GetComponent<ISpecialItem>()?.TriggerSpecialItem();
-        }
+        // Проверяем бомбы на обеих позициях
+        CheckAndTriggerBomb(Board, swapX, swapY);
+        CheckAndTriggerBomb(Board, otherX, otherY);
 
+        // Запускаем проверку матчей с позицией свапа
         if (Board != null)
-            Board.CheckMatches();
+            Board.CheckMatches(swapX, swapY);
+    }
+
+    private void CheckAndTriggerBomb(Board board, int x, int y)
+    {
+        if (board == null) return;
+        if (x < 0 || x >= board.Width || y < 0 || y >= board.Height) return;
+    
+        var item = board.Items[x, y];
+        if (item != null && !string.IsNullOrEmpty(item.SpecialItemId) && item.SpecialItemId == "bomb")
+        {
+            Debug.Log($"[CheckAndTriggerBomb] Bomb triggered at ({x},{y})");
+            item.GetComponent<ISpecialItem>()?.TriggerSpecialItem();
+        }
     }
 
     public IEnumerator MoveToPosition(int targetX, int targetY)

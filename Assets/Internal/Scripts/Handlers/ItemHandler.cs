@@ -17,7 +17,6 @@ public class ItemHandler : MonoBehaviour
     {
         if (_isInitialized)
         {
-            // Если уже инициализированы — пересоздаём кеш (на случай если спрайты добавили позже)
             RebuildCache();
             return;
         }
@@ -66,7 +65,6 @@ public class ItemHandler : MonoBehaviour
         }
     }
     
-    // Пересоздаём кеш без перезагрузки всего
     public void RebuildCache()
     {
         if (_registry == null)
@@ -75,7 +73,6 @@ public class ItemHandler : MonoBehaviour
             return;
         }
         
-        // Удаляем старые префабы
         if (_prefabCache != null)
         {
             foreach (var kvp in _prefabCache)
@@ -103,7 +100,6 @@ public class ItemHandler : MonoBehaviour
     
     public GameObject CreateItem(string id, Vector2 position, Transform parent)
     {
-        // Если кеш пустой — пересоздаём
         if (_prefabCache == null || _prefabCache.Count == 0)
         {
             BuildPrefabCache();
@@ -125,7 +121,6 @@ public class ItemHandler : MonoBehaviour
             item.ItemId = id;
             item.SpecialItemId = "";
             
-            // ОБНОВЛЯЕМ СПРАЙТ ИЗ РЕЕСТРА (на случай если префаб старый)
             var def = _registry.Get(id);
             if (def != null)
             {

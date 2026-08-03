@@ -195,7 +195,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Board
   _useRandomLevel: 0
-  _testLevel: {fileID: 0}
+  _testLevel: {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
   _itemGenerator: {fileID: 295793230}
   _matchesHandler: {fileID: 620468259}
   _offset: {x: -3, y: -3}
@@ -440,6 +440,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchesHandler
   _moveDuration: 0.15
+  _matchDelay: 0.15
+  _dropDelay: 0.15
+  _postDropDelay: 0.15
+  _bombExplosionDelay: 0.2
 --- !u!1 &1441193950
 GameObject:
   m_ObjectHideFlags: 0
