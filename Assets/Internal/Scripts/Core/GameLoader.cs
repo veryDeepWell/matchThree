@@ -33,11 +33,34 @@ public class GameLoader : MonoBehaviour
         _itemHandler.ForceInitialize();
         _itemGenerator.ForceInitialize(_itemHandler);
         
-        // 4. Загружаем уровень
-        LevelData level = _levelManager.LoadLevel(_levelIndex);
+        // 4. Сначала пробуем продолжить сохранённую попытку.
+        SaveService saveService = SaveService.Instance;
+        if (saveService != null && saveService.TryConsumeContinueRequest(out RunningLevelSaveData runningLevel))
+        {
+            LevelData savedLevel = _levelManager.LoadLevel(runningLevel.LevelName);
+            if (savedLevel != null && runningLevel.Board != null)
+            {
+                _board.RestoreSnapshot(runningLevel.Board, savedLevel);
+                Debug.Log($"[GameLoader] Restored saved level: {runningLevel.LevelName}");
+                return;
+            }
+
+            Debug.LogWarning("[GameLoader] Saved level could not be restored. Starting a configured level instead.");
+        }
+
+        // 5. Незавершённой попытки нет — загружаем текущий открытый уровень или Inspector fallback.
+        LevelData level = null;
+        string currentLevelName = saveService?.Data?.LevelProgress?.CurrentLevelName;
+        if (!string.IsNullOrWhiteSpace(currentLevelName))
+            level = _levelManager.LoadLevel(currentLevelName);
+
+        if (level == null)
+            level = _levelManager.LoadLevel(_levelIndex);
+
         if (level != null)
         {
             _board.ForceLoadLevel(level);
+            saveService?.BeginLevel(level, _board);
         }
         else
         {

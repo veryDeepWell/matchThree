@@ -43,4 +43,29 @@ public class BoardData
 
     public int GetSpecialCell(int x, int y) => IsValid(x, y) ? SpecialCells[GetIndex(x, y)] : 0;
     public void SetSpecialCell(int x, int y, int value) { if (IsValid(x, y)) SpecialCells[GetIndex(x, y)] = value; }
+
+    public bool IsStructurallyValid()
+    {
+        if (Width <= 0 || Height <= 0)
+            return false;
+
+        int total = Width * Height;
+        return Items != null && Items.Length == total &&
+               ActiveCells != null && ActiveCells.Length == total &&
+               SpecialItems != null && SpecialItems.Length == total &&
+               SpecialCells != null && SpecialCells.Length == total;
+    }
+
+    public BoardData Clone()
+    {
+        if (!IsStructurallyValid())
+            return null;
+
+        var clone = new BoardData(Width, Height);
+        Array.Copy(Items, clone.Items, Items.Length);
+        Array.Copy(ActiveCells, clone.ActiveCells, ActiveCells.Length);
+        Array.Copy(SpecialItems, clone.SpecialItems, SpecialItems.Length);
+        Array.Copy(SpecialCells, clone.SpecialCells, SpecialCells.Length);
+        return clone;
+    }
 }

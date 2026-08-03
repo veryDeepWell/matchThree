@@ -130,25 +130,19 @@ public class Board : MonoBehaviour
             return null;
         }
 
-        var data = Data;
-        var snapshot = new BoardData(data.Width, data.Height);
-
-        System.Array.Copy(data.Items, snapshot.Items, data.Items.Length);
-        System.Array.Copy(data.ActiveCells, snapshot.ActiveCells, data.ActiveCells.Length);
-        System.Array.Copy(data.SpecialItems, snapshot.SpecialItems, data.SpecialItems.Length);
-        System.Array.Copy(data.SpecialCells, snapshot.SpecialCells, data.SpecialCells.Length);
-
-        return snapshot;
+        return Data.Clone();
     }
 
-    public void RestoreSnapshot(BoardData snapshot)
+    public void RestoreSnapshot(BoardData snapshot, LevelData sourceLevel = null)
     {
-        if (snapshot == null)
+        if (snapshot == null || !snapshot.IsStructurallyValid())
         {
-            Debug.LogWarning("[Board] Snapshot is null, cannot restore!");
+            Debug.LogWarning("[Board] Snapshot is null or invalid, cannot restore!");
             return;
         }
-        LoadFromData(snapshot);
+
+        CurrentLevel = sourceLevel;
+        LoadFromData(snapshot.Clone());
     }
 
     private void OnDrawGizmosSelected()

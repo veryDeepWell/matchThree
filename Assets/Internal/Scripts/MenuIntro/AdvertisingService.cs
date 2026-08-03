@@ -81,7 +81,8 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
             return false;
         }
 
-        // Сохраняемся перед переходом во внешнее рекламное окно.
+        // Сохраняем мета-прогресс и текущее поле перед переходом во внешнее рекламное окно.
+        SaveService.Instance?.CaptureCurrentBoard(SaveReason.BeforeAdvertisement);
         PlayerPrefs.Save();
 
         pendingRewardId = rewardId;
@@ -126,6 +127,8 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
         Action reward = pendingReward;
 
         reward.Invoke();
+        SaveService.Instance?.CaptureCurrentBoard(SaveReason.AfterAdvertisement);
+        SaveService.Instance?.CaptureCurrentBoard(SaveReason.BeforeAdvertisement);
         PlayerPrefs.Save();
 
         Debug.Log($"Rewarded-реклама успешно завершена: {pendingRewardId}");
@@ -138,6 +141,7 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
             Debug.Log("Rewarded-реклама закрыта без награды.");
         }
 
+        SaveService.Instance?.SaveNow(SaveReason.AfterAdvertisement);
         ClearRewardedState();
     }
 
@@ -148,6 +152,7 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
             Debug.LogWarning("Не удалось показать rewarded-рекламу. Награда не выдана.");
         }
 
+        SaveService.Instance?.SaveNow(SaveReason.AfterAdvertisement);
         ClearRewardedState();
     }
 
@@ -164,6 +169,7 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
         pendingInterstitialClosed = null;
         interstitialRequested = false;
 
+        SaveService.Instance?.CaptureCurrentBoard(SaveReason.AfterAdvertisement);
         PlayerPrefs.Save();
         callback?.Invoke(wasShown);
     }
@@ -175,6 +181,7 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
         interstitialRequested = false;
 
         Debug.LogWarning("Не удалось показать interstitial-рекламу.");
+        SaveService.Instance?.SaveNow(SaveReason.AfterAdvertisement);
         callback?.Invoke(false);
     }
 }
