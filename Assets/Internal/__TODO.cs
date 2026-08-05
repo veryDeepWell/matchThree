@@ -12,7 +12,27 @@
 // NOT DONE
 // Special items
 
+// ======================================================
+
 // ### RUSH 2
 // PLANNED
 // Special Items
 // Special cells
+
+// DONE
+// Special Items
+
+// NOT DONE
+// Special cells
+
+// ======================================================
+
+// #### RUSH 3
+// PLANNED
+// Special cells
+// More special items
+// VFX
+// Fix editor
+// Mobile controller
+// Fix bombs
+// Cheat menu

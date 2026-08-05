@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   Id: red
   DisplayName: Red
-  Icon: {fileID: 21300000, guid: 4ab3fdc94a8b11f4db502af1f99ca2d9, type: 3}
+  Icon: {fileID: 5329656426364916515, guid: edc5fd959f0041241b78760ff18bd8a0, type: 3}
   Color: {r: 1, g: 1, b: 1, a: 1}
   Category: 0
   SpecialEffect: {fileID: 0}
