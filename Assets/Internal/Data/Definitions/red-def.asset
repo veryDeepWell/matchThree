@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6c527670c4f4c3cb502af7f3d56c4ae, type: 3}
-  m_Name: Green
+  m_Name: red-def
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  Id: green
-  DisplayName: Green
-  Icon: {fileID: -3001687758895900087, guid: edc5fd959f0041241b78760ff18bd8a0, type: 3}
+  Id: red
+  DisplayName: Red
+  Icon: {fileID: 5329656426364916515, guid: edc5fd959f0041241b78760ff18bd8a0, type: 3}
   Color: {r: 1, g: 1, b: 1, a: 1}
   Category: 0
   SpecialEffect: {fileID: 0}

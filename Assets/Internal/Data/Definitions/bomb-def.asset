@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6c527670c4f4c3cb502af7f3d56c4ae, type: 3}
-  m_Name: Magenta
+  m_Name: bomb-def
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  Id: magenta
-  DisplayName: Magenta
-  Icon: {fileID: 21300000, guid: 193324b58573af549859733f491e9dbe, type: 3}
-  Color: {r: 1, g: 1, b: 1, a: 1}
-  Category: 0
-  SpecialEffect: {fileID: 0}
+  Id: bomb
+  DisplayName: Bomb
+  Icon: {fileID: 528661489, guid: e1d79143fb5afc344aeb0ec4e89291a1, type: 3}
+  Color: {r: 1, g: 1, b: 1, a: 0}
+  Category: 1
+  SpecialEffect: {fileID: 11400000, guid: ee0d5bf1973ff4a4389ce09b5dd2a3bd, type: 2}
   CellData: {fileID: 0}

@@ -57,6 +57,11 @@ public class BombEffect : SpecialItemEffect
             }
         }
 
+        // Не трогаем саму бомбу — её удалит SpecialItem.ExecuteWithDelay
+        var self = board.Items[column, row];
+        if (self != null)
+            itemsToRemove.Remove(self);
+
         Debug.Log($"[BombEffect] Removing {itemsToRemove.Count} items and {cellsToRemove.Count} cells");
         RemoveTargets(board, itemsToRemove, cellsToRemove);
     }

@@ -76,7 +76,14 @@ public class Board : MonoBehaviour
         }
 
         CurrentLevel = level;
+        ClearRuntimeTiles();
         Data = level.ToBoardData();
+        if (!Data.IsStructurallyValid())
+        {
+            Debug.LogError("[Board] Level data is structurally invalid.");
+            return;
+        }
+
         Width = Data.Width;
         Height = Data.Height;
         Items = new Item[Width, Height];
@@ -93,8 +100,13 @@ public class Board : MonoBehaviour
 
     public void LoadFromData(BoardData data)
     {
-        if (data == null) return;
+        if (data == null || !data.IsStructurallyValid())
+        {
+            Debug.LogWarning("[Board] Cannot load invalid board data.");
+            return;
+        }
 
+        ClearRuntimeTiles();
         Data = data;
         Width = data.Width;
         Height = data.Height;
@@ -122,6 +134,13 @@ public class Board : MonoBehaviour
         if (Data == null) return;
         if (x < 0 || x >= Width || y < 0 || y >= Height) return;
         Data.SetItem(x, y, id);
+    }
+
+    public void SetSpecialItemId(int x, int y, string id)
+    {
+        if (Data == null) return;
+        if (x < 0 || x >= Width || y < 0 || y >= Height) return;
+        Data.SetSpecialItem(x, y, id);
     }
 
     public SpecialCell GetSpecialCell(int x, int y)
@@ -190,6 +209,20 @@ public class Board : MonoBehaviour
         LoadFromData(snapshot);
     }
 
+
+    private void ClearRuntimeTiles()
+    {
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            var child = transform.GetChild(i);
+            if (!child.name.StartsWith("Tile(")) continue;
+
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
+        }
+    }
     private void OnDrawGizmosSelected()
     {
         if (Data == null) return;

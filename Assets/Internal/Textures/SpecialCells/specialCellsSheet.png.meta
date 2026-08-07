@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 8dfd63fcb27907244b0459c13580e987
+guid: 6c9840ee5256698488187cb3bfba7d78
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 459522697607140906
-    second: itemBomb_0
+      213: -5750362285841145751
+    second: ChatGPT Image Aug 7, 2026, 01_27_19 PM_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,12 +46,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 128
+  spritePixelsToUnits: 300
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -113,23 +113,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: itemBomb_0
+      name: specialCellsSheet_ice
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 128
-        height: 128
+        x: 139
+        y: 683
+        width: 420
+        height: 446
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: a265a15757d806600800000000000000
-      internalID: 459522697607140906
+      spriteID: 05a073e9ff61dda49aedabb698bdc800
+      internalID: 944470027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialCellsSheet_stone
+      rect:
+        serializedVersion: 2
+        x: 692
+        y: 685
+        width: 429
+        height: 444
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a3129e41e78835046b1d3e7ee5bf8b0b
+      internalID: 1950889724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialCellsSheet_vine
+      rect:
+        serializedVersion: 2
+        x: 137
+        y: 151
+        width: 428
+        height: 411
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3f35fc8c371e11245b83286d03f66408
+      internalID: -733784099
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialCellsSheet_chain
+      rect:
+        serializedVersion: 2
+        x: 680
+        y: 151
+        width: 437
+        height: 427
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 048bc7067fa739149b823d266c0e2a4c
+      internalID: 640552972
       vertices: []
       indices: 
       edges: []
@@ -138,7 +204,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: b6d6ffa1e425b3342a52e424d9811584
     internalID: 0
     vertices: []
     indices: 
@@ -146,9 +212,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      itemBomb_0: 459522697607140906
+      specialCellsSheet_chain: 640552972
+      specialCellsSheet_ice: 944470027
+      specialCellsSheet_stone: 1950889724
+      specialCellsSheet_vine: -733784099
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

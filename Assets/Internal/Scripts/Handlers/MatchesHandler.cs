@@ -1,38 +1,33 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MatchesHandler : MonoBehaviour
 {
-    [SerializeField] private float _moveDuration = 0.15f;
-
-    [Header("Animation Delays")] [SerializeField]
-    private float _matchDelay = 0.15f; // Задержка перед удалением матчей
-
-    [SerializeField] private float _dropDelay = 0.1f; // Задержка перед падением
-    [SerializeField] private float _postDropDelay = 0.15f; // Задержка после падения
+    [Header("Animation Delays")]
+    [SerializeField] private float _matchDelay = 0.15f;
+    [SerializeField] private float _dropDelay = 0.1f;
+    [SerializeField] private float _postDropDelay = 0.15f;
     [SerializeField] private float _bombExplosionDelay = 0.3f;
 
     public float GetBombExplosionDelay() => _bombExplosionDelay;
 
     public HashSet<int> FindMatches(Board board)
     {
-        if (board?.Data == null) return new HashSet<int>();
+        if (board?.Data == null)
+            return new HashSet<int>();
 
-        var data = board.Data;
-        for (int x = 0; x < data.Width; x++)
+        for (int column = 0; column < board.Width; column++)
         {
-            for (int y = 0; y < data.Height; y++)
+            for (int row = 0; row < board.Height; row++)
             {
-                var item = board.Items[x, y];
-                if (item != null && !string.IsNullOrEmpty(item.ItemId) && string.IsNullOrEmpty(item.SpecialItemId))
-                    data.SetItem(x, y, item.ItemId);
-                else
-                    data.SetItem(x, y, "");
+                var item = board.Items[column, row];
+                string itemId = item != null && string.IsNullOrEmpty(item.SpecialItemId) ? item.ItemId : "";
+                board.Data.SetItem(column, row, itemId);
             }
         }
 
-        return MatchFinder.FindMatches(data);
+        return MatchFinder.FindMatches(board.Data);
     }
 
     public void ProcessMatches(Board board)
@@ -41,404 +36,255 @@ public class MatchesHandler : MonoBehaviour
         StartCoroutine(ProcessMatchesCoroutine(board));
     }
 
+    public void DropItems(Board board)
+    {
+        if (board?.Data == null) return;
+
+        var generator = FindObjectOfType<ItemGenerator>();
+        var itemHandler = FindObjectOfType<ItemHandler>();
+        var registry = itemHandler != null ? itemHandler.GetRegistry() : null;
+        if (generator == null || registry == null)
+        {
+            Debug.LogError("[MatchesHandler] ItemGenerator or ItemRegistry is missing.");
+            return;
+        }
+
+        CollapseColumns(board);
+        FillEmptyCells(board, registry);
+    }
+
     private IEnumerator ProcessMatchesCoroutine(Board board)
     {
         var matches = FindMatches(board);
+        if (matches.Count == 0)
+            yield break;
 
-        if (matches.Count == 0) yield break;
-
-        // 1. Проверяем специальные предметы (4+ в ряд)
         CheckForSpecialItems(board, matches);
-
-        // 2. Удаляем обычные предметы
+        DamageSpecialCellsAroundMatches(board, matches);
         RemoveItems(board, matches);
+
         yield return new WaitForSeconds(_matchDelay);
 
-        // 3. Падение
         DropItems(board);
         yield return new WaitForSeconds(_dropDelay + _postDropDelay);
 
-        // 4. Рекурсивная проверка
         board.CheckMatches();
     }
 
     private void RemoveItems(Board board, HashSet<int> matches)
     {
-        var data = board.Data;
-        int w = data.Width;
-
-        foreach (int idx in matches)
+        foreach (int index in matches)
         {
-            int x = idx % w;
-            int y = idx / w;
-            var item = board.Items[x, y];
-            if (item)
+            int column = index % board.Width;
+            int row = index / board.Width;
+            var item = board.Items[column, row];
+            if (item == null || !string.IsNullOrEmpty(item.SpecialItemId)) continue;
+
+            board.GetSpecialCell(column, row)?.ClearOccupant(item);
+            board.SetItemId(column, row, "");
+            board.Items[column, row] = null;
+            Destroy(item.gameObject);
+        }
+    }
+
+    private void CollapseColumns(Board board)
+    {
+        for (int column = 0; column < board.Width; column++)
+        {
+            int writeRow = 0;
+
+            for (int row = 0; row < board.Height; row++)
             {
-                if (!string.IsNullOrEmpty(item.SpecialItemId))
+                if (!board.IsCellActive(column, row))
                 {
-                    Debug.Log($"[RemoveItems] Skipping special item '{item.SpecialItemId}' at ({x},{y})");
+                    writeRow = row + 1;
                     continue;
                 }
 
-                data.SetItem(x, y, "");
-                board.Items[x, y] = null;
-                Destroy(item.gameObject);
+                var specialCell = board.GetSpecialCell(column, row);
+                if (specialCell != null && specialCell.BlocksFalling())
+                {
+                    specialCell.AttachItem(board.Items[column, row]);
+                    writeRow = row + 1;
+                    continue;
+                }
+
+                var item = board.Items[column, row];
+                bool hasObject = item != null || specialCell != null;
+                if (!hasObject) continue;
+
+                if (writeRow != row)
+                {
+                    if (item != null)
+                        MoveItem(board, item, column, row, column, writeRow);
+                    else if (specialCell != null && specialCell.CanFall())
+                        MoveSpecialCell(board, specialCell, column, row, column, writeRow);
+                }
+
+                writeRow++;
             }
         }
     }
 
-    public void DropItems(Board board)
+    private void FillEmptyCells(Board board, ItemRegistry registry)
     {
-        var data = board.Data;
-        int w = data.Width;
-        int h = data.Height;
         var generator = FindObjectOfType<ItemGenerator>();
-        var handler = FindObjectOfType<ItemHandler>();
+        if (generator == null) return;
 
-        ItemRegistry registry = null;
-        if (handler != null)
+        for (int column = 0; column < board.Width; column++)
         {
-            registry = handler.GetRegistry();
-        }
-
-        for (int x = 0; x < w; x++)
-        {
-            int empty = 0;
-            for (int y = 0; y < h; y++)
+            for (int row = 0; row < board.Height; row++)
             {
-                int idx = data.GetIndex(x, y);
-
-                if (!data.ActiveCells[idx])
-                {
-                    empty = 0;
+                if (!board.IsCellActive(column, row) || board.Items[column, row] != null)
                     continue;
-                }
 
-                var currentItem = board.Items[x, y]; // ← переименовал с item на currentItem
+                string itemId = registry.GetRandomNormalId();
+                if (string.IsNullOrEmpty(itemId)) continue;
 
-                bool hasItem = currentItem != null &&
-                               (!string.IsNullOrEmpty(currentItem.ItemId) ||
-                                !string.IsNullOrEmpty(currentItem.SpecialItemId));
-
-                if (!hasItem)
+                var tile = board.transform.Find($"Tile({column},{row})");
+                if (tile == null)
                 {
-                    empty++;
+                    var tileObject = Instantiate(generator.GetTilePrefab(), board.GetWorldPosition(column, row), Quaternion.identity, board.transform);
+                    tileObject.name = $"Tile({column},{row})";
+                    tile = tileObject.transform;
                 }
-                else if (empty > 0)
-                {
-                    int newY = y - empty;
-                    int newIdx = data.GetIndex(x, newY);
 
-                    if (data.ActiveCells[newIdx])
-                    {
-                        board.Items[x, y] = null;
-                        board.Items[x, newY] = currentItem;
-                        currentItem.Row = newY;
+                var itemObject = FindObjectOfType<ItemHandler>()?.CreateItem(itemId, board.GetWorldPosition(column, row), tile);
+                var item = itemObject != null ? itemObject.GetComponent<Item>() : null;
+                if (item == null) continue;
 
-                        // Находим родительский Tile для новой позиции
-                        Transform newParent = board.transform.Find($"Tile({x},{newY})");
-                        if (newParent != null)
-                        {
-                            currentItem.transform.parent = newParent;
-                        }
-
-                        board.StartCoroutine(currentItem.MoveToPosition(x, newY));
-
-                        data.Items[newIdx] = data.Items[idx];
-                        data.Items[idx] = "";
-                    }
-                    else
-                    {
-                        empty = 0;
-                    }
-                }
-            }
-
-            int emptyCount = 0;
-            for (int y = 0; y < h; y++)
-            {
-                int idx = data.GetIndex(x, y);
-                if (!data.ActiveCells[idx]) continue;
-
-                var checkItem = board.Items[x, y]; // ← переименовал
-                bool hasItem = checkItem != null &&
-                               (!string.IsNullOrEmpty(checkItem.ItemId) ||
-                                !string.IsNullOrEmpty(checkItem.SpecialItemId));
-
-                if (!hasItem) emptyCount++;
-            }
-
-            if (emptyCount > 0 && generator != null && handler != null && registry != null)
-            {
-                for (int y = h - emptyCount; y < h; y++)
-                {
-                    int idx = data.GetIndex(x, y);
-                    if (!data.ActiveCells[idx]) continue;
-
-                    var existingItem = board.Items[x, y];
-                    bool hasItem = existingItem != null &&
-                                   (!string.IsNullOrEmpty(existingItem.ItemId) ||
-                                    !string.IsNullOrEmpty(existingItem.SpecialItemId));
-
-                    if (hasItem) continue;
-
-                    string type = registry.GetRandomNormalId();
-                    if (string.IsNullOrEmpty(type)) continue;
-
-                    Vector2 targetPos = board.GetWorldPosition(x, y);
-
-                    // НАХОДИМ ИЛИ СОЗДАЁМ TILE
-                    Transform tileParent = board.transform.Find($"Tile({x},{y})");
-                    if (tileParent == null)
-                    {
-                        GameObject tile = Instantiate(generator.GetTilePrefab(), targetPos, Quaternion.identity,
-                            board.transform);
-                        tile.name = $"Tile({x},{y})";
-                        tileParent = tile.transform;
-                    }
-
-                    // Создаём предмет ВНУТРИ TILE
-                    Vector2 startPos = board.GetWorldPosition(x, h + 1);
-                    GameObject go = handler.CreateItem(type, startPos, tileParent);
-                    if (go == null) continue;
-
-                    var newItem = go.GetComponent<Item>(); // ← переименовал с item на newItem
-                    if (newItem == null) continue;
-
-                    newItem.Column = x;
-                    newItem.Row = y;
-                    newItem.Board = board;
-                    newItem.ItemId = type;
-
-                    board.StartCoroutine(newItem.MoveToPosition(x, y));
-
-                    board.Items[x, y] = newItem;
-                    data.SetItem(x, y, type);
-                }
+                item.Column = column;
+                item.Row = row;
+                item.Board = board;
+                item.ItemId = itemId;
+                board.Items[column, row] = item;
+                board.SetItemId(column, row, itemId);
+                board.GetSpecialCell(column, row)?.AttachItem(item);
             }
         }
+    }
 
-        // Второй проход для заполнения пустот
-        for (int x = 0; x < w; x++)
+    private void MoveItem(Board board, Item item, int fromColumn, int fromRow, int toColumn, int toRow)
+    {
+        if (item == null || (fromColumn == toColumn && fromRow == toRow)) return;
+
+        var oldCell = board.GetSpecialCell(fromColumn, fromRow);
+        oldCell?.ClearOccupant(item);
+
+        board.Items[fromColumn, fromRow] = null;
+        board.SetItemId(fromColumn, fromRow, "");
+        board.Items[toColumn, toRow] = item;
+        board.SetItemId(toColumn, toRow, item.ItemId);
+
+        item.Column = toColumn;
+        item.Row = toRow;
+        item.Board = board;
+
+        var targetCell = board.GetSpecialCell(toColumn, toRow);
+        targetCell?.AttachItem(item);
+
+        var targetTile = board.transform.Find($"Tile({toColumn},{toRow})");
+        if (targetTile != null)
+            item.transform.SetParent(targetTile, true);
+
+        if (oldCell != null && oldCell.CanFall())
         {
-            for (int y = 0; y < h; y++)
-            {
-                int idx = data.GetIndex(x, y);
-                if (!data.ActiveCells[idx]) continue;
-
-                var checkItem = board.Items[x, y];
-                bool hasItem = checkItem != null &&
-                               (!string.IsNullOrEmpty(checkItem.ItemId) ||
-                                !string.IsNullOrEmpty(checkItem.SpecialItemId));
-
-                if (!hasItem)
-                {
-                    string type = registry.GetRandomNormalId();
-                    if (string.IsNullOrEmpty(type)) continue;
-
-                    Vector2 pos = board.GetWorldPosition(x, y);
-
-                    Transform tileParent = board.transform.Find($"Tile({x},{y})");
-                    if (tileParent == null)
-                    {
-                        GameObject tile = Instantiate(generator.GetTilePrefab(), pos, Quaternion.identity,
-                            board.transform);
-                        tile.name = $"Tile({x},{y})";
-                        tileParent = tile.transform;
-                    }
-
-                    GameObject go = handler.CreateItem(type, pos, tileParent);
-                    if (go == null) continue;
-
-                    var newItem = go.GetComponent<Item>();
-                    if (newItem == null) continue;
-
-                    newItem.Column = x;
-                    newItem.Row = y;
-                    newItem.Board = board;
-                    newItem.ItemId = type;
-                    board.Items[x, y] = newItem;
-                    data.SetItem(x, y, type);
-                }
-            }
+            oldCell.SetGridPosition(toColumn, toRow);
+            oldCell.AttachItem(item);
         }
 
-        // В конце DropItems() после всех циклов:
-        for (int x = 0; x < w; x++)
-        {
-            for (int y = 0; y < h; y++)
-            {
-                int idx = data.GetIndex(x, y);
-                if (!data.ActiveCells[idx]) continue;
+        board.StartCoroutine(item.MoveToPosition(toColumn, toRow));
+    }
 
-                var checkItem = board.Items[x, y];
-                bool hasItem = checkItem != null &&
-                               (!string.IsNullOrEmpty(checkItem.ItemId) ||
-                                !string.IsNullOrEmpty(checkItem.SpecialItemId));
+    private void MoveSpecialCell(Board board, SpecialCell cell, int fromColumn, int fromRow, int toColumn, int toRow)
+    {
+        if (cell == null) return;
+        cell.SetGridPosition(toColumn, toRow);
 
-                if (!hasItem)
-                {
-                    // Заполняем пустоту
-                    string type = registry.GetRandomNormalId();
-                    if (string.IsNullOrEmpty(type)) continue;
+        var item = board.Items[fromColumn, fromRow];
+        if (item != null)
+            cell.AttachItem(item);
+    }
 
-                    Vector2 pos = board.GetWorldPosition(x, y);
-
-                    Transform tileParent = board.transform.Find($"Tile({x},{y})");
-                    if (tileParent == null)
-                    {
-                        // Если тайла нет — создаём
-                        GameObject tile = Instantiate(generator.GetTilePrefab(), pos, Quaternion.identity,
-                            board.transform);
-                        tile.name = $"Tile({x},{y})";
-                        tileParent = tile.transform;
-                    }
-
-                    GameObject go = handler.CreateItem(type, pos, tileParent);
-                    if (go == null) continue;
-
-                    var newItem = go.GetComponent<Item>();
-                    if (newItem == null) continue;
-
-                    newItem.Column = x;
-                    newItem.Row = y;
-                    newItem.Board = board;
-                    newItem.ItemId = type;
-                    board.Items[x, y] = newItem;
-                    data.SetItem(x, y, type);
-                }
-            }
-        }
+    private void DamageSpecialCellsAroundMatches(Board board, HashSet<int> matches)
+    {
+        var handler = FindObjectOfType<SpecialCellHandler>();
+        handler?.DamageAround(board, matches, 1);
     }
 
     private void CheckForSpecialItems(Board board, HashSet<int> matches)
     {
-        if (board?.Data == null || matches == null) return;
+        if (board?.Data == null || matches == null || matches.Count == 0) return;
 
-        var (swapX, swapY) = board.GetLastSwapPosition();
+        var (swapColumn, swapRow) = board.GetLastSwapPosition();
         board.ClearLastSwapPosition();
-
-        var data = board.Data;
-        int w = data.Width;
 
         var horizontalMatches = new Dictionary<int, List<int>>();
         var verticalMatches = new Dictionary<int, List<int>>();
 
-        foreach (int idx in matches)
+        foreach (int index in matches)
         {
-            int x = idx % w;
-            int y = idx / w;
+            int column = index % board.Width;
+            int row = index / board.Width;
 
-            if (!horizontalMatches.ContainsKey(y))
-                horizontalMatches[y] = new List<int>();
-            horizontalMatches[y].Add(x);
+            if (!horizontalMatches.TryGetValue(row, out var horizontal))
+            {
+                horizontal = new List<int>();
+                horizontalMatches[row] = horizontal;
+            }
+            horizontal.Add(column);
 
-            if (!verticalMatches.ContainsKey(x))
-                verticalMatches[x] = new List<int>();
-            verticalMatches[x].Add(y);
+            if (!verticalMatches.TryGetValue(column, out var vertical))
+            {
+                vertical = new List<int>();
+                verticalMatches[column] = vertical;
+            }
+            vertical.Add(row);
         }
 
-        // Горизонтальные матчи
-        foreach (var kvp in horizontalMatches)
+        foreach (var pair in horizontalMatches)
+            CreateBombsFromLine(board, pair.Value, pair.Key, true, swapColumn, swapRow);
+
+        foreach (var pair in verticalMatches)
+            CreateBombsFromLine(board, pair.Value, pair.Key, false, swapColumn, swapRow);
+    }
+
+    private void CreateBombsFromLine(Board board, List<int> coordinates, int fixedCoordinate, bool horizontal, int swapColumn, int swapRow)
+    {
+        coordinates.Sort();
+        int consecutive = 1;
+        int start = coordinates[0];
+
+        for (int index = 1; index < coordinates.Count; index++)
         {
-            int y = kvp.Key;
-            var xs = kvp.Value;
-            xs.Sort();
-
-            int consecutive = 1;
-            int startX = xs[0];
-
-            for (int i = 1; i < xs.Count; i++)
+            if (coordinates[index] == coordinates[index - 1] + 1)
             {
-                if (xs[i] == xs[i - 1] + 1)
+                consecutive++;
+                if (consecutive >= 4)
                 {
-                    consecutive++;
-                    if (consecutive >= 4)
-                    {
-                        // Определяем позицию для бомбы
-                        int createX;
-                        int createY = y;
+                    int column = horizontal ? start + consecutive / 2 : fixedCoordinate;
+                    int row = horizontal ? fixedCoordinate : start + consecutive / 2;
 
-                        // Если позиция свапа в этом ряду — создаём там!
-                        if (swapX >= 0 && swapY == y && xs.Contains(swapX))
-                        {
-                            createX = swapX;
-                            Debug.Log($"[CheckForSpecialItems] Bomb at swap position: ({createX},{createY})");
-                        }
-                        else
-                        {
-                            createX = startX + consecutive / 2;
-                            Debug.Log($"[CheckForSpecialItems] Bomb at center: ({createX},{createY})");
-                        }
+                    if (horizontal && swapRow == fixedCoordinate && coordinates.Contains(swapColumn))
+                        column = swapColumn;
+                    else if (!horizontal && swapColumn == fixedCoordinate && coordinates.Contains(swapRow))
+                        row = swapRow;
 
-                        CreateBomb(board, createX, createY);
-                        consecutive = 1;
-                        startX = xs[i];
-                    }
-                }
-                else
-                {
+                    CreateBomb(board, column, row);
                     consecutive = 1;
-                    startX = xs[i];
+                    start = coordinates[index];
                 }
             }
-        }
-
-        // Вертикальные матчи (аналогично)
-        foreach (var kvp in verticalMatches)
-        {
-            int x = kvp.Key;
-            var ys = kvp.Value;
-            ys.Sort();
-
-            int consecutive = 1;
-            int startY = ys[0];
-
-            for (int i = 1; i < ys.Count; i++)
+            else
             {
-                if (ys[i] == ys[i - 1] + 1)
-                {
-                    consecutive++;
-                    if (consecutive >= 4)
-                    {
-                        int createX = x;
-                        int createY;
-
-                        if (swapX == x && swapY >= 0 && ys.Contains(swapY))
-                        {
-                            createY = swapY;
-                            Debug.Log($"[CheckForSpecialItems] Bomb at swap position: ({createX},{createY})");
-                        }
-                        else
-                        {
-                            createY = startY + consecutive / 2;
-                            Debug.Log($"[CheckForSpecialItems] Bomb at center: ({createX},{createY})");
-                        }
-
-                        CreateBomb(board, createX, createY);
-                        consecutive = 1;
-                        startY = ys[i];
-                    }
-                }
-                else
-                {
-                    consecutive = 1;
-                    startY = ys[i];
-                }
+                consecutive = 1;
+                start = coordinates[index];
             }
         }
     }
 
-    private void CreateBomb(Board board, int x, int y)
+    private void CreateBomb(Board board, int column, int row)
     {
-        var generator = FindObjectOfType<ItemGenerator>();
-        if (generator == null)
-        {
-            Debug.LogError("[CreateBomb] ItemGenerator not found!");
-            return;
-        }
-
-        Debug.Log($"[CreateBomb] Creating bomb at ({x},{y})");
-        generator.ReplaceWithSpecial(board, x, y, "bomb");
+        FindObjectOfType<ItemGenerator>()?.ReplaceWithSpecial(board, column, row, "bomb");
     }
 }

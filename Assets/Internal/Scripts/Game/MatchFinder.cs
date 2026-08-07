@@ -1,57 +1,69 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 public static class MatchFinder
 {
     public static HashSet<int> FindMatches(BoardData data)
     {
         var matches = new HashSet<int>();
-        int w = data.Width;
-        int h = data.Height;
+        if (data == null || !data.IsStructurallyValid())
+            return matches;
 
-        for (int y = 0; y < h; y++)
-        {
-            for (int x = 0; x < w - 2; x++)
-            {
-                int idx = y * w + x;
-                if (!data.ActiveCells[idx]) continue;
-                
-                string type = data.Items[idx];
-                if (string.IsNullOrEmpty(type)) continue;
-
-                if (data.Items[idx + 1] == type && data.Items[idx + 2] == type)
-                {
-                    int endX = x + 2;
-                    while (endX + 1 < w && data.Items[y * w + endX + 1] == type)
-                        endX++;
-
-                    for (int i = x; i <= endX; i++)
-                        matches.Add(y * w + i);
-                }
-            }
-        }
-
-        for (int x = 0; x < w; x++)
-        {
-            for (int y = 0; y < h - 2; y++)
-            {
-                int idx = y * w + x;
-                if (!data.ActiveCells[idx]) continue;
-                
-                string type = data.Items[idx];
-                if (string.IsNullOrEmpty(type)) continue;
-
-                if (data.Items[idx + w] == type && data.Items[idx + 2 * w] == type)
-                {
-                    int endY = y + 2;
-                    while (endY + 1 < h && data.Items[(endY + 1) * w + x] == type)
-                        endY++;
-
-                    for (int i = y; i <= endY; i++)
-                        matches.Add(i * w + x);
-                }
-            }
-        }
-
+        FindHorizontalMatches(data, matches);
+        FindVerticalMatches(data, matches);
         return matches;
+    }
+
+    private static void FindHorizontalMatches(BoardData data, HashSet<int> matches)
+    {
+        for (int row = 0; row < data.Height; row++)
+        {
+            for (int column = 0; column < data.Width; column++)
+            {
+                int startIndex = data.GetIndex(column, row);
+                if (!data.ActiveCells[startIndex] || string.IsNullOrEmpty(data.Items[startIndex]))
+                    continue;
+
+                string itemId = data.Items[startIndex];
+                int endColumn = column;
+                while (endColumn + 1 < data.Width &&
+                       data.ActiveCells[data.GetIndex(endColumn + 1, row)] &&
+                       data.Items[data.GetIndex(endColumn + 1, row)] == itemId)
+                {
+                    endColumn++;
+                }
+
+                if (endColumn - column + 1 < 3) continue;
+
+                for (int matchColumn = column; matchColumn <= endColumn; matchColumn++)
+                    matches.Add(data.GetIndex(matchColumn, row));
+            }
+        }
+    }
+
+    private static void FindVerticalMatches(BoardData data, HashSet<int> matches)
+    {
+        for (int column = 0; column < data.Width; column++)
+        {
+            for (int row = 0; row < data.Height; row++)
+            {
+                int startIndex = data.GetIndex(column, row);
+                if (!data.ActiveCells[startIndex] || string.IsNullOrEmpty(data.Items[startIndex]))
+                    continue;
+
+                string itemId = data.Items[startIndex];
+                int endRow = row;
+                while (endRow + 1 < data.Height &&
+                       data.ActiveCells[data.GetIndex(column, endRow + 1)] &&
+                       data.Items[data.GetIndex(column, endRow + 1)] == itemId)
+                {
+                    endRow++;
+                }
+
+                if (endRow - row + 1 < 3) continue;
+
+                for (int matchRow = row; matchRow <= endRow; matchRow++)
+                    matches.Add(data.GetIndex(column, matchRow));
+            }
+        }
     }
 }

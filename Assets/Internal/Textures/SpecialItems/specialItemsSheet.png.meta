@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: b00f99904a7b25d4988588883ba352c1
+guid: e1d79143fb5afc344aeb0ec4e89291a1
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4298056599330406823
-    second: none_0
+      213: 5507751437025818786
+    second: IMG_3401_0
+  - first:
+      213: -7893277689715030987
+    second: IMG_3401_1
+  - first:
+      213: 169402678597203473
+    second: IMG_3401_2
+  - first:
+      213: 426447871684540411
+    second: IMG_3401_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +46,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -51,7 +60,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 285
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -113,23 +122,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: none_0
+      name: specialItemsSheet_bomb
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 128
-        height: 128
+        x: 55
+        y: 269
+        width: 332
+        height: 398
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 95e33648b4c3a54c0800000000000000
-      internalID: -4298056599330406823
+      spriteID: a775996ae45fc314488ff9d09d877dd7
+      internalID: 528661489
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialItemsSheet_magnet
+      rect:
+        serializedVersion: 2
+        x: 502
+        y: 274
+        width: 343
+        height: 343
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be5bc6e7208ca1948a10fad320a00196
+      internalID: 137048751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialItemsSheet_MURDER
+      rect:
+        serializedVersion: 2
+        x: 957
+        y: 259
+        width: 307
+        height: 378
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 21e2bfdd3601f0d4b9d7035329f599e7
+      internalID: 1559437956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialItemsSheet_sweeper
+      rect:
+        serializedVersion: 2
+        x: 1372
+        y: 262
+        width: 355
+        height: 349
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b0819d7ae4081004fb849831be58f211
+      internalID: -491010015
       vertices: []
       indices: 
       edges: []
@@ -138,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 97b8dbd6be7071a45a6c9b67e8343e8f
     internalID: 0
     vertices: []
     indices: 
@@ -146,9 +221,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      none_0: -4298056599330406823
+      specialItemsSheet_MURDER: 1559437956
+      specialItemsSheet_bomb: 528661489
+      specialItemsSheet_magnet: 137048751
+      specialItemsSheet_sweeper: -491010015
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

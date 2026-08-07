@@ -1,82 +1,102 @@
-﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class SpecialItemHandler : MonoBehaviour
 {
-    [Header("Effect Data")] [SerializeField]
-    private List<SpecialItemEffect> _allEffects;
-
+    [Header("References")]
+    [SerializeField] private ItemRegistry _registry;
     [SerializeField] private GameObject _specialItemPrefab;
 
-    [Header("Cell Data")] [SerializeField] private List<SpecialCellData> _cellDataList;
-
-    private Dictionary<string, SpecialItemEffect> _effectDictionary;
-
-    public List<SpecialCellData> GetAllCellData() => _cellDataList;
+    private Dictionary<string, SpecialItemEffect> _effectsById;
 
     private void Awake()
     {
         BuildEffectDictionary();
     }
 
-    private void BuildEffectDictionary()
-    {
-        _effectDictionary = new Dictionary<string, SpecialItemEffect>();
-
-        foreach (var effect in _allEffects)
-        {
-            if (effect == null) continue;
-            string id = effect.name.ToLower();
-            _effectDictionary[id] = effect;
-            Debug.Log($"[SpecialItemHandler] Registered effect: {id} -> {effect.name}");
-        }
-    }
-
     public SpecialItemEffect GetEffect(string id)
     {
-        string key = id.ToLower();
-        return _effectDictionary.ContainsKey(key) ? _effectDictionary[key] : null;
+        EnsureEffectDictionary();
+        if (string.IsNullOrEmpty(id)) return null;
+
+        return _effectsById.TryGetValue(id.ToLowerInvariant(), out var effect) ? effect : null;
     }
 
     public GameObject CreateSpecialItem(string id, Vector2 position, Transform parent)
     {
         var effect = GetEffect(id);
+        var definition = GetDefinition(id);
+
         if (effect == null)
         {
-            Debug.LogError($"SpecialItemHandler: No effect found for id '{id}'!");
+            Debug.LogError($"[SpecialItemHandler] No effect found for id '{id}'.");
             return null;
         }
-    
-        GameObject newItem = Instantiate(_specialItemPrefab, position, Quaternion.identity, parent);
-        newItem.name = $"Special_{id}";
-        newItem.SetActive(true);
-    
-        // Убеждаемся что есть Item компонент
-        var item = newItem.GetComponent<Item>();
-        if (item == null)
+
+        if (definition == null || definition.Category != ItemCategory.Special)
         {
-            item = newItem.AddComponent<Item>();
-            Debug.Log("[SpecialItemHandler] Added Item component");
+            Debug.LogError($"[SpecialItemHandler] No Special ItemDefinition found for id '{id}'.");
+            return null;
         }
-    
-        // Убеждаемся что есть SpecialItem компонент
-        var specialItem = newItem.GetComponent<SpecialItem>();
-        if (specialItem == null)
+
+        if (_specialItemPrefab == null)
         {
-            specialItem = newItem.AddComponent<SpecialItem>();
-            Debug.Log("[SpecialItemHandler] Added SpecialItem component");
+            Debug.LogError("[SpecialItemHandler] Special item prefab is not assigned.");
+            return null;
         }
-    
-        // Инициализируем SpecialItem
-        specialItem.Initialize(effect, -1, -1);
-    
-        // Добавляем коллайдер если нет
-        if (newItem.GetComponent<Collider2D>() == null)
+
+        var itemObject = Instantiate(_specialItemPrefab, position, Quaternion.identity, parent);
+        itemObject.name = $"Special_{id}";
+        itemObject.SetActive(true);
+
+        if (itemObject.GetComponent<Item>() == null)
+            itemObject.AddComponent<Item>();
+
+        var specialItem = itemObject.GetComponent<SpecialItem>() ?? itemObject.AddComponent<SpecialItem>();
+        specialItem.Initialize(effect, definition, -1, -1);
+
+        return itemObject;
+    }
+
+    private ItemDefinition GetDefinition(string id)
+    {
+        if (_registry == null)
+            _registry = Resources.Load<ItemRegistry>("ItemRegistry");
+
+        if (_registry == null) return null;
+        _registry.Initialize();
+        return _registry.Get(id);
+    }
+
+    private void EnsureEffectDictionary()
+    {
+        if (_effectsById == null)
+            BuildEffectDictionary();
+    }
+
+    private void BuildEffectDictionary()
+    {
+        _effectsById = new Dictionary<string, SpecialItemEffect>();
+
+        if (_registry == null)
         {
-            newItem.AddComponent<BoxCollider2D>();
+            var itemHandler = FindObjectOfType<ItemHandler>();
+            _registry = itemHandler != null ? itemHandler.GetRegistry() : Resources.Load<ItemRegistry>("ItemRegistry");
         }
-    
-        return newItem;
+
+        if (_registry != null)
+            _registry.Initialize();
+
+        var definitions = _registry != null ? _registry.GetSpecialItems() : null;
+        if (definitions == null)
+            return;
+
+        foreach (var definition in definitions)
+        {
+            if (definition == null || string.IsNullOrEmpty(definition.Id) || definition.SpecialEffect == null)
+                continue;
+
+            _effectsById[definition.Id.ToLowerInvariant()] = definition.SpecialEffect;
+        }
     }
 }

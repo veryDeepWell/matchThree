@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6c527670c4f4c3cb502af7f3d56c4ae, type: 3}
-  m_Name: Yellow
+  m_Name: ice-def
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  Id: yellow
-  DisplayName: Yellow
-  Icon: {fileID: 8738446065157557334, guid: edc5fd959f0041241b78760ff18bd8a0, type: 3}
+  Id: ice
+  DisplayName: Ice
+  Icon: {fileID: 944470027, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Category: 0
+  Category: 2
   SpecialEffect: {fileID: 0}
-  CellData: {fileID: 0}
+  CellData: {fileID: 11400000, guid: 5b803b21c2318d94b8252a68ea4143c5, type: 2}

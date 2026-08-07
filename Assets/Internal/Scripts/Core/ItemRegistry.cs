@@ -51,4 +51,25 @@ public class ItemRegistry : ScriptableObject
         if (normals == null || normals.Count == 0) return "";
         return normals[Random.Range(0, normals.Count)].Id;
     }
+    
+    public List<SpecialCellData> GetAllSpecialCellData()
+    {
+        var result = new List<SpecialCellData>();
+        foreach (var item in _allItems)
+        {
+            if (item != null && item.Category == ItemCategory.SpecialCell && item.CellData != null)
+            {
+                result.Add(item.CellData);
+            }
+        }
+        return result;
+    }
+
+    public SpecialCellData GetSpecialCellDataById(string id)
+    {
+        var def = Get(id);
+        if (def != null && def.Category == ItemCategory.SpecialCell)
+            return def.CellData;
+        return null;
+    }
 }

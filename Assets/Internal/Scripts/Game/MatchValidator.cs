@@ -1,46 +1,52 @@
-﻿using System.Collections.Generic;
-
 public static class MatchValidator
 {
     public static bool HasPossibleMoves(BoardData data)
     {
-        int w = data.Width;
-        int h = data.Height;
+        if (data == null || !data.IsStructurallyValid())
+            return false;
 
-        for (int x = 0; x < w; x++)
+        for (int column = 0; column < data.Width; column++)
         {
-            for (int y = 0; y < h; y++)
+            for (int row = 0; row < data.Height; row++)
             {
-                int idx = data.GetIndex(x, y);
-                if (!data.ActiveCells[idx]) continue;
-                if (string.IsNullOrEmpty(data.Items[idx])) continue;
+                int cellIndex = data.GetIndex(column, row);
+                if (!data.ActiveCells[cellIndex] ||
+                    !string.IsNullOrEmpty(data.SpecialItems[cellIndex]) ||
+                    string.IsNullOrEmpty(data.Items[cellIndex]))
+                    continue;
 
-                if (CanSwapAndMatch(data, x, y, x + 1, y)) return true;
-                if (CanSwapAndMatch(data, x, y, x - 1, y)) return true;
-                if (CanSwapAndMatch(data, x, y, x, y + 1)) return true;
-                if (CanSwapAndMatch(data, x, y, x, y - 1)) return true;
+                if (CanSwapAndMatch(data, column, row, column + 1, row) ||
+                    CanSwapAndMatch(data, column, row, column, row + 1))
+                    return true;
             }
         }
+
         return false;
     }
 
-    private static bool CanSwapAndMatch(BoardData data, int x1, int y1, int x2, int y2)
+    private static bool CanSwapAndMatch(BoardData data, int firstColumn, int firstRow, int secondColumn, int secondRow)
     {
-        if (!data.IsValid(x1, y1) || !data.IsValid(x2, y2)) return false;
-        if (!data.ActiveCells[data.GetIndex(x1, y1)]) return false;
-        if (!data.ActiveCells[data.GetIndex(x2, y2)]) return false;
+        if (!data.IsValid(firstColumn, firstRow) || !data.IsValid(secondColumn, secondRow))
+            return false;
 
-        int idx1 = data.GetIndex(x1, y1);
-        int idx2 = data.GetIndex(x2, y2);
-        string temp = data.Items[idx1];
-        data.Items[idx1] = data.Items[idx2];
-        data.Items[idx2] = temp;
+        int firstIndex = data.GetIndex(firstColumn, firstRow);
+        int secondIndex = data.GetIndex(secondColumn, secondRow);
+        if (!data.ActiveCells[firstIndex] || !data.ActiveCells[secondIndex])
+            return false;
+        if (!string.IsNullOrEmpty(data.SpecialItems[firstIndex]) ||
+            !string.IsNullOrEmpty(data.SpecialItems[secondIndex]) ||
+            string.IsNullOrEmpty(data.Items[secondIndex]))
+            return false;
 
-        var matches = MatchFinder.FindMatches(data);
+        string firstItemId = data.Items[firstIndex];
+        string secondItemId = data.Items[secondIndex];
+        data.Items[firstIndex] = secondItemId;
+        data.Items[secondIndex] = firstItemId;
 
-        data.Items[idx1] = data.Items[idx2];
-        data.Items[idx2] = temp;
+        bool createsMatch = MatchFinder.FindMatches(data).Count > 0;
 
-        return matches.Count > 0;
+        data.Items[firstIndex] = firstItemId;
+        data.Items[secondIndex] = secondItemId;
+        return createsMatch;
     }
 }

@@ -392,6 +392,7 @@ Transform:
   - {fileID: 295793229}
   - {fileID: 620468258}
   - {fileID: 1645305277}
+  - {fileID: 1254275238}
   - {fileID: 592891539}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -440,10 +441,60 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchesHandler
   _moveDuration: 0.15
-  _matchDelay: 0.15
-  _dropDelay: 0.15
-  _postDropDelay: 0.15
+  _matchDelay: 0.1
+  _dropDelay: 0.2
+  _postDropDelay: 0.2
   _bombExplosionDelay: 0.2
+--- !u!1 &1254275237
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1254275238}
+  - component: {fileID: 1254275239}
+  m_Layer: 0
+  m_Name: SpecialCellHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1254275238
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1254275237}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.67164, y: 0.80094, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 616996649}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1254275239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1254275237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be483142ad7649b6b2be8294b88c67ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpecialCellHandler
+  _cellDataList:
+  - {fileID: 11400000, guid: 5b803b21c2318d94b8252a68ea4143c5, type: 2}
+  - {fileID: 11400000, guid: 635e4b9c006742e49968fb2aad3badf0, type: 2}
+  - {fileID: 11400000, guid: 141ee0575186f7b44b3dea14c2bbeb15, type: 2}
+  - {fileID: 11400000, guid: c68994cc5b7dbfe4e9ed580eb74daf69, type: 2}
+  _cellPrefab: {fileID: 9007602702262825664, guid: 319571a0333123d4d976cd1be3937bb3, type: 3}
 --- !u!1 &1441193950
 GameObject:
   m_ObjectHideFlags: 0

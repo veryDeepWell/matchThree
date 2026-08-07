@@ -36,3 +36,6 @@
 // Mobile controller
 // Fix bombs
 // Cheat menu
+
+// DONE
+// Fix bombs
