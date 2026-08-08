@@ -17,17 +17,25 @@ public class Item : MonoBehaviour
     [Header("Type")]
     public string ItemId;
     public string SpecialItemId;
-    
+
     private Camera _camera;
     private Vector2 _firstTouch;
     private Vector2 _finalTouch;
     private bool _isMoving;
+    private bool _positionSetExplicitly;
+    private bool _usingTouchInput;
     private Transform _cachedTransform;
-    
+
+    public bool IsMoving => _isMoving;
+    public float MoveDuration => _moveDuration;
+
     private void Start()
     {
         _camera = Camera.main;
         _cachedTransform = transform;
+
+        if (_positionSetExplicitly)
+            return;
 
         if (Board != null)
             _cachedTransform.position = Board.GetWorldPosition(Column, Row);
@@ -35,242 +43,57 @@ public class Item : MonoBehaviour
             _cachedTransform.position = new Vector3(Column, Row, 0f);
     }
 
+    private void Update()
+    {
+        if (!enabled || _isMoving || Board == null || Board.IsProcessing)
+            return;
+
+        HandleTouchInput();
+    }
+
     private void OnMouseDown()
     {
-        if (_isMoving || Board == null || _cachedTransform == null || _camera == null) return;
+        if (Input.touchCount > 0)
+            return;
+
+        if (_isMoving || Board == null || Board.IsProcessing || _cachedTransform == null)
+            return;
+
+        _camera ??= Camera.main;
+        if (_camera == null)
+            return;
+
         _firstTouch = _camera.ScreenToWorldPoint(Input.mousePosition);
     }
 
     private void OnMouseUp()
     {
-        if (_isMoving || Board == null || _cachedTransform == null || _camera == null) return;
-
-        _finalTouch = _camera.ScreenToWorldPoint(Input.mousePosition);
-        if (Vector2.Distance(_firstTouch, _finalTouch) < _minSwipeDistance) return;
-
-        TrySwipe();
-    }
-
-    private void TrySwipe()
-    {
-        if (Board == null || Board.Data == null) return;
-
-        Vector2 delta = _finalTouch - _firstTouch;
-        float angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
-
-        int targetX = Column;
-        int targetY = Row;
-
-        if (angle > -45 && angle <= 45) targetX = Column + 1;
-        else if (angle > 45 && angle <= 135) targetY = Row + 1;
-        else if (angle > 135 || angle <= -135) targetX = Column - 1;
-        else if (angle < -45 && angle >= -135) targetY = Row - 1;
-        else return;
-
-        if (targetX == Column && targetY == Row) return;
-        if (!Board.IsCellActive(targetX, targetY)) return;
-
-        // A special cell is an overlay over the item. By default it is not swappable.
-        var sourceCell = Board.GetSpecialCell(Column, Row);
-        var targetCell = Board.GetSpecialCell(targetX, targetY);
-        if ((sourceCell != null && !sourceCell.CanBeSwappedByPlayer()) ||
-            (targetCell != null && !targetCell.CanBeSwappedByPlayer()))
+        if (_usingTouchInput || Input.touchCount > 0)
             return;
 
-        var other = Board.Items[targetX, targetY];
-        if (other == null || other._isMoving) return;
+        if (_isMoving || Board == null || Board.IsProcessing || _cachedTransform == null)
+            return;
 
-        // Бомбы можно свапать без комбинации
-        bool isBomb = !string.IsNullOrEmpty(SpecialItemId) && SpecialItemId == "bomb";
-        bool otherIsBomb = other != null && !string.IsNullOrEmpty(other.SpecialItemId) && other.SpecialItemId == "bomb";
-    
-        if (!isBomb && !otherIsBomb)
-        {
-            if (!WouldCreateMatch(other, targetX, targetY)) return;
-        }
+        _camera ??= Camera.main;
+        if (_camera == null)
+            return;
 
-        StartCoroutine(Swap(other, targetX, targetY));
+        _finalTouch = _camera.ScreenToWorldPoint(Input.mousePosition);
+        TrySwipeFromPoints(_firstTouch, _finalTouch);
     }
 
-    private bool WouldCreateMatch(Item other, int targetX, int targetY)
+    public void SetVisualPosition(Vector2 worldPosition)
     {
-        if (Board?.Data == null) return false;
-
-        var data = Board.Data;
-        int myIdx = data.GetIndex(Column, Row);
-        int otherIdx = data.GetIndex(targetX, targetY);
-
-        string myType = data.Items[myIdx];
-        string otherType = data.Items[otherIdx];
-
-        data.Items[myIdx] = otherType;
-        data.Items[otherIdx] = myType;
-
-        var matches = MatchFinder.FindMatches(data);
-
-        data.Items[myIdx] = myType;
-        data.Items[otherIdx] = otherType;
-
-        return matches.Count > 0;
-    }
-
-    private IEnumerator Swap(Item other, int targetX, int targetY)
-    {
-        if (Board == null || other == null) yield break;
-
-        _isMoving = true;
-        other._isMoving = true;
-
-        int myX = Column;
-        int myY = Row;
-        int otherX = other.Column;
-        int otherY = other.Row;
-
-        var myCell = Board.GetSpecialCell(myX, myY);
-        var otherCell = Board.GetSpecialCell(otherX, otherY);
-
-        // Сохраняем позицию свапа (этот предмет был свапнут)
-        int swapX = Column;
-        int swapY = Row;
-
-        Board.Items[myX, myY] = other;
-        Board.Items[otherX, otherY] = this;
-
-        Column = otherX;
-        Row = otherY;
-        other.Column = myX;
-        other.Row = myY;
-
-        if (myCell != null)
-        {
-            myCell.SetGridPosition(otherX, otherY);
-            myCell.AttachItem(this);
-        }
-
-        if (otherCell != null)
-        {
-            otherCell.SetGridPosition(myX, myY);
-            otherCell.AttachItem(other);
-        }
-
-        // Синхронизация SpecialItem
-        var specialThis = GetComponent<SpecialItem>();
-        if (specialThis != null)
-            specialThis.SetGridPosition(Column, Row);
-
-        var specialOther = other.GetComponent<SpecialItem>();
-        if (specialOther != null)
-            specialOther.SetGridPosition(other.Column, other.Row);
-
-        Coroutine move1 = StartCoroutine(MoveToPosition(otherX, otherY));
-        Coroutine move2 = other.StartCoroutine(other.MoveToPosition(myX, myY));
-
-        yield return move1;
-        yield return move2;
-
-        _isMoving = false;
-        other._isMoving = false;
-
-        bool thisIsBomb = !string.IsNullOrEmpty(SpecialItemId) && SpecialItemId == "bomb";
-        bool otherIsBomb = !string.IsNullOrEmpty(other.SpecialItemId) && other.SpecialItemId == "bomb";
-
-        if (thisIsBomb && otherIsBomb)
-        {
-            // Две бомбы: один мощный взрыв в клетке, куда переместили (otherX, otherY)
-            // this сейчас стоит на (otherX, otherY)
-            Debug.Log($"[Swap] Bomb + Bomb at ({otherX},{otherY})");
-    
-            // Уничтожаем вторую бомбу без взрыва (она уже на старой клетке, Board.Items там уже this)
-            // other сейчас на (myX, myY)
-            if (Board != null)
-            {
-                Board.SetItemId(myX, myY, "");
-                Board.Items[myX, myY] = null;
-            }
-            Destroy(other.gameObject);
-
-            // Триггерим только одну бомбу (на целевой клетке)
-            // Позже можно сделать отдельный BigBombEffect с большим радиусом
-            GetComponent<ISpecialItem>()?.TriggerSpecialItem();
-        }
-        else
-        {
-            CheckAndTriggerBomb(Board, swapX, swapY);
-            CheckAndTriggerBomb(Board, otherX, otherY);
-        }
-
-        if (Board != null)
-            Board.CheckMatches(swapX, swapY);
-    }
-
-    private void CheckAndTriggerBomb(Board board, int x, int y)
-    {
-        if (board == null) return;
-        if (x < 0 || x >= board.Width || y < 0 || y >= board.Height) return;
-    
-        var item = board.Items[x, y];
-        if (item != null && !string.IsNullOrEmpty(item.SpecialItemId) && item.SpecialItemId == "bomb")
-        {
-            Debug.Log($"[CheckAndTriggerBomb] Bomb triggered at ({x},{y})");
-            item.GetComponent<ISpecialItem>()?.TriggerSpecialItem();
-        }
-    }
-
-    public IEnumerator MoveToPosition(int targetX, int targetY)
-    {
-        if (_cachedTransform == null)
-        {
-            _cachedTransform = transform;
-            if (_cachedTransform == null) yield break;
-        }
-
-        if (Board == null) yield break;
-
-        Vector2 start = _cachedTransform.position;
-        Vector2 target = Board.GetWorldPosition(targetX, targetY);
-
-        float elapsed = 0f;
-
-        while (elapsed < _moveDuration)
-        {
-            if (_cachedTransform == null || Board == null) yield break;
-
-            elapsed += Time.deltaTime;
-            float t = elapsed / _moveDuration;
-            float smooth = t * t * (3f - 2f * t);
-            _cachedTransform.position = Vector2.Lerp(start, target, smooth);
-
-            var movingCell = Board.GetSpecialCell(Column, Row);
-            if (movingCell != null && movingCell.Occupant == this)
-                movingCell.FollowItemTransform(this);
-
-            yield return null;
-        }
-
-        if (_cachedTransform != null)
-        {
-            _cachedTransform.position = target;
-            Column = targetX;
-            Row = targetY;
-
-            var finalCell = Board.GetSpecialCell(targetX, targetY);
-            if (finalCell != null && finalCell.Occupant == this)
-                finalCell.SetGridPosition(targetX, targetY);
-
-            // Синхронизация SpecialItem
-            var special = GetComponent<SpecialItem>();
-            if (special != null)
-                special.SetGridPosition(targetX, targetY);
-        }
+        _cachedTransform ??= transform;
+        _cachedTransform.position = worldPosition;
+        _positionSetExplicitly = true;
     }
 
     public void SnapToPosition(int targetX, int targetY)
     {
+        _cachedTransform ??= transform;
         if (_cachedTransform == null)
-        {
-            _cachedTransform = transform;
-            if (_cachedTransform == null) return;
-        }
+            return;
 
         Column = targetX;
         Row = targetY;
@@ -279,5 +102,252 @@ public class Item : MonoBehaviour
             _cachedTransform.position = Board.GetWorldPosition(targetX, targetY);
         else
             _cachedTransform.position = new Vector2(targetX, targetY);
+
+        _positionSetExplicitly = true;
+    }
+
+    public IEnumerator MoveToPosition(int targetX, int targetY)
+    {
+        _cachedTransform ??= transform;
+
+        if (_cachedTransform == null || Board == null)
+            yield break;
+
+        Vector2 startPosition = _cachedTransform.position;
+        Vector2 targetPosition = Board.GetWorldPosition(targetX, targetY);
+        float elapsed = 0f;
+
+        while (elapsed < _moveDuration)
+        {
+            if (_cachedTransform == null || Board == null)
+                yield break;
+
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / _moveDuration);
+            float smoothProgress = progress * progress * (3f - 2f * progress);
+
+            _cachedTransform.position = Vector2.Lerp(startPosition, targetPosition, smoothProgress);
+
+            var movingCell = Board.GetSpecialCell(Column, Row);
+            if (movingCell != null && movingCell.Occupant == this)
+                movingCell.FollowItemTransform(this);
+
+            yield return null;
+        }
+
+        _cachedTransform.position = targetPosition;
+        Column = targetX;
+        Row = targetY;
+
+        var finalCell = Board.GetSpecialCell(targetX, targetY);
+        if (finalCell != null && finalCell.Occupant == this)
+            finalCell.SetGridPosition(targetX, targetY);
+
+        GetComponent<SpecialItem>()?.SetGridPosition(targetX, targetY);
+    }
+
+    public IEnumerator PlayHint(Vector2 direction, float distance, float duration)
+    {
+        if (_cachedTransform == null || _isMoving)
+            yield break;
+
+        Vector3 originalPosition = _cachedTransform.position;
+        Vector3 offset = (Vector3)direction.normalized * distance;
+
+        yield return MoveTransform(originalPosition, originalPosition + offset, duration);
+        yield return MoveTransform(originalPosition + offset, originalPosition, duration);
+    }
+
+    private IEnumerator MoveTransform(Vector3 startPosition, Vector3 targetPosition, float duration)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            float smoothProgress = progress * progress * (3f - 2f * progress);
+            _cachedTransform.position = Vector3.Lerp(startPosition, targetPosition, smoothProgress);
+            yield return null;
+        }
+
+        _cachedTransform.position = targetPosition;
+    }
+
+    private void HandleTouchInput()
+    {
+        if (Input.touchCount != 1)
+            return;
+
+        Touch touch = Input.GetTouch(0);
+        _camera ??= Camera.main;
+        if (_camera == null)
+            return;
+
+        if (touch.phase == TouchPhase.Began)
+        {
+            _usingTouchInput = true;
+            _firstTouch = _camera.ScreenToWorldPoint(touch.position);
+        }
+        else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+        {
+            _finalTouch = _camera.ScreenToWorldPoint(touch.position);
+
+            if (touch.phase == TouchPhase.Ended)
+                TrySwipeFromPoints(_firstTouch, _finalTouch);
+
+            _usingTouchInput = false;
+        }
+    }
+
+    private void TrySwipeFromPoints(Vector2 startPoint, Vector2 endPoint)
+    {
+        if (Board == null || Board.Data == null || Board.IsProcessing)
+            return;
+
+        if (Vector2.Distance(startPoint, endPoint) < _minSwipeDistance)
+            return;
+
+        Vector2 delta = endPoint - startPoint;
+        int targetColumn = Column;
+        int targetRow = Row;
+
+        if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+            targetColumn += delta.x > 0f ? 1 : -1;
+        else
+            targetRow += delta.y > 0f ? 1 : -1;
+
+        if (!Board.IsCellActive(targetColumn, targetRow))
+        {
+            StartCoroutine(PlayRejectedMove(Vector2.zero));
+            return;
+        }
+
+        var sourceCell = Board.GetSpecialCell(Column, Row);
+        var targetCell = Board.GetSpecialCell(targetColumn, targetRow);
+
+        if ((sourceCell != null && !sourceCell.CanBeSwappedByPlayer()) ||
+            (targetCell != null && !targetCell.CanBeSwappedByPlayer()))
+        {
+            StartCoroutine(PlayRejectedMove(Vector2.zero));
+            return;
+        }
+
+        var otherItem = Board.Items[targetColumn, targetRow];
+        if (otherItem == null || otherItem._isMoving)
+        {
+            StartCoroutine(PlayRejectedMove(Vector2.zero));
+            return;
+        }
+
+        bool isBomb = SpecialItemId == "bomb";
+        bool otherIsBomb = otherItem.SpecialItemId == "bomb";
+
+        if (!isBomb && !otherIsBomb && !WouldCreateMatch(otherItem, targetColumn, targetRow))
+        {
+            StartCoroutine(PlayRejectedSwap(otherItem));
+            return;
+        }
+
+        StartCoroutine(Swap(otherItem, targetColumn, targetRow));
+    }
+
+    private bool WouldCreateMatch(Item otherItem, int targetColumn, int targetRow)
+    {
+        if (Board?.Data == null || otherItem == null)
+            return false;
+
+        int firstIndex = Board.Data.GetIndex(Column, Row);
+        int secondIndex = Board.Data.GetIndex(targetColumn, targetRow);
+
+        string firstItemId = Board.Data.Items[firstIndex];
+        string secondItemId = Board.Data.Items[secondIndex];
+
+        Board.Data.Items[firstIndex] = secondItemId;
+        Board.Data.Items[secondIndex] = firstItemId;
+
+        bool createsMatch = MatchFinder.FindMatches(Board.Data).Count > 0;
+
+        Board.Data.Items[firstIndex] = firstItemId;
+        Board.Data.Items[secondIndex] = secondItemId;
+
+        return createsMatch;
+    }
+
+    private IEnumerator Swap(Item otherItem, int targetColumn, int targetRow)
+    {
+        _isMoving = true;
+        otherItem._isMoving = true;
+
+        int sourceColumn = Column;
+        int sourceRow = Row;
+
+        var sourceCell = Board.GetSpecialCell(sourceColumn, sourceRow);
+        var targetCell = Board.GetSpecialCell(targetColumn, targetRow);
+
+        Board.Items[sourceColumn, sourceRow] = otherItem;
+        Board.Items[targetColumn, targetRow] = this;
+
+        Board.SetItemId(sourceColumn, sourceRow, otherItem.ItemId);
+        Board.SetItemId(targetColumn, targetRow, ItemId);
+
+        Column = targetColumn;
+        Row = targetRow;
+        otherItem.Column = sourceColumn;
+        otherItem.Row = sourceRow;
+
+        if (sourceCell != null)
+        {
+            sourceCell.SetGridPosition(targetColumn, targetRow);
+            sourceCell.AttachItem(this);
+        }
+
+        if (targetCell != null)
+        {
+            targetCell.SetGridPosition(sourceColumn, sourceRow);
+            targetCell.AttachItem(otherItem);
+        }
+
+        StartCoroutine(MoveToPosition(targetColumn, targetRow));
+        StartCoroutine(otherItem.MoveToPosition(sourceColumn, sourceRow));
+
+        yield return new WaitForSeconds(_moveDuration);
+
+        _isMoving = false;
+        otherItem._isMoving = false;
+
+        if (SpecialItemId == "bomb")
+            GetComponent<ISpecialItem>()?.TriggerSpecialItem();
+
+        if (otherItem.SpecialItemId == "bomb")
+            otherItem.GetComponent<ISpecialItem>()?.TriggerSpecialItem();
+
+        Board.CheckMatches(sourceColumn, sourceRow, targetColumn, targetRow);
+    }
+
+    private IEnumerator PlayRejectedSwap(Item otherItem)
+    {
+        Vector2 direction = new Vector2(otherItem.Column - Column, otherItem.Row - Row).normalized;
+
+        yield return StartCoroutine(PlayRejectedMove(direction));
+        yield return StartCoroutine(otherItem.PlayRejectedMove(-direction));
+    }
+
+    private IEnumerator PlayRejectedMove(Vector2 direction)
+    {
+        if (_cachedTransform == null)
+            yield break;
+
+        Vector3 originalPosition = _cachedTransform.position;
+        Vector3 sideDirection = direction.sqrMagnitude > 0.001f
+            ? new Vector3(-direction.y, direction.x, 0f).normalized
+            : Vector3.right;
+
+        float distance = 0.06f;
+        float duration = 0.07f;
+
+        yield return MoveTransform(originalPosition, originalPosition + sideDirection * distance, duration);
+        yield return MoveTransform(originalPosition + sideDirection * distance, originalPosition - sideDirection * distance, duration * 2f);
+        yield return MoveTransform(originalPosition - sideDirection * distance, originalPosition, duration);
     }
 }

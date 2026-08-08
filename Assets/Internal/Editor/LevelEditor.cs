@@ -158,8 +158,12 @@ public class LevelEditorWindow : EditorWindow
 
         foreach (var def in _registry.GetSpecialCells())
         {
-            if (def != null && !string.IsNullOrEmpty(def.Id) && def.Icon != null)
-                _specialCellSprites[def.Id] = def.Icon;
+            if (def != null && !string.IsNullOrEmpty(def.Id))
+            {
+                Sprite sprite = def.GetSpecialCellStateSprite(0);
+                if (sprite != null)
+                    _specialCellSprites[def.Id] = sprite;
+            }
         }
 
         Debug.Log($"Loaded: Items={_itemSprites.Count}, Special={_specialItemSprites.Count}, Cells={_specialCellSprites.Count}");
@@ -245,8 +249,10 @@ public class LevelEditorWindow : EditorWindow
 
     private void EnsureLevelInitialized()
     {
-        if (_currentLevel.Items == null || _currentLevel.ActiveCells == null)
-            _currentLevel.Initialize(_currentLevel.Width, _currentLevel.Height);
+        if (_currentLevel == null)
+            return;
+
+        _currentLevel.EnsureArrays();
     }
 
     private void DrawLevelSettings()
@@ -297,7 +303,10 @@ public class LevelEditorWindow : EditorWindow
             {
                 _selectedItemId = id;
                 if (!string.IsNullOrEmpty(id))
+                {
                     _selectedSpecialItemId = "";
+                    _selectedSpecialCellId = "";
+                }
             }
 
             GUI.enabled = wasEnabled;
@@ -323,7 +332,10 @@ public class LevelEditorWindow : EditorWindow
             {
                 _selectedSpecialItemId = id;
                 if (!string.IsNullOrEmpty(id))
+                {
                     _selectedItemId = "";
+                    _selectedSpecialCellId = "";
+                }
             }
 
             GUI.enabled = wasEnabled;
@@ -338,6 +350,14 @@ public class LevelEditorWindow : EditorWindow
         EditorGUILayout.LabelField("Special Cells", EditorStyles.boldLabel);
         EditorGUILayout.BeginHorizontal();
 
+        bool clearSpecialSelected = _selectedSpecialCellId == "clear";
+        if (GUILayout.Button(clearSpecialSelected ? "X" : "Clear", GUILayout.Width(PaletteButtonSize), GUILayout.Height(PaletteButtonSize)))
+        {
+            _selectedSpecialCellId = "clear";
+            _selectedSpecialItemId = "";
+            _selectedItemId = "";
+        }
+
         foreach (string id in _specialCellIds)
         {
             bool isSelected = (_selectedSpecialCellId == id);
@@ -346,7 +366,11 @@ public class LevelEditorWindow : EditorWindow
             {
                 bool clicked = GUILayout.Button("", GUILayout.Width(PaletteButtonSize), GUILayout.Height(PaletteButtonSize));
                 if (clicked)
+                {
                     _selectedSpecialCellId = id;
+                    _selectedSpecialItemId = "";
+                    _selectedItemId = "";
+                }
 
                 Rect rect = GUILayoutUtility.GetLastRect();
                 EditorGUI.DrawRect(rect, new Color(0.15f, 0.15f, 0.15f));
@@ -366,7 +390,11 @@ public class LevelEditorWindow : EditorWindow
 
             Sprite sprite = GetSpecialCellSprite(id);
             if (DrawPaletteButton(sprite, isSelected))
+            {
                 _selectedSpecialCellId = id;
+                _selectedSpecialItemId = "";
+                _selectedItemId = "";
+            }
         }
 
         EditorGUILayout.EndHorizontal();
@@ -430,7 +458,8 @@ public class LevelEditorWindow : EditorWindow
     {
         EditorGUILayout.Space(5);
         EditorGUILayout.HelpBox(
-            "Left Click: Place selected | Right Click: Clear cell | Shift+Click: Full clear\n" +
+            "Left Click: Place selected | Right Click: Remove item | Shift+Click: Activate + full clear\n" +
+            "Clear: Remove only special-cell overlay | Inactive: Disable cell\n" +
             "Middle Click: Copy item | Shift+Middle Click: Copy full cell",
             MessageType.Info
         );
@@ -490,28 +519,7 @@ public class LevelEditorWindow : EditorWindow
                 Rect cellRect = GUILayoutUtility.GetRect(GridCellSize, GridCellSize, _gridCellStyle);
                 EditorGUI.DrawRect(cellRect, bgColor);
 
-                // Спец-ячейка - используем спрайт из _specialCellSprites
-                if (isActive && specialCellType > 0)
-                {
-                    string cellId = GetSpecialCellIdByIndex(specialCellType);
-                    if (!string.IsNullOrEmpty(cellId))
-                    {
-                        Sprite sprite = GetSpecialCellSprite(cellId);
-                        if (sprite != null)
-                        {
-                            float padding = 2f;
-                            Rect spriteRect = new Rect(
-                                cellRect.x + padding,
-                                cellRect.y + padding,
-                                GridCellSize - padding * 2,
-                                GridCellSize - padding * 2
-                            );
-                            DrawSprite(spriteRect, sprite);
-                        }
-                    }
-                }
-
-                // Обычный предмет
+                // Base item is drawn first.
                 if (isActive && !string.IsNullOrEmpty(currentId))
                 {
                     Sprite sprite = GetItemSprite(currentId);
@@ -523,6 +531,44 @@ public class LevelEditorWindow : EditorWindow
                             cellRect.y + padding,
                             GridCellSize - padding * 2,
                             GridCellSize - padding * 2
+                        );
+                        DrawSprite(spriteRect, sprite);
+                    }
+                }
+
+                // Special item is a small marker in the upper-left corner.
+                string currentSpecialItemId = idx < _currentLevel.SpecialItems.Length
+                    ? _currentLevel.SpecialItems[idx]
+                    : "";
+                if (isActive && !string.IsNullOrEmpty(currentSpecialItemId))
+                {
+                    Sprite specialItemSprite = GetSpecialItemSprite(currentSpecialItemId);
+                    if (specialItemSprite != null)
+                    {
+                        float size = GridCellSize * 0.38f;
+                        Rect spriteRect = new Rect(
+                            cellRect.x + 2f,
+                            cellRect.y + 2f,
+                            size,
+                            size
+                        );
+                        DrawSprite(spriteRect, specialItemSprite);
+                    }
+                }
+
+                // Special-cell overlay is a small marker in the upper-right corner.
+                if (isActive && specialCellType > 0)
+                {
+                    string cellId = GetSpecialCellIdByIndex(specialCellType);
+                    Sprite sprite = GetSpecialCellSprite(cellId);
+                    if (sprite != null)
+                    {
+                        float size = GridCellSize * 0.42f;
+                        Rect spriteRect = new Rect(
+                            cellRect.x + GridCellSize - size - 2f,
+                            cellRect.y + 2f,
+                            size,
+                            size
                         );
                         DrawSprite(spriteRect, sprite);
                     }
@@ -642,54 +688,84 @@ public class LevelEditorWindow : EditorWindow
             {
                 SetCellActive(x, y, false);
                 SetCellItem(x, y, "");
+                SetCellSpecialItem(x, y, "");
                 SetCellSpecialCell(x, y, 0);
                 return;
             }
 
-            if (!string.IsNullOrEmpty(_selectedSpecialCellId) && _selectedSpecialCellId != "inactive")
+            if (_selectedSpecialCellId == "clear")
+            {
+                SetCellSpecialCell(x, y, 0);
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(_selectedSpecialCellId))
             {
                 if (!isActive)
                     SetCellActive(x, y, true);
 
-                var def = _registry.Get(_selectedSpecialCellId);
-                if (def != null && def.Category == ItemCategory.SpecialCell && _cellHandler != null)
+                var definition = _registry.Get(_selectedSpecialCellId);
+                if (definition != null &&
+                    definition.Category == ItemCategory.SpecialCell &&
+                    _cellHandler != null)
                 {
-                    var allData = _cellHandler.GetAllCellData();
-                    int index = allData.IndexOf(def.CellData);
-                    if (index >= 0)
-                    {
-                        SetCellSpecialCell(x, y, index + 1);
-                        SetCellItem(x, y, "");
-                    }
+                    int typeIndex = _cellHandler.GetAllCellData().IndexOf(definition.CellData) + 1;
+                    if (typeIndex > 0)
+                        SetCellSpecialCell(x, y, typeIndex);
                 }
+
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(_selectedSpecialItemId))
+            {
+                if (!isActive)
+                    SetCellActive(x, y, true);
+
+                SetCellSpecialItem(x, y, _selectedSpecialItemId);
+                SetCellItem(x, y, "");
                 return;
             }
 
             if (isActive)
             {
-                SetCellItem(x, y, string.IsNullOrEmpty(_selectedItemId) ? "" : _selectedItemId);
-                SetCellSpecialCell(x, y, 0);
+                SetCellItem(x, y, _selectedItemId);
+                SetCellSpecialItem(x, y, "");
             }
+
+            return;
         }
-        else if (currentEvent.button == 1)
+
+        if (currentEvent.button == 1)
         {
             if (currentEvent.shift)
             {
                 SetCellActive(x, y, true);
                 SetCellItem(x, y, "");
+                SetCellSpecialItem(x, y, "");
                 SetCellSpecialCell(x, y, 0);
             }
             else
             {
+                // Right click removes the item but intentionally keeps the
+                // special-cell overlay.
                 SetCellItem(x, y, "");
+                SetCellSpecialItem(x, y, "");
                 SetCellActive(x, y, true);
             }
+
+            return;
         }
-        else if (currentEvent.button == 2 && isActive)
+
+        if (currentEvent.button == 2 && isActive)
         {
             string itemId = GetCellItem(x, y);
             if (!string.IsNullOrEmpty(itemId))
                 _selectedItemId = itemId;
+
+            string specialItemId = GetCellSpecialItem(x, y);
+            if (!string.IsNullOrEmpty(specialItemId))
+                _selectedSpecialItemId = specialItemId;
 
             int specialCellType = GetCellSpecialCell(x, y);
             if (specialCellType > 0)
@@ -697,17 +773,34 @@ public class LevelEditorWindow : EditorWindow
                 var cellData = GetSpecialCellDataByIndex(specialCellType);
                 if (cellData != null)
                 {
-                    foreach (var def in _registry.GetSpecialCells())
+                    foreach (var definition in _registry.GetSpecialCells())
                     {
-                        if (def != null && def.CellData == cellData)
+                        if (definition != null && definition.CellData == cellData)
                         {
-                            _selectedSpecialCellId = def.Id;
+                            _selectedSpecialCellId = definition.Id;
                             break;
                         }
                     }
                 }
             }
         }
+    }
+
+    private string GetCellSpecialItem(int x, int y)
+    {
+        if (!IsValidCell(x, y)) return "";
+        int index = GetIndex(x, y);
+        return _currentLevel.SpecialItems != null && index < _currentLevel.SpecialItems.Length
+            ? _currentLevel.SpecialItems[index] ?? ""
+            : "";
+    }
+
+    private void SetCellSpecialItem(int x, int y, string id)
+    {
+        if (!IsValidCell(x, y)) return;
+        int index = GetIndex(x, y);
+        if (_currentLevel.SpecialItems != null && index < _currentLevel.SpecialItems.Length)
+            _currentLevel.SpecialItems[index] = id ?? "";
     }
 
     private void DrawControls()
@@ -796,9 +889,11 @@ public class LevelEditorWindow : EditorWindow
         var oldItems = _currentLevel.Items;
         var oldActive = _currentLevel.ActiveCells;
         var oldSpecialCells = _currentLevel.SpecialCells;
+        var oldSpecialItems = _currentLevel.SpecialItems;
 
         string[] newItems = new string[newWidth * newHeight];
         bool[] newActive = new bool[newWidth * newHeight];
+        string[] newSpecialItems = new string[newWidth * newHeight];
         int[] newSpecialCells = new int[newWidth * newHeight];
 
         int minWidth = Mathf.Min(newWidth, oldWidth);
@@ -812,6 +907,9 @@ public class LevelEditorWindow : EditorWindow
                 int newIdx = y * newWidth + x;
                 newActive[newIdx] = oldActive != null && oldIdx < oldActive.Length && oldActive[oldIdx];
                 newItems[newIdx] = oldItems != null && oldIdx < oldItems.Length ? oldItems[oldIdx] : "";
+                newSpecialItems[newIdx] = oldSpecialItems != null && oldIdx < oldSpecialItems.Length
+                    ? oldSpecialItems[oldIdx]
+                    : "";
                 newSpecialCells[newIdx] = oldSpecialCells != null && oldIdx < oldSpecialCells.Length
                     ? oldSpecialCells[oldIdx]
                     : 0;
@@ -827,6 +925,7 @@ public class LevelEditorWindow : EditorWindow
                     int idx = y * newWidth + x;
                     newActive[idx] = true;
                     newItems[idx] = "";
+                    newSpecialItems[idx] = "";
                     newSpecialCells[idx] = 0;
                 }
             }
@@ -836,6 +935,7 @@ public class LevelEditorWindow : EditorWindow
         _currentLevel.Height = newHeight;
         _currentLevel.ActiveCells = newActive;
         _currentLevel.Items = newItems;
+        _currentLevel.SpecialItems = newSpecialItems;
         _currentLevel.SpecialCells = newSpecialCells;
     }
 
@@ -952,6 +1052,8 @@ public class LevelEditorWindow : EditorWindow
                     _currentLevel.Items[idx] = "";
                 if (_currentLevel.ActiveCells != null && idx < _currentLevel.ActiveCells.Length)
                     _currentLevel.ActiveCells[idx] = true;
+                if (_currentLevel.SpecialItems != null && idx < _currentLevel.SpecialItems.Length)
+                    _currentLevel.SpecialItems[idx] = "";
                 if (_currentLevel.SpecialCells != null && idx < _currentLevel.SpecialCells.Length)
                     _currentLevel.SpecialCells[idx] = 0;
             }

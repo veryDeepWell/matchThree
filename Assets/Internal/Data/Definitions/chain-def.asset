@@ -19,3 +19,7 @@ MonoBehaviour:
   Category: 2
   SpecialEffect: {fileID: 0}
   CellData: {fileID: 11400000, guid: c68994cc5b7dbfe4e9ed580eb74daf69, type: 2}
+  SpecialCellStateCount: 1
+  SpecialCellStateSprites:
+  - {fileID: 640552972, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
+  SpecialCellOverlayColor: {r: 1, g: 1, b: 1, a: 1}

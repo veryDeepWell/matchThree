@@ -19,3 +19,6 @@ MonoBehaviour:
   Category: 0
   SpecialEffect: {fileID: 0}
   CellData: {fileID: 0}
+  SpecialCellStateCount: 1
+  SpecialCellStateSprites: []
+  SpecialCellOverlayColor: {r: 1, g: 1, b: 1, a: 1}

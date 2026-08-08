@@ -12,11 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c2e5cd69d964b9290300cae05fcfbe5, type: 3}
   m_Name: ice
   m_EditorClassIdentifier: Assembly-CSharp::SpecialCellData
-  icon: {fileID: 944470027, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
-  color: {r: 1, g: 1, b: 1, a: 1}
   canBeSwappedByPlayer: 0
   canFall: 0
-  maxHealth: 3
   isDestroyableBySpecial: 1
   breakEffect: {fileID: 0}
   breakSound: {fileID: 0}

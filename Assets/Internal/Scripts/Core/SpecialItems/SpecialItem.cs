@@ -11,10 +11,13 @@ public class SpecialItem : MonoBehaviour, ISpecialItem
 
     private Board _board;
     private SpriteRenderer _spriteRenderer;
+    private bool _isQueued;
+    private bool _isTriggered;
 
     public SpecialItemEffect Effect => _effect;
     public int Column => _column;
     public int Row => _row;
+    public bool IsTriggered => _isTriggered;
 
     private void Start()
     {
@@ -35,6 +38,7 @@ public class SpecialItem : MonoBehaviour, ISpecialItem
     public void SetBoard(Board board)
     {
         _board = board;
+
         var item = GetComponent<Item>();
         if (item != null)
             item.Board = board;
@@ -46,10 +50,12 @@ public class SpecialItem : MonoBehaviour, ISpecialItem
         _row = row;
 
         var item = GetComponent<Item>();
-        if (item == null) return;
+        if (item == null)
+            return;
 
         item.Column = column;
         item.Row = row;
+
         if (_board != null)
             item.transform.position = _board.GetWorldPosition(column, row);
     }
@@ -61,21 +67,33 @@ public class SpecialItem : MonoBehaviour, ISpecialItem
 
     public void TriggerSpecialItem()
     {
-        if (_effect == null || _board == null)
-        {
-            Debug.LogWarning("[SpecialItem] Effect or Board is null.");
+        if (_board == null)
+            _board = FindObjectOfType<Board>();
+
+        if (_board == null || _isQueued || _isTriggered || this == null)
             return;
-        }
+
+        _isQueued = true;
+        _board.QueueSpecialItem(this);
+    }
+
+    public IEnumerator TriggerRoutine()
+    {
+        if (_isTriggered || this == null)
+            yield break;
+
+        _isQueued = false;
+        _isTriggered = true;
+
+        if (_effect == null || _board == null)
+            yield break;
 
         var item = GetComponent<Item>();
-        if (item == null)
+        if (item != null)
         {
-            Debug.LogWarning("[SpecialItem] Item component is missing.");
-            return;
+            _column = item.Column;
+            _row = item.Row;
         }
-
-        _column = item.Column;
-        _row = item.Row;
 
         if (_effect.ActivationEffect != null)
             Instantiate(_effect.ActivationEffect, transform.position, Quaternion.identity);
@@ -83,38 +101,35 @@ public class SpecialItem : MonoBehaviour, ISpecialItem
         if (_effect.ActivationSound != null)
             AudioSource.PlayClipAtPoint(_effect.ActivationSound, transform.position);
 
-        _board.StartCoroutine(ExecuteWithDelay(_column, _row));
-    }
+        var matchesHandler = FindObjectOfType<MatchesHandler>();
+        float delay = matchesHandler != null
+            ? matchesHandler.GetSpecialItemTriggerDelay()
+            : 0.3f;
 
-    private IEnumerator ExecuteWithDelay(int column, int row)
-    {
-        var matchHandler = FindObjectOfType<MatchesHandler>();
-        float delay = matchHandler != null ? matchHandler.GetBombExplosionDelay() : 0.3f;
         yield return new WaitForSeconds(delay);
 
-        var item = GetComponent<Item>();
+        if (this == null || _board == null)
+            yield break;
+
         if (item != null)
         {
-            column = item.Column;
-            row = item.Row;
+            _column = item.Column;
+            _row = item.Row;
         }
 
-        _effect.Execute(_board, column, row);
+        _effect.Execute(_board, _column, _row);
 
-        if (_board != null && _board.Data != null && _board.Data.IsValid(column, row))
+        if (_board.Data != null && _board.Data.IsValid(_column, _row))
         {
-            _board.SetItemId(column, row, "");
-            _board.SetSpecialItemId(column, row, "");
-            _board.Items[column, row] = null;
+            var cell = _board.GetSpecialCell(_column, _row);
+            cell?.ClearOccupant(item);
+
+            _board.SetItemId(_column, _row, "");
+            _board.SetSpecialItemId(_column, _row, "");
+            _board.Items[_column, _row] = null;
         }
 
         Destroy(gameObject);
-
-        if (matchHandler != null)
-        {
-            matchHandler.DropItems(_board);
-            matchHandler.ProcessMatches(_board);
-        }
     }
 
     private void UpdateVisual()
@@ -128,6 +143,6 @@ public class SpecialItem : MonoBehaviour, ISpecialItem
         _spriteRenderer.sprite = _definition.Icon;
         _spriteRenderer.color = _definition.Color;
         _spriteRenderer.enabled = _spriteRenderer.sprite != null;
-        _spriteRenderer.sortingOrder = 2;
+        _spriteRenderer.sortingOrder = 5;
     }
 }

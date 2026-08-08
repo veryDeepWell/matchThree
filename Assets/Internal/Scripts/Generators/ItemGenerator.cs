@@ -237,6 +237,15 @@ public class ItemGenerator : MonoBehaviour
         cell?.AttachItem(board.Items[column, row]);
     }
 
+    public void EnsurePlayableBoard(Board board)
+    {
+        if (board == null || board.Data == null)
+            return;
+
+        if (!MatchValidator.HasPossibleMoves(board.Data))
+            ReshuffleBoard(board);
+    }
+
     private void ReshuffleBoard(Board board)
     {
         var data = board.Data;
@@ -246,12 +255,22 @@ public class ItemGenerator : MonoBehaviour
         {
             for (int row = 0; row < board.Height; row++)
             {
-                if (!data.IsActive(column, row)) continue;
+                if (!data.IsActive(column, row))
+                    continue;
+
+                // Special cells are obstacles/containers. Their occupants must
+                // stay where they are and never participate in reshuffling.
+                if (data.GetSpecialCell(column, row) > 0)
+                    continue;
+
                 var item = board.Items[column, row];
                 if (item != null && string.IsNullOrEmpty(item.SpecialItemId))
                     movableItems.Add(item.ItemId);
             }
         }
+
+        if (movableItems.Count < 2)
+            return;
 
         for (int attempt = 0; attempt < 100; attempt++)
         {
@@ -262,9 +281,13 @@ public class ItemGenerator : MonoBehaviour
             {
                 for (int row = 0; row < board.Height; row++)
                 {
-                    if (!data.IsActive(column, row)) continue;
+                    if (!data.IsActive(column, row) ||
+                        data.GetSpecialCell(column, row) > 0)
+                        continue;
+
                     var item = board.Items[column, row];
-                    if (item == null || !string.IsNullOrEmpty(item.SpecialItemId)) continue;
+                    if (item == null || !string.IsNullOrEmpty(item.SpecialItemId))
+                        continue;
 
                     string newId = movableItems[itemIndex++];
                     item.ItemId = newId;

@@ -12,10 +12,16 @@ public abstract class SpecialItemEffect : ScriptableObject
 
     public abstract void Execute(Board board, int column, int row);
 
-    protected void AddTarget(Board board, int column, int row, HashSet<Item> items, HashSet<SpecialCell> cells,
+    protected void AddTarget(
+        Board board,
+        int column,
+        int row,
+        HashSet<Item> items,
+        HashSet<SpecialCell> cells,
         bool ignoreSpecialCells = false)
     {
-        if (board == null || !board.IsCellActive(column, row)) return;
+        if (board == null || !board.IsCellActive(column, row))
+            return;
 
         if (!ignoreSpecialCells)
         {
@@ -32,15 +38,20 @@ public abstract class SpecialItemEffect : ScriptableObject
             items.Add(item);
     }
 
-    protected void RemoveTargets(Board board, HashSet<Item> items, HashSet<SpecialCell> cells)
+    protected void RemoveTargets(
+        Board board,
+        HashSet<Item> items,
+        HashSet<SpecialCell> cells)
     {
-        if (board == null || board.Data == null) return;
+        if (board == null || board.Data == null)
+            return;
 
         DamageNearbyCells(board, items, cells);
 
         foreach (var item in items)
         {
-            if (item == null) continue;
+            if (item == null)
+                continue;
 
             int column = item.Column;
             int row = item.Row;
@@ -54,8 +65,12 @@ public abstract class SpecialItemEffect : ScriptableObject
 
             if (TriggerOtherSpecialItems && !string.IsNullOrEmpty(item.SpecialItemId))
             {
-                item.GetComponent<ISpecialItem>()?.TriggerSpecialItem();
-                continue;
+                var specialItem = item.GetComponent<SpecialItem>();
+                if (specialItem != null)
+                {
+                    board.QueueSpecialItem(specialItem);
+                    continue;
+                }
             }
 
             board.SetItemId(column, row, "");
@@ -71,23 +86,25 @@ public abstract class SpecialItemEffect : ScriptableObject
         }
     }
 
-    private void DamageNearbyCells(Board board, HashSet<Item> items, HashSet<SpecialCell> cells)
+    private void DamageNearbyCells(
+        Board board,
+        HashSet<Item> items,
+        HashSet<SpecialCell> cells)
     {
         var affectedIndices = new HashSet<int>();
 
         foreach (var item in items)
         {
-            if (item == null) continue;
-            affectedIndices.Add(board.Data.GetIndex(item.Column, item.Row));
+            if (item != null)
+                affectedIndices.Add(board.Data.GetIndex(item.Column, item.Row));
         }
 
         foreach (var cell in cells)
         {
-            if (cell == null) continue;
-            affectedIndices.Add(board.Data.GetIndex(cell.Column, cell.Row));
+            if (cell != null)
+                affectedIndices.Add(board.Data.GetIndex(cell.Column, cell.Row));
         }
 
-        var handler = Object.FindObjectOfType<SpecialCellHandler>();
-        handler?.DamageAround(board, affectedIndices);
+        FindObjectOfType<SpecialCellHandler>()?.DamageAround(board, affectedIndices);
     }
 }

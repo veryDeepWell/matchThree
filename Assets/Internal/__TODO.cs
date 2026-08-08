@@ -1,41 +1,49 @@
-﻿// ### RUSH 1
-// PLANNED
-// Special Items
-// Cheat mode
+﻿/*
+### RUSH 1
+PLANNED
+Special Items
+Cheat mode
 
-// DONE
-// Full naming review
-// Remove prefabs
-// Load level
-// Tweak level editor
+DONE
+Full naming review
+Remove prefabs
+Load level
+Tweak level editor
 
-// NOT DONE
-// Special items
+NOT DONE
+Special items
 
-// ======================================================
+======================================================
 
-// ### RUSH 2
-// PLANNED
-// Special Items
-// Special cells
+### RUSH 2
+PLANNED
+Special Items
+Special cells
 
-// DONE
-// Special Items
+DONE
+Special Items
 
-// NOT DONE
-// Special cells
+NOT DONE
+Special cells
 
-// ======================================================
+======================================================
 
-// #### RUSH 3
-// PLANNED
-// Special cells
-// More special items
-// VFX
-// Fix editor
-// Mobile controller
-// Fix bombs
-// Cheat menu
+#### RUSH 3
+PLANNED
+Special cells
+More special items
+VFX
+Fix editor
+Mobile controller
+Fix bombs
+Cheat menu
 
-// DONE
-// Fix bombs
+BUGS
+Items don't generate
+
+DONE
+Fix bombs
+Fix editor
+Fix animations
+Mobile controller
+*/

@@ -30,7 +30,13 @@ public class SpecialCell : MonoBehaviour
     public bool CanItemStand() => !IsDestroyed;
     public bool IsDestroyableBySpecial() => !IsDestroyed && (_data?.isDestroyableBySpecial ?? true);
 
-    public void Initialize(SpecialCellData data, ItemDefinition definition, int typeIndex, Board board, int column, int row)
+    public void Initialize(
+        SpecialCellData data,
+        ItemDefinition definition,
+        int typeIndex,
+        Board board,
+        int column,
+        int row)
     {
         _data = data;
         _definition = definition;
@@ -48,11 +54,13 @@ public class SpecialCell : MonoBehaviour
     public void AttachItem(Item item)
     {
         _occupant = item;
-        if (item != null)
-        {
-            _board = item.Board != null ? item.Board : _board;
-            SetGridPosition(item.Column, item.Row, false);
-        }
+
+        if (item == null)
+            return;
+
+        _board = item.Board != null ? item.Board : _board;
+        SetGridPosition(item.Column, item.Row, false);
+        SyncSortingLayer();
     }
 
     public void ClearOccupant(Item item = null)
@@ -78,6 +86,7 @@ public class SpecialCell : MonoBehaviour
             return;
 
         _currentHealth -= damage;
+
         if (_currentHealth <= 0)
             DestroyCell();
         else
@@ -100,6 +109,8 @@ public class SpecialCell : MonoBehaviour
             _board.Data?.SetSpecialCell(_column, _row, 0);
         }
 
+        // The occupant belongs to the board, not to the overlay.
+        // Destroying the overlay must never destroy the item underneath it.
         _occupant = null;
         Destroy(gameObject);
     }
@@ -116,13 +127,33 @@ public class SpecialCell : MonoBehaviour
         _spriteRenderer.sprite = _definition != null
             ? _definition.GetSpecialCellStateSprite(stateIndex)
             : null;
-        _spriteRenderer.color = _definition != null ? _definition.SpecialCellOverlayColor : Color.white;
-        _spriteRenderer.sortingOrder = 3;
+        _spriteRenderer.color = _definition != null
+            ? _definition.SpecialCellOverlayColor
+            : Color.white;
+
+        // The item prefab uses its own sorting layer. SortingOrder alone cannot
+        // bring the overlay above an item on another sorting layer.
+        _spriteRenderer.sortingOrder = 10;
         _spriteRenderer.enabled = _spriteRenderer.sprite != null;
 
         var collider = GetComponent<Collider2D>();
         if (collider != null)
             collider.enabled = false;
+
+        SyncSortingLayer();
+    }
+
+    private void SyncSortingLayer()
+    {
+        if (_spriteRenderer == null)
+            return;
+
+        var itemRenderer = _occupant != null
+            ? _occupant.GetComponent<SpriteRenderer>()
+            : null;
+
+        if (itemRenderer != null)
+            _spriteRenderer.sortingLayerID = itemRenderer.sortingLayerID;
     }
 
     private void SetGridPosition(int column, int row, bool updateBoard)
@@ -132,9 +163,12 @@ public class SpecialCell : MonoBehaviour
             if (_board.GetSpecialCell(_column, _row) == this)
                 _board.SetSpecialCell(_column, _row, null);
 
-            if (_board.Data != null && _board.Data.IsValid(_column, _row) &&
+            if (_board.Data != null &&
+                _board.Data.IsValid(_column, _row) &&
                 _board.Data.GetSpecialCell(_column, _row) == _typeIndex)
+            {
                 _board.Data.SetSpecialCell(_column, _row, 0);
+            }
         }
 
         _column = column;
@@ -154,5 +188,7 @@ public class SpecialCell : MonoBehaviour
 
             transform.position = _board.GetWorldPosition(column, row);
         }
+
+        SyncSortingLayer();
     }
 }

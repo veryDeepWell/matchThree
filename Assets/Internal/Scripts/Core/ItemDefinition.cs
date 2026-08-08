@@ -33,6 +33,12 @@ public class ItemDefinition : ScriptableObject
     private void OnValidate()
     {
         SpecialCellStateCount = Mathf.Max(1, SpecialCellStateCount);
+
+        if (SpecialCellOverlayColor.a <= 0f)
+            SpecialCellOverlayColor.a = 0.5f;
+
+        if (Color.a <= 0f)
+            Color.a = 1f;
     }
 
     public Sprite GetSpecialCellStateSprite(int stateIndex)

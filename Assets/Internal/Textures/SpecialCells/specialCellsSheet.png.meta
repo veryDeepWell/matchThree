@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: specialCellsSheet_ice
+      name: specialCellsSheet_ice_stage1
       rect:
         serializedVersion: 2
-        x: 139
-        y: 683
-        width: 420
-        height: 446
+        x: 53
+        y: 1015
+        width: 426
+        height: 449
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -135,13 +135,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: specialCellsSheet_stone
+      name: specialCellsSheet_stone_stage1
       rect:
         serializedVersion: 2
-        x: 692
-        y: 685
-        width: 429
-        height: 444
+        x: 501
+        y: 1022
+        width: 433
+        height: 450
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -160,10 +160,10 @@ TextureImporter:
       name: specialCellsSheet_vine
       rect:
         serializedVersion: 2
-        x: 137
-        y: 151
-        width: 428
-        height: 411
+        x: 964
+        y: 1027
+        width: 448
+        height: 424
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -182,10 +182,10 @@ TextureImporter:
       name: specialCellsSheet_chain
       rect:
         serializedVersion: 2
-        x: 680
-        y: 151
+        x: 1415
+        y: 1034
         width: 437
-        height: 427
+        height: 429
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -196,6 +196,94 @@ TextureImporter:
       bones: []
       spriteID: 048bc7067fa739149b823d266c0e2a4c
       internalID: 640552972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialCellsSheet_ice_stage2
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 535
+        width: 434
+        height: 462
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 306b72d3e79479e459e3fc4dfecf7075
+      internalID: -728073921
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialCellsSheet_ice_stage3
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 61
+        width: 433
+        height: 464
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 70f733c5b94401d4f9347a270b1f4a5b
+      internalID: 904108387
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialCellsSheet_stone_stage2
+      rect:
+        serializedVersion: 2
+        x: 497
+        y: 539
+        width: 437
+        height: 453
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c65e6ee49ad41884eba8f1835cd4f271
+      internalID: 992850534
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: specialCellsSheet_stone_stage3
+      rect:
+        serializedVersion: 2
+        x: 497
+        y: 56
+        width: 441
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5826910095e9fe94aa521e16f5cedc39
+      internalID: -380257227
       vertices: []
       indices: 
       edges: []
@@ -217,8 +305,12 @@ TextureImporter:
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       specialCellsSheet_chain: 640552972
-      specialCellsSheet_ice: 944470027
-      specialCellsSheet_stone: 1950889724
+      specialCellsSheet_ice_stage1: 944470027
+      specialCellsSheet_ice_stage2: -728073921
+      specialCellsSheet_ice_stage3: 904108387
+      specialCellsSheet_stone_stage1: 1950889724
+      specialCellsSheet_stone_stage2: 992850534
+      specialCellsSheet_stone_stage3: -380257227
       specialCellsSheet_vine: -733784099
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
