@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6c527670c4f4c3cb502af7f3d56c4ae, type: 3}
+  m_Name: item-red-def
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  Id: red
+  DisplayName: Red
+  Icon: {fileID: 5329656426364916515, guid: edc5fd959f0041241b78760ff18bd8a0, type: 3}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  Category: 0
+  SpecialEffect: {fileID: 0}
+  CellData: {fileID: 0}
+  SpecialCellStateCount: 1
+  SpecialCellStateSprites: []
+  SpecialCellOverlayColor: {r: 1, g: 1, b: 1, a: 1}
