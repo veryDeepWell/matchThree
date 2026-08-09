@@ -8,6 +8,7 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
 
     private string pendingRewardId;
     private Action pendingReward;
+    private Action<bool> pendingRewardedClosed;
     private bool rewardReceived;
     private Action<bool> pendingInterstitialClosed;
     private bool interstitialRequested;
@@ -61,7 +62,7 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
         }
     }
 
-    public bool ShowRewarded(string rewardId, Action onReward)
+    public bool ShowRewarded(string rewardId, Action onReward, Action<bool> onClosed = null)
     {
         if (pendingReward != null || interstitialRequested || YG2.nowAdsShow)
         {
@@ -90,6 +91,7 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
 
         pendingRewardId = rewardId;
         pendingReward = onReward;
+        pendingRewardedClosed = onClosed;
         rewardReceived = false;
 
         Debug.Log($"Запрос rewarded-рекламы: {rewardId}");
@@ -142,6 +144,9 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
 
     private void HandleRewardedClosed()
     {
+        bool wasRewardGranted = rewardReceived;
+        Action<bool> closedCallback = pendingRewardedClosed;
+
         if (pendingReward != null && !rewardReceived)
         {
             Debug.Log("Rewarded-реклама закрыта без награды.");
@@ -149,10 +154,13 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
 
         SaveService.Instance?.SaveNow(SaveReason.AfterAdvertisement);
         ClearRewardedState();
+        closedCallback?.Invoke(wasRewardGranted);
     }
 
     private void HandleRewardedError()
     {
+        Action<bool> closedCallback = pendingRewardedClosed;
+
         if (pendingReward != null)
         {
             Debug.LogWarning("Не удалось показать rewarded-рекламу. Награда не выдана.");
@@ -160,12 +168,14 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
 
         SaveService.Instance?.SaveNow(SaveReason.AfterAdvertisement);
         ClearRewardedState();
+        closedCallback?.Invoke(false);
     }
 
     private void ClearRewardedState()
     {
         pendingRewardId = null;
         pendingReward = null;
+        pendingRewardedClosed = null;
         rewardReceived = false;
     }
 

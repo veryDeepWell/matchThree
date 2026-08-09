@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using YG;
 
 public sealed class GameplayFlowController : MonoBehaviour
 {
@@ -127,7 +128,10 @@ public sealed class GameplayFlowController : MonoBehaviour
             return;
         }
 
-        bool started = advertisingService.ShowRewarded(ExtraTimeRewardId, GrantExtraTime);
+        bool started = advertisingService.ShowRewarded(
+            ExtraTimeRewardId,
+            GrantExtraTime,
+            HandleExtraTimeAdvertisementClosed);
         if (!started)
             Debug.LogWarning("[GameplayFlow] Extra-time advertisement was not started.");
     }
@@ -197,9 +201,31 @@ public sealed class GameplayFlowController : MonoBehaviour
         runningLevel.Status = LevelSessionStatus.InProgress;
 
         SetOnlyResultPanel(null);
-        Time.timeScale = 1f;
+        RestoreGameplayStateAfterAdvertisement();
         UpdateTimerText(runningLevel.RemainingTime);
         SaveCurrentBoard(SaveReason.ExtraTimeGranted);
+    }
+
+    private void HandleExtraTimeAdvertisementClosed(bool rewardGranted)
+    {
+        if (!rewardGranted)
+            return;
+
+        // PluginYG может восстановить состояние приложения только после callback награды.
+        // Поэтому окончательно возобновляем игру именно после закрытия рекламного окна.
+        SetOnlyResultPanel(null);
+        RestoreGameplayStateAfterAdvertisement();
+    }
+
+    private static void RestoreGameplayStateAfterAdvertisement()
+    {
+        // Если объект паузы PluginYG ещё существует, SetState меняет сохранённое
+        // состояние, которое плагин применит после полного закрытия рекламы.
+        // Если объект уже удалён, метод сразу применит значения к игре.
+        PauseGameYG.SetState(
+            timeScale: 1f,
+            audioPause: false,
+            cursorEnable: true);
     }
 
     private void ApplySavedState()
