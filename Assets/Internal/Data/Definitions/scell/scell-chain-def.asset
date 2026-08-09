@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6c527670c4f4c3cb502af7f3d56c4ae, type: 3}
-  m_Name: vine-def
+  m_Name: scell-chain-def
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  Id: vine
-  DisplayName: Vine
-  Icon: {fileID: -733784099, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
+  Id: chain
+  DisplayName: Chain
+  Icon: {fileID: 640552972, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
   Color: {r: 1, g: 1, b: 1, a: 1}
   Category: 2
   SpecialEffect: {fileID: 0}
-  CellData: {fileID: 11400000, guid: 141ee0575186f7b44b3dea14c2bbeb15, type: 2}
+  CellData: {fileID: 11400000, guid: c68994cc5b7dbfe4e9ed580eb74daf69, type: 2}
   SpecialCellStateCount: 1
   SpecialCellStateSprites:
-  - {fileID: -733784099, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
-  SpecialCellOverlayColor: {r: 1, g: 1, b: 1, a: 1}
+  - {fileID: 640552972, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
+  SpecialCellOverlayColor: {r: 1, g: 1, b: 1, a: 0.49803922}

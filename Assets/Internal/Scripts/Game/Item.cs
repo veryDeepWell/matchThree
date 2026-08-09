@@ -240,10 +240,13 @@ public class Item : MonoBehaviour
             return;
         }
 
-        bool isBomb = SpecialItemId == "bomb";
-        bool otherIsBomb = otherItem.SpecialItemId == "bomb";
+        bool thisIsSpecial = !string.IsNullOrEmpty(SpecialItemId);
+        bool otherIsSpecial = !string.IsNullOrEmpty(otherItem.SpecialItemId);
 
-        if (!isBomb && !otherIsBomb && !WouldCreateMatch(otherItem, targetColumn, targetRow))
+        // Specials can always be swapped (with each other or with normals).
+        // Two normals still require a resulting match.
+        if (!thisIsSpecial && !otherIsSpecial &&
+            !WouldCreateMatch(otherItem, targetColumn, targetRow))
         {
             StartCoroutine(PlayRejectedSwap(otherItem));
             return;
@@ -285,11 +288,18 @@ public class Item : MonoBehaviour
         var sourceCell = Board.GetSpecialCell(sourceColumn, sourceRow);
         var targetCell = Board.GetSpecialCell(targetColumn, targetRow);
 
+        string thisSpecialId = SpecialItemId;
+        string otherSpecialId = otherItem.SpecialItemId;
+        string thisItemId = ItemId;
+        string otherItemId = otherItem.ItemId;
+
         Board.Items[sourceColumn, sourceRow] = otherItem;
         Board.Items[targetColumn, targetRow] = this;
 
-        Board.SetItemId(sourceColumn, sourceRow, otherItem.ItemId);
-        Board.SetItemId(targetColumn, targetRow, ItemId);
+        Board.SetItemId(sourceColumn, sourceRow, otherItemId);
+        Board.SetItemId(targetColumn, targetRow, thisItemId);
+        Board.SetSpecialItemId(sourceColumn, sourceRow, otherSpecialId);
+        Board.SetSpecialItemId(targetColumn, targetRow, thisSpecialId);
 
         Column = targetColumn;
         Row = targetRow;
@@ -316,13 +326,30 @@ public class Item : MonoBehaviour
         _isMoving = false;
         otherItem._isMoving = false;
 
-        if (SpecialItemId == "bomb")
-            GetComponent<ISpecialItem>()?.TriggerSpecialItem();
+        // After the visual swap, positions are:
+        //   this      → (targetColumn, targetRow)
+        //   otherItem → (sourceColumn, sourceRow)
+        bool handledCombo = SpecialCombination.TryResolve(
+            Board, this, otherItem,
+            targetColumn, targetRow,
+            sourceColumn, sourceRow);
 
-        if (otherItem.SpecialItemId == "bomb")
-            otherItem.GetComponent<ISpecialItem>()?.TriggerSpecialItem();
+        if (!handledCombo)
+        {
+            // Default: trigger any specials that were swapped (or involved).
+            if (!string.IsNullOrEmpty(thisSpecialId))
+                GetComponent<ISpecialItem>()?.TriggerSpecialItem();
 
-        Board.CheckMatches(sourceColumn, sourceRow, targetColumn, targetRow);
+            if (!string.IsNullOrEmpty(otherSpecialId))
+                otherItem.GetComponent<ISpecialItem>()?.TriggerSpecialItem();
+
+            Board.CheckMatches(sourceColumn, sourceRow, targetColumn, targetRow);
+        }
+        else
+        {
+            // Combination already queued the resulting effect(s).
+            Board.CheckMatches();
+        }
     }
 
     private IEnumerator PlayRejectedSwap(Item otherItem)

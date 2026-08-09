@@ -137,6 +137,11 @@ public class SpecialCellHandler : MonoBehaviour
         var damagedCells = new HashSet<SpecialCell>();
         int width = board.Width;
 
+        // Only the matched cell itself and its orthogonal neighbours.
+        // Diagonal matches must NOT damage special cells.
+        int[] offsetX = { 0, -1, 1, 0, 0 };
+        int[] offsetY = { 0, 0, 0, -1, 1 };
+
         foreach (int index in affectedIndices)
         {
             if (index < 0 || index >= board.Width * board.Height)
@@ -145,14 +150,11 @@ public class SpecialCellHandler : MonoBehaviour
             int column = index % width;
             int row = index / width;
 
-            for (int offsetX = -1; offsetX <= 1; offsetX++)
+            for (int i = 0; i < offsetX.Length; i++)
             {
-                for (int offsetY = -1; offsetY <= 1; offsetY++)
-                {
-                    var cell = board.GetSpecialCell(column + offsetX, row + offsetY);
-                    if (cell != null && !cell.IsDestroyed)
-                        damagedCells.Add(cell);
-                }
+                var cell = board.GetSpecialCell(column + offsetX[i], row + offsetY[i]);
+                if (cell != null && !cell.IsDestroyed)
+                    damagedCells.Add(cell);
             }
         }
 

@@ -87,8 +87,11 @@ public static class MatchFinder
 
     private static bool IsMatchableCell(BoardData data, int index)
     {
+        // Items under special cells (ice, vine, etc.) must be matchable so that
+        // matching them can free the cell temporarily / damage its health.
+        // Special cells themselves are not swapped by the player (see MatchValidator
+        // and Item.TrySwipe), but their occupants still participate in matches.
         return data.ActiveCells[index] &&
-               data.SpecialCells[index] <= 0 &&
                !string.IsNullOrEmpty(data.Items[index]);
     }
 }

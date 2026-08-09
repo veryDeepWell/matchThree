@@ -145,7 +145,7 @@ Transform:
   m_GameObject: {fileID: 76942516}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.66338, y: -0.27719, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -200,6 +200,9 @@ MonoBehaviour:
   _matchesHandler: {fileID: 620468259}
   _offset: {x: -3, y: -3}
   _cellSize: 1
+  _hintDelay: 8
+  _hintDistance: 0.12
+  _hintDuration: 0.18
 --- !u!4 &185996522
 Transform:
   m_ObjectHideFlags: 0
@@ -241,7 +244,7 @@ Transform:
   m_GameObject: {fileID: 295793228}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.66338, y: -0.27719, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -260,6 +263,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemGenerator
   _tilePrefab: {fileID: 170917415711285555, guid: d4dfcd7ac21749c4baf2aa47c398a3fe, type: 3}
+  _itemHandler: {fileID: 76942518}
+  _specialItemHandler: {fileID: 1645305278}
+  _specialCellHandler: {fileID: 1254275239}
 --- !u!1 &552873582
 GameObject:
   m_ObjectHideFlags: 0
@@ -286,7 +292,7 @@ Transform:
   m_GameObject: {fileID: 552873582}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.66338, y: -0.27719, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -336,7 +342,7 @@ Transform:
   m_GameObject: {fileID: 592891538}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.66338, y: -0.27719, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -354,9 +360,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8efa0f2badd7f14ea041c7a01213625, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelManager
-  levels:
+  _levels:
   - {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
-  lastLevel: 0
+  _lastLevel: 0
 --- !u!1 &616996648
 GameObject:
   m_ObjectHideFlags: 0
@@ -388,9 +394,9 @@ Transform:
   m_Children:
   - {fileID: 552873583}
   - {fileID: 185996522}
-  - {fileID: 76942517}
   - {fileID: 295793229}
   - {fileID: 620468258}
+  - {fileID: 76942517}
   - {fileID: 1645305277}
   - {fileID: 1254275238}
   - {fileID: 592891539}
@@ -422,7 +428,7 @@ Transform:
   m_GameObject: {fileID: 620468257}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.66338, y: -0.27719, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -440,10 +446,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5dbc75926134257be12e7df0daf0098, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchesHandler
-  _moveDuration: 0.15
   _matchDelay: 0.1
   _dropDelay: 0.2
   _postDropDelay: 0.2
+  _specialItemTriggerDelay: 0.3
   _bombExplosionDelay: 0.2
 --- !u!1 &1254275237
 GameObject:
@@ -471,7 +477,7 @@ Transform:
   m_GameObject: {fileID: 1254275237}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.67164, y: 0.80094, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -489,12 +495,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be483142ad7649b6b2be8294b88c67ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpecialCellHandler
+  _registry: {fileID: 11400000, guid: 2e9a479b23b4c7c418001678dcca3968, type: 2}
+  _cellPrefab: {fileID: 9007602702262825664, guid: 319571a0333123d4d976cd1be3937bb3, type: 3}
   _cellDataList:
   - {fileID: 11400000, guid: 5b803b21c2318d94b8252a68ea4143c5, type: 2}
   - {fileID: 11400000, guid: 635e4b9c006742e49968fb2aad3badf0, type: 2}
   - {fileID: 11400000, guid: 141ee0575186f7b44b3dea14c2bbeb15, type: 2}
   - {fileID: 11400000, guid: c68994cc5b7dbfe4e9ed580eb74daf69, type: 2}
-  _cellPrefab: {fileID: 9007602702262825664, guid: 319571a0333123d4d976cd1be3937bb3, type: 3}
 --- !u!1 &1441193950
 GameObject:
   m_ObjectHideFlags: 0
@@ -613,7 +620,7 @@ Transform:
   m_GameObject: {fileID: 1645305276}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.66338, y: -0.27719, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -631,10 +638,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d818826628054bccb81b15688ad1a844, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpecialItemHandler
-  _allEffects:
-  - {fileID: 11400000, guid: ee0d5bf1973ff4a4389ce09b5dd2a3bd, type: 2}
+  _registry: {fileID: 11400000, guid: 2e9a479b23b4c7c418001678dcca3968, type: 2}
   _specialItemPrefab: {fileID: 1919115339449239105, guid: d983efdfb272a23448f86d5bc669ef3f, type: 3}
-  _cellDataList: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

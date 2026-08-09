@@ -10,16 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6c527670c4f4c3cb502af7f3d56c4ae, type: 3}
-  m_Name: chain-def
+  m_Name: item-yellow-def
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  Id: chain
-  DisplayName: Chain
-  Icon: {fileID: 640552972, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
+  Id: yellow
+  DisplayName: Yellow
+  Icon: {fileID: 8738446065157557334, guid: edc5fd959f0041241b78760ff18bd8a0, type: 3}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Category: 2
+  Category: 0
   SpecialEffect: {fileID: 0}
-  CellData: {fileID: 11400000, guid: c68994cc5b7dbfe4e9ed580eb74daf69, type: 2}
+  CellData: {fileID: 0}
   SpecialCellStateCount: 1
-  SpecialCellStateSprites:
-  - {fileID: 640552972, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
+  SpecialCellStateSprites: []
   SpecialCellOverlayColor: {r: 1, g: 1, b: 1, a: 1}

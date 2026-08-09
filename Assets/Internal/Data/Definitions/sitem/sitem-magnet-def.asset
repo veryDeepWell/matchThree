@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6c527670c4f4c3cb502af7f3d56c4ae, type: 3}
-  m_Name: blue-def
+  m_Name: sitem-magnet-def
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  Id: blue
-  DisplayName: Blue
-  Icon: {fileID: 1838255707366105553, guid: edc5fd959f0041241b78760ff18bd8a0, type: 3}
+  Id: magnet
+  DisplayName: Magnet
+  Icon: {fileID: 1500600336, guid: e1d79143fb5afc344aeb0ec4e89291a1, type: 3}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Category: 0
-  SpecialEffect: {fileID: 0}
+  Category: 1
+  SpecialEffect: {fileID: 11400000, guid: a3fd608578624b4abf322243638df79e, type: 2}
   CellData: {fileID: 0}
   SpecialCellStateCount: 1
   SpecialCellStateSprites: []

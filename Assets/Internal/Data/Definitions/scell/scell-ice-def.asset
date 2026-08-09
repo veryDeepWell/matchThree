@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6c527670c4f4c3cb502af7f3d56c4ae, type: 3}
-  m_Name: stone-def
+  m_Name: scell-ice-def
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  Id: stone
-  DisplayName: Stone
-  Icon: {fileID: 1950889724, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
+  Id: ice
+  DisplayName: Ice
+  Icon: {fileID: 944470027, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
   Color: {r: 1, g: 1, b: 1, a: 1}
   Category: 2
   SpecialEffect: {fileID: 0}
-  CellData: {fileID: 11400000, guid: 635e4b9c006742e49968fb2aad3badf0, type: 2}
+  CellData: {fileID: 11400000, guid: 5b803b21c2318d94b8252a68ea4143c5, type: 2}
   SpecialCellStateCount: 3
   SpecialCellStateSprites:
-  - {fileID: 1950889724, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
-  - {fileID: 992850534, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
-  - {fileID: -380257227, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
-  SpecialCellOverlayColor: {r: 1, g: 1, b: 1, a: 1}
+  - {fileID: 944470027, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
+  - {fileID: -728073921, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
+  - {fileID: 904108387, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
+  SpecialCellOverlayColor: {r: 1, g: 1, b: 1, a: 0.49803922}
