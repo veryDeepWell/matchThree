@@ -47,6 +47,14 @@ public sealed class EconomySaveData
 
     // Unix-время в UTC. Ноль означает, что восстановление жизни сейчас не запущено.
     public long NextLifeRestoreUtcSeconds;
+    public List<BonusInventoryItemSaveData> Bonuses = new List<BonusInventoryItemSaveData>();
+}
+
+[Serializable]
+public sealed class BonusInventoryItemSaveData
+{
+    public string BonusId = string.Empty;
+    public int Count;
 }
 
 [Serializable]
@@ -63,6 +71,12 @@ public sealed class RunningLevelSaveData
     public LevelSessionStatus Status = LevelSessionStatus.InProgress;
     public float RemainingTime;
     public int ExtraTimeUses;
+    public int GoldReward;
+    public int CrystalReward;
+    public int ExtraTimeSeconds = 120;
+    public int ExtraTimeGoldCost = 1000;
+    public bool AllowRepeatedExtraTime;
+    public bool VictoryRewardsGranted;
     public List<GoalProgressSaveData> Goals = new List<GoalProgressSaveData>();
     public BoardData Board;
 }

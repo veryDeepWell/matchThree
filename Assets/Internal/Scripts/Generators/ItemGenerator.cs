@@ -74,31 +74,31 @@ public class ItemGenerator : MonoBehaviour
         ReplaceWithSpecial(board, column, row, specialId);
     }
 
-    public void ReplaceWithSpecial(Board board, int column, int row, string specialId)
+    public bool ReplaceWithSpecial(Board board, int column, int row, string specialId)
     {
         if (board == null || board.Data == null || !board.IsCellActive(column, row))
-            return;
+            return false;
 
         if (string.IsNullOrEmpty(specialId))
-            return;
+            return false;
 
         _specialItemHandler ??= FindObjectOfType<SpecialItemHandler>();
         if (_specialItemHandler == null)
         {
             Debug.LogError("[ItemGenerator] SpecialItemHandler is missing.");
-            return;
+            return false;
         }
 
         var oldItem = board.Items[column, row];
         if (oldItem != null && !string.IsNullOrEmpty(oldItem.SpecialItemId))
-            return;
+            return false;
 
         // Verify the special can actually be created BEFORE destroying the old item.
         var effect = _specialItemHandler.GetEffect(specialId);
         if (effect == null)
         {
             Debug.LogWarning($"[ItemGenerator] No effect for '{specialId}', special not created.");
-            return;
+            return false;
         }
 
         if (oldItem != null)
@@ -111,6 +111,7 @@ public class ItemGenerator : MonoBehaviour
 
         board.SetSpecialItemId(column, row, specialId);
         CreateSpecialItemAt(board, column, row, specialId);
+        return board.Items[column, row] != null && board.Items[column, row].SpecialItemId == specialId;
     }
 
     private void GenerateCell(Board board, int column, int row)

@@ -262,7 +262,65 @@ public class LevelEditorWindow : EditorWindow
         int newHeight = EditorGUILayout.IntField("Height", _currentLevel.Height);
         if (newWidth != _currentLevel.Width || newHeight != _currentLevel.Height)
             ResizeGrid(newWidth, newHeight);
+
+        EditorGUILayout.LabelField("Level Rules", EditorStyles.boldLabel);
+        if (_currentLevel.GoalData == null)
+        {
+            EditorGUILayout.HelpBox("This level has no goals and economy settings yet.", MessageType.Warning);
+            if (GUILayout.Button("Create Level Rules"))
+                CreateGoalData(_currentLevel);
+            EditorGUILayout.Space();
+            return;
+        }
+
+        LevelGoalData rules = _currentLevel.GoalData;
+        Undo.RecordObject(rules, "Edit Level Rules");
+        rules.TimeLimit = Mathf.Max(1, EditorGUILayout.IntField("Time Limit (seconds)", rules.TimeLimit));
+        rules.GoldReward = Mathf.Max(0, EditorGUILayout.IntField("Gold Reward", rules.GoldReward));
+        rules.CrystalReward = Mathf.Max(0, EditorGUILayout.IntField("Crystal Reward", rules.CrystalReward));
+        rules.ExtraTimeSeconds = Mathf.Max(1, EditorGUILayout.IntField("Extra Time (seconds)", rules.ExtraTimeSeconds));
+        rules.ExtraTimeGoldCost = Mathf.Max(0, EditorGUILayout.IntField("Extra Time Gold Cost", rules.ExtraTimeGoldCost));
+        rules.AllowRepeatedExtraTime = EditorGUILayout.Toggle("Allow Repeated Extra Time", rules.AllowRepeatedExtraTime);
+
+        DrawGoals(rules);
         EditorGUILayout.Space();
+    }
+
+    private void DrawGoals(LevelGoalData rules)
+    {
+        EditorGUILayout.LabelField("Victory Goals", EditorStyles.boldLabel);
+        var goals = rules.Goals != null ? rules.Goals.ToList() : new List<LevelGoal>();
+
+        for (int i = 0; i < goals.Count; i++)
+        {
+            LevelGoal goal = goals[i] ?? new LevelGoal();
+            goals[i] = goal;
+
+            EditorGUILayout.BeginHorizontal();
+            int selectedIndex = Mathf.Max(0, _itemIds.IndexOf(goal.TargetItemId));
+            if (_itemIds.Count > 0)
+                selectedIndex = EditorGUILayout.Popup(selectedIndex, _itemIds.ToArray());
+            goal.TargetItemId = _itemIds.Count > 0 ? _itemIds[selectedIndex] : string.Empty;
+            goal.RequiredCount = Mathf.Max(1, EditorGUILayout.IntField(goal.RequiredCount, GUILayout.Width(70)));
+            if (GUILayout.Button("Remove", GUILayout.Width(70)))
+            {
+                goals.RemoveAt(i);
+                i--;
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        if (GUILayout.Button("Add Goal"))
+        {
+            goals.Add(new LevelGoal
+            {
+                TargetItemId = _itemIds.Count > 0 ? _itemIds[0] : string.Empty,
+                RequiredCount = 10
+            });
+        }
+
+        rules.Goals = goals.ToArray();
+        EditorUtility.SetDirty(rules);
     }
 
     private void DrawSelectedInfo()
@@ -866,9 +924,24 @@ public class LevelEditorWindow : EditorWindow
         }
 
         AssetDatabase.CreateAsset(newLevel, path);
+        CreateGoalData(newLevel);
         AssetDatabase.SaveAssets();
         _currentLevel = newLevel;
         EditorGUIUtility.PingObject(newLevel);
+    }
+
+    private static void CreateGoalData(LevelData level)
+    {
+        if (level == null || level.GoalData != null)
+            return;
+
+        var rules = CreateInstance<LevelGoalData>();
+        rules.name = level.name + " Rules";
+        AssetDatabase.AddObjectToAsset(rules, level);
+        level.GoalData = rules;
+        EditorUtility.SetDirty(level);
+        EditorUtility.SetDirty(rules);
+        AssetDatabase.SaveAssets();
     }
 
     private void SetCellItemForLevel(LevelData level, int x, int y, string id)
@@ -1035,6 +1108,8 @@ public class LevelEditorWindow : EditorWindow
     {
         if (_currentLevel == null) return;
         EditorUtility.SetDirty(_currentLevel);
+        if (_currentLevel.GoalData != null)
+            EditorUtility.SetDirty(_currentLevel.GoalData);
         AssetDatabase.SaveAssets();
         Debug.Log($"Level saved: {_currentLevel.name}");
     }

@@ -155,6 +155,7 @@ public static class SpecialCombination
     {
         if (item == null) return;
         board.GetSpecialCell(column, row)?.ClearOccupant(item);
+        board.ReportItemCollected(item.ItemId);
         board.SetItemId(column, row, "");
         board.SetSpecialItemId(column, row, "");
         board.Items[column, row] = null;
@@ -410,6 +411,7 @@ public static class SpecialCombination
                 }
             }
 
+            board.ReportItemCollected(item.ItemId);
             board.SetItemId(c, r, "");
             board.SetSpecialItemId(c, r, "");
             board.Items[c, r] = null;

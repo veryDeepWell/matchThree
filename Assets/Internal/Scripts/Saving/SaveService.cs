@@ -9,6 +9,7 @@ public sealed class SaveService : MonoBehaviour
 {
     private const int CurrentSaveVersion = 1;
     private const int LifeRestoreIntervalSeconds = 15 * 60;
+    private const int MaximumLives = 5;
     private const string SaveFileName = "player-save.json";
     private const string BackupFileName = "player-save.backup.json";
     private const string TemporaryFileName = "player-save.tmp.json";
@@ -61,6 +62,7 @@ public sealed class SaveService : MonoBehaviour
         string backupPath = Path.Combine(Application.persistentDataPath, BackupFileName);
         Data = TryReadSave(SavePath) ?? TryReadSave(backupPath) ?? CreateDefaultData();
         Normalize(Data);
+        RefreshLives();
         SaveLoaded?.Invoke(Data);
     }
 
@@ -115,11 +117,120 @@ public sealed class SaveService : MonoBehaviour
             LevelName = level.name,
             Status = LevelSessionStatus.InProgress,
             RemainingTime = level.GoalData != null ? level.GoalData.TimeLimit : 0f,
+            GoldReward = level.GoalData != null ? level.GoalData.GoldReward : 0,
+            CrystalReward = level.GoalData != null ? level.GoalData.CrystalReward : 0,
+            ExtraTimeSeconds = level.GoalData != null ? level.GoalData.ExtraTimeSeconds : 120,
+            ExtraTimeGoldCost = level.GoalData != null ? level.GoalData.ExtraTimeGoldCost : 1000,
+            AllowRepeatedExtraTime = level.GoalData != null && level.GoalData.AllowRepeatedExtraTime,
             Goals = goals,
             Board = board.CreateSnapshot()
         };
 
         SaveNow(SaveReason.LevelStarted);
+    }
+
+    public bool GrantVictoryRewards()
+    {
+        if (Data == null || Data.RunningLevel == null || Data.RunningLevel.VictoryRewardsGranted)
+            return false;
+
+        RunningLevelSaveData level = Data.RunningLevel;
+        Data.Economy.Gold += Mathf.Max(0, level.GoldReward);
+        Data.Economy.Crystals += Mathf.Max(0, level.CrystalReward);
+        level.VictoryRewardsGranted = true;
+        level.Status = LevelSessionStatus.Victory;
+        SaveNow(SaveReason.RewardGranted);
+        return true;
+    }
+
+    public bool TrySpendGold(int amount)
+    {
+        if (Data == null || Data.Economy == null || amount < 0 || Data.Economy.Gold < amount)
+            return false;
+
+        Data.Economy.Gold -= amount;
+        SaveNow(SaveReason.RewardGranted);
+        return true;
+    }
+
+    public int GetBonusCount(string bonusId)
+    {
+        BonusInventoryItemSaveData bonus = FindBonus(bonusId);
+        return bonus != null ? Mathf.Max(0, bonus.Count) : 0;
+    }
+
+    public bool TryConsumeBonus(string bonusId)
+    {
+        BonusInventoryItemSaveData bonus = FindBonus(bonusId);
+        if (bonus == null || bonus.Count <= 0)
+            return false;
+
+        bonus.Count--;
+        SaveNow(SaveReason.RewardGranted);
+        return true;
+    }
+
+    public void SetAllGameplayBonuses(int count)
+    {
+        string[] bonusIds = { "bomb", "sweeper_h", "sweeper_cross", "magnet", "sweeper_v" };
+        foreach (string bonusId in bonusIds)
+            GetOrCreateBonus(bonusId).Count = Mathf.Max(0, count);
+
+        SaveNow(SaveReason.RewardGranted);
+    }
+
+    private BonusInventoryItemSaveData FindBonus(string bonusId)
+    {
+        if (Data == null || Data.Economy == null || Data.Economy.Bonuses == null)
+            return null;
+
+        return Data.Economy.Bonuses.Find(bonus => bonus.BonusId == bonusId);
+    }
+
+    private BonusInventoryItemSaveData GetOrCreateBonus(string bonusId)
+    {
+        BonusInventoryItemSaveData bonus = FindBonus(bonusId);
+        if (bonus != null)
+            return bonus;
+
+        bonus = new BonusInventoryItemSaveData { BonusId = bonusId, Count = 0 };
+        Data.Economy.Bonuses.Add(bonus);
+        return bonus;
+    }
+
+    public bool RefreshLives()
+    {
+        if (Data == null || Data.Economy == null)
+            return false;
+
+        EconomySaveData economy = Data.Economy;
+        int previousLives = economy.Lives;
+        long previousRestoreTime = economy.NextLifeRestoreUtcSeconds;
+
+        if (economy.Lives >= MaximumLives)
+        {
+            economy.Lives = MaximumLives;
+            economy.NextLifeRestoreUtcSeconds = 0;
+            return previousLives != economy.Lives || previousRestoreTime != economy.NextLifeRestoreUtcSeconds;
+        }
+
+        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (economy.NextLifeRestoreUtcSeconds == 0)
+        {
+            economy.NextLifeRestoreUtcSeconds = now + LifeRestoreIntervalSeconds;
+            return true;
+        }
+
+        while (economy.Lives < MaximumLives && now >= economy.NextLifeRestoreUtcSeconds)
+        {
+            economy.Lives++;
+            economy.NextLifeRestoreUtcSeconds += LifeRestoreIntervalSeconds;
+        }
+
+        if (economy.Lives >= MaximumLives)
+            economy.NextLifeRestoreUtcSeconds = 0;
+
+        return previousLives != economy.Lives || previousRestoreTime != economy.NextLifeRestoreUtcSeconds;
     }
 
     public bool CaptureBoard(Board board, SaveReason reason = SaveReason.Manual)
@@ -338,6 +449,7 @@ public sealed class SaveService : MonoBehaviour
     {
         data.SaveVersion = CurrentSaveVersion;
         data.Economy ??= new EconomySaveData();
+        data.Economy.Bonuses ??= new List<BonusInventoryItemSaveData>();
         data.LevelProgress ??= new LevelProgressSaveData();
         data.LevelProgress.CurrentLevelName ??= string.Empty;
         data.LevelProgress.CompletedLevelNames ??= new List<string>();

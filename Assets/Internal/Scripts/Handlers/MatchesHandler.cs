@@ -547,6 +547,8 @@ public class MatchesHandler : MonoBehaviour
 
     private void RemoveItems(Board board, HashSet<int> matches)
     {
+        var collectedItems = new Dictionary<string, int>();
+
         foreach (int index in matches)
         {
             int column = index % board.Width;
@@ -557,12 +559,23 @@ public class MatchesHandler : MonoBehaviour
             if (item == null || !string.IsNullOrEmpty(item.SpecialItemId))
                 continue;
 
+            string collectedItemId = item.ItemId;
+            if (!string.IsNullOrEmpty(collectedItemId))
+            {
+                if (!collectedItems.ContainsKey(collectedItemId))
+                    collectedItems[collectedItemId] = 0;
+                collectedItems[collectedItemId]++;
+            }
+
             board.GetSpecialCell(column, row)?.ClearOccupant(item);
             board.SetItemId(column, row, "");
             board.SetSpecialItemId(column, row, "");
             board.Items[column, row] = null;
             Destroy(item.gameObject);
         }
+
+        foreach (KeyValuePair<string, int> collectedItem in collectedItems)
+            board.ReportItemCollected(collectedItem.Key, collectedItem.Value);
     }
 
     private void DamageSpecialCellsAroundMatches(Board board, HashSet<int> matches)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,17 +15,37 @@ public sealed class GameplayFlowController : MonoBehaviour
     [SerializeField] private string mainMenuSceneName = "MainMenu";
     [SerializeField] private string battleSceneName = "BattleScene";
 
-    [Header("Continue settings")]
-    [SerializeField, Min(1)] private int extraTimeSeconds = 120;
-    [SerializeField, Min(0)] private int goldContinueCost = 1000;
-
     private GameObject _pausePanel;
     private GameObject _continueOfferPanel;
     private GameObject _losePanel;
     private GameObject _winPanel;
     private GameObject _userUiPanel;
+    private GameObject _backgroundPanel;
+    private GameObject _goalBoardPanel;
+    private GameObject _goalPanelTemplate;
     private TMP_Text _timerText;
+    private TMP_Text _goldContinuePriceText;
     private Board _board;
+    private MatchesHandler _matchesHandler;
+    private float _remainingTime;
+    private readonly List<GoalUiEntry> _goalUiEntries = new List<GoalUiEntry>();
+    private readonly List<BonusUiEntry> _bonusUiEntries = new List<BonusUiEntry>();
+    private string _selectedBonusId = string.Empty;
+
+    private sealed class GoalUiEntry
+    {
+        public GoalProgressSaveData Goal;
+        public TMP_Text Text;
+    }
+
+    private sealed class BonusUiEntry
+    {
+        public string BonusId;
+        public Button Button;
+        public Image Background;
+        public Color NormalColor;
+        public TMP_Text CountText;
+    }
 
     private void Awake()
     {
@@ -37,7 +58,12 @@ public sealed class GameplayFlowController : MonoBehaviour
     private void Start()
     {
         _board = FindFirstObjectByType<Board>();
+        _matchesHandler = FindFirstObjectByType<MatchesHandler>();
+        if (_board != null)
+            _board.ItemsCollected += HandleItemsCollected;
         ApplySavedState();
+        BuildGoalPanels();
+        BuildBonusInventory();
     }
 
     private void Update()
@@ -50,10 +76,25 @@ public sealed class GameplayFlowController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.L))
             DebugLose();
 #endif
+
+        RunningLevelSaveData runningLevel = GetRunningLevel();
+        if (runningLevel == null || runningLevel.Status != LevelSessionStatus.InProgress)
+            return;
+
+        _remainingTime = Mathf.Max(0f, _remainingTime - Time.deltaTime);
+        runningLevel.RemainingTime = _remainingTime;
+        UpdateTimerText(_remainingTime);
+
+        if (_remainingTime <= 0f)
+            ShowContinueOffer();
     }
 
     private void OnDestroy()
     {
+        if (_board != null)
+            _board.ItemsCollected -= HandleItemsCollected;
+        if (SaveService.Instance != null)
+            SaveService.Instance.Saved -= HandleInventorySaved;
         // Не оставляем следующую сцену и Editor с остановленным временем.
         Time.timeScale = 1f;
     }
@@ -65,6 +106,7 @@ public sealed class GameplayFlowController : MonoBehaviour
 
         SetOnlyResultPanel(null);
         SetPanelActive(_pausePanel, true);
+        SetPanelActive(_backgroundPanel, true);
         SetPanelActive(_userUiPanel, false);
         Time.timeScale = 0f;
 
@@ -74,6 +116,7 @@ public sealed class GameplayFlowController : MonoBehaviour
     public void ResumeFromPause()
     {
         SetPanelActive(_pausePanel, false);
+        SetPanelActive(_backgroundPanel, false);
         SetPanelActive(_userUiPanel, true);
         Time.timeScale = 1f;
     }
@@ -143,13 +186,19 @@ public sealed class GameplayFlowController : MonoBehaviour
             return;
 
         EconomySaveData economy = saveService.Data.Economy;
+        RunningLevelSaveData runningLevel = GetRunningLevel();
+        if (runningLevel == null)
+            return;
+
+        int goldContinueCost = Mathf.Max(0, runningLevel.ExtraTimeGoldCost);
         if (economy.Gold < goldContinueCost)
         {
             Debug.LogWarning($"[GameplayFlow] Not enough gold. Required: {goldContinueCost}.");
             return;
         }
 
-        economy.Gold -= goldContinueCost;
+        if (!saveService.TrySpendGold(goldContinueCost))
+            return;
         GrantExtraTime();
     }
 
@@ -170,6 +219,10 @@ public sealed class GameplayFlowController : MonoBehaviour
 
     public void ShowVictory()
     {
+        SaveService saveService = SaveService.Instance;
+        if (saveService != null)
+            saveService.GrantVictoryRewards();
+
         SetOnlyResultPanel(_winPanel);
         Time.timeScale = 0f;
         SaveStatusAndBoard(LevelSessionStatus.Victory, SaveReason.LevelVictory);
@@ -177,6 +230,13 @@ public sealed class GameplayFlowController : MonoBehaviour
 
     public void ShowContinueOffer()
     {
+        RunningLevelSaveData runningLevel = GetRunningLevel();
+        if (runningLevel != null && !runningLevel.AllowRepeatedExtraTime && runningLevel.ExtraTimeUses > 0)
+        {
+            ShowFinalDefeat();
+            return;
+        }
+
         SetOnlyResultPanel(_continueOfferPanel);
         Time.timeScale = 0f;
         SaveStatusAndBoard(LevelSessionStatus.ContinueOffer, SaveReason.ContinueOffer);
@@ -196,8 +256,15 @@ public sealed class GameplayFlowController : MonoBehaviour
             return;
 
         RunningLevelSaveData runningLevel = saveService.Data.RunningLevel;
+        if (!runningLevel.AllowRepeatedExtraTime && runningLevel.ExtraTimeUses > 0)
+        {
+            ShowFinalDefeat();
+            return;
+        }
+
         runningLevel.ExtraTimeUses++;
-        runningLevel.RemainingTime += extraTimeSeconds;
+        runningLevel.RemainingTime += Mathf.Max(1, runningLevel.ExtraTimeSeconds);
+        _remainingTime = runningLevel.RemainingTime;
         runningLevel.Status = LevelSessionStatus.InProgress;
 
         SetOnlyResultPanel(null);
@@ -234,7 +301,11 @@ public sealed class GameplayFlowController : MonoBehaviour
         RunningLevelSaveData runningLevel = GetRunningLevel();
 
         if (runningLevel != null)
+        {
+            _remainingTime = runningLevel.RemainingTime;
             UpdateTimerText(runningLevel.RemainingTime);
+            UpdateContinuePriceText(runningLevel.ExtraTimeGoldCost);
+        }
 
         switch (status)
         {
@@ -258,6 +329,246 @@ public sealed class GameplayFlowController : MonoBehaviour
                 Time.timeScale = 1f;
                 break;
         }
+    }
+
+    private void HandleItemsCollected(string itemId, int amount)
+    {
+        RunningLevelSaveData runningLevel = GetRunningLevel();
+        if (runningLevel == null || runningLevel.Status != LevelSessionStatus.InProgress)
+            return;
+
+        foreach (GoalProgressSaveData goal in runningLevel.Goals)
+        {
+            if (goal.TargetItemId == itemId)
+                goal.CurrentCount = Mathf.Clamp(goal.CurrentCount + amount, 0, goal.RequiredCount);
+        }
+
+        bool hasGoals = runningLevel.Goals.Count > 0;
+        bool allGoalsComplete = hasGoals;
+        foreach (GoalProgressSaveData goal in runningLevel.Goals)
+        {
+            if (goal.CurrentCount < goal.RequiredCount)
+            {
+                allGoalsComplete = false;
+                break;
+            }
+        }
+
+        SaveCurrentBoard(SaveReason.Manual);
+        RefreshGoalPanels();
+        if (allGoalsComplete)
+            ShowVictory();
+    }
+
+    private void BuildGoalPanels()
+    {
+        _goalUiEntries.Clear();
+        RunningLevelSaveData runningLevel = GetRunningLevel();
+        if (_goalBoardPanel == null || _goalPanelTemplate == null || runningLevel == null)
+            return;
+
+        bool hasGoals = runningLevel.Goals != null && runningLevel.Goals.Count > 0;
+        _goalBoardPanel.SetActive(hasGoals);
+        if (!hasGoals)
+            return;
+
+        ItemHandler itemHandler = FindFirstObjectByType<ItemHandler>();
+        ItemRegistry registry = itemHandler != null ? itemHandler.GetRegistry() : null;
+        RectTransform templateRect = _goalPanelTemplate.GetComponent<RectTransform>();
+        Vector2 templatePosition = templateRect != null ? templateRect.anchoredPosition : Vector2.zero;
+        float verticalStep = templateRect != null ? templateRect.rect.height : 100f;
+
+        for (int i = 0; i < runningLevel.Goals.Count; i++)
+        {
+            GoalProgressSaveData goal = runningLevel.Goals[i];
+            GameObject panel = i == 0
+                ? _goalPanelTemplate
+                : Instantiate(_goalPanelTemplate, _goalPanelTemplate.transform.parent);
+
+            panel.name = $"GoalPanel_{i + 1}";
+            panel.SetActive(true);
+
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            if (panelRect != null)
+                panelRect.anchoredPosition = templatePosition + Vector2.down * verticalStep * i;
+
+            Transform imageTransform = FindDescendant(panel.transform, "GoalImage");
+            Image goalImage = imageTransform != null ? imageTransform.GetComponent<Image>() : null;
+            ItemDefinition definition = registry != null ? registry.Get(goal.TargetItemId) : null;
+            if (goalImage != null)
+            {
+                goalImage.sprite = definition != null ? definition.Icon : null;
+                goalImage.enabled = goalImage.sprite != null;
+                goalImage.preserveAspect = true;
+            }
+
+            Transform textTransform = FindDescendant(panel.transform, "GoalText (TMP)");
+            TMP_Text goalText = textTransform != null ? textTransform.GetComponent<TMP_Text>() : null;
+            _goalUiEntries.Add(new GoalUiEntry { Goal = goal, Text = goalText });
+        }
+
+        RefreshGoalPanels();
+    }
+
+    private void RefreshGoalPanels()
+    {
+        foreach (GoalUiEntry entry in _goalUiEntries)
+        {
+            if (entry.Goal == null || entry.Text == null)
+                continue;
+
+            int remaining = Mathf.Max(0, entry.Goal.RequiredCount - entry.Goal.CurrentCount);
+            entry.Text.text = remaining.ToString();
+        }
+    }
+
+    public bool HandleBonusCellClick(Item item)
+    {
+        if (string.IsNullOrEmpty(_selectedBonusId))
+            return false;
+
+        // Пока выбран бонус, клик предназначен только для его размещения:
+        // неудачный клик не должен случайно превратиться в свайп фишки.
+        if (item == null || item.Board == null || item.Board.IsProcessing ||
+            GetSavedStatus() != LevelSessionStatus.InProgress)
+            return true;
+
+        SaveService saveService = SaveService.Instance;
+        if (saveService == null || saveService.GetBonusCount(_selectedBonusId) <= 0)
+        {
+            CancelBonusSelection();
+            return true;
+        }
+
+        ItemGenerator generator = FindFirstObjectByType<ItemGenerator>();
+        if (generator == null)
+            return true;
+
+        string placedBonusId = _selectedBonusId;
+        bool placed = generator.ReplaceWithSpecial(item.Board, item.Column, item.Row, placedBonusId);
+        if (!placed)
+            return true;
+
+        if (saveService.TryConsumeBonus(placedBonusId))
+            SaveCurrentBoard(SaveReason.RewardGranted);
+
+        CancelBonusSelection();
+        RefreshBonusInventory();
+        return true;
+    }
+
+    private void BuildBonusInventory()
+    {
+        _bonusUiEntries.Clear();
+        AddBonusSlot("BombBonusSlotPanel", "bomb");
+        AddBonusSlot("LineSweeperXBonusSlotPanel", "sweeper_h");
+        AddBonusSlot("LineSweeperBonusSlotPanel", "sweeper_cross");
+        AddBonusSlot("MagnetBonusSlotBombPanel", "magnet");
+        AddBonusSlot("LineSweeperYBonusSlotPanel", "sweeper_v");
+
+        Transform plusTwoTransform = FindDescendant(transform, "Plus2Bonus");
+        Button plusTwoButton = plusTwoTransform != null ? plusTwoTransform.GetComponent<Button>() : null;
+        if (plusTwoTransform != null && plusTwoButton == null)
+            plusTwoButton = plusTwoTransform.gameObject.AddComponent<Button>();
+        if (plusTwoButton != null)
+            plusTwoButton.onClick.AddListener(SetAllBonusesToTwo);
+
+        SaveService saveService = SaveService.Instance;
+        if (saveService != null)
+            saveService.Saved += HandleInventorySaved;
+
+        RefreshBonusInventory();
+    }
+
+    private void AddBonusSlot(string panelName, string bonusId)
+    {
+        Transform panelTransform = FindDescendant(transform, panelName);
+        if (panelTransform == null)
+        {
+            Debug.LogWarning($"[GameplayFlow] Bonus panel '{panelName}' was not found.");
+            return;
+        }
+
+        Image background = panelTransform.GetComponent<Image>();
+        Button button = panelTransform.GetComponent<Button>();
+        if (button == null)
+            button = panelTransform.gameObject.AddComponent<Button>();
+        button.targetGraphic = background;
+
+        Transform countTransform = FindDescendant(panelTransform, "BonusNumberText (TMP)");
+        TMP_Text countText = countTransform != null ? countTransform.GetComponent<TMP_Text>() : null;
+        if (countText == null)
+            countText = panelTransform.GetComponentInChildren<TMP_Text>(true);
+
+        if (countText == null)
+            Debug.LogWarning($"[GameplayFlow] Counter text inside '{panelName}' was not found.");
+        var entry = new BonusUiEntry
+        {
+            BonusId = bonusId,
+            Button = button,
+            Background = background,
+            NormalColor = background != null ? background.color : Color.white,
+            CountText = countText
+        };
+        button.onClick.AddListener(() => ToggleBonusSelection(bonusId));
+        _bonusUiEntries.Add(entry);
+    }
+
+    private void ToggleBonusSelection(string bonusId)
+    {
+        if (_selectedBonusId == bonusId)
+            _selectedBonusId = string.Empty;
+        else if (string.IsNullOrEmpty(_selectedBonusId) && SaveService.Instance != null &&
+                 SaveService.Instance.GetBonusCount(bonusId) > 0)
+            _selectedBonusId = bonusId;
+
+        RefreshBonusInventory();
+    }
+
+    private void CancelBonusSelection()
+    {
+        _selectedBonusId = string.Empty;
+        RefreshBonusInventory();
+    }
+
+    private void SetAllBonusesToTwo()
+    {
+        SaveService.Instance?.SetAllGameplayBonuses(2);
+        CancelBonusSelection();
+    }
+
+    private void HandleInventorySaved(SaveReason reason)
+    {
+        RefreshBonusInventory();
+    }
+
+    private void RefreshBonusInventory()
+    {
+        SaveService saveService = SaveService.Instance;
+        foreach (BonusUiEntry entry in _bonusUiEntries)
+        {
+            int count = saveService != null ? saveService.GetBonusCount(entry.BonusId) : 0;
+            if (entry.CountText != null)
+                entry.CountText.text = count.ToString();
+
+            bool selected = entry.BonusId == _selectedBonusId;
+            if (entry.Background != null)
+                entry.Background.color = selected
+                    ? Color.Lerp(entry.NormalColor, Color.green, 0.45f)
+                    : entry.NormalColor;
+
+            if (entry.Button != null)
+            {
+                bool anotherBonusSelected = !string.IsNullOrEmpty(_selectedBonusId) && !selected;
+                entry.Button.interactable = !anotherBonusSelected && (count > 0 || selected);
+            }
+        }
+    }
+
+    private void UpdateContinuePriceText(int price)
+    {
+        if (_goldContinuePriceText != null)
+            _goldContinuePriceText.text = Mathf.Max(0, price).ToString();
     }
 
     private RunningLevelSaveData GetRunningLevel()
@@ -332,6 +643,7 @@ public sealed class GameplayFlowController : MonoBehaviour
         SetPanelActive(_continueOfferPanel, activePanel == _continueOfferPanel);
         SetPanelActive(_losePanel, activePanel == _losePanel);
         SetPanelActive(_winPanel, activePanel == _winPanel);
+        SetPanelActive(_backgroundPanel, activePanel != null);
         SetPanelActive(_userUiPanel, activePanel == null);
     }
 
@@ -360,10 +672,22 @@ public sealed class GameplayFlowController : MonoBehaviour
         _losePanel = FindGameObject(transform, "LosePanel");
         _winPanel = FindGameObject(transform, "WinPanel");
         _userUiPanel = FindGameObject(transform, "UserUIPanel");
+        _backgroundPanel = FindGameObject(transform, "BackgroundPanel");
+        _goalBoardPanel = FindGameObject(transform, "GoalBoardPanel");
+        if (_goalBoardPanel != null)
+            _goalPanelTemplate = FindGameObject(_goalBoardPanel.transform, "GoalPanel");
 
         Transform timerTransform = FindDescendant(transform, "TimerText (TMP)");
         if (timerTransform != null)
             _timerText = timerTransform.GetComponent<TMP_Text>();
+
+        Button goldContinueButton = FindButton(_continueOfferPanel, "GoldContinueButton");
+        if (goldContinueButton != null)
+        {
+            Transform priceTransform = FindDescendant(goldContinueButton.transform, "PrizeNumberText (TMP)");
+            if (priceTransform != null)
+                _goldContinuePriceText = priceTransform.GetComponent<TMP_Text>();
+        }
     }
 
     private void DisableDecorativeRaycasts()

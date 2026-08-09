@@ -73,6 +73,7 @@ public abstract class SpecialItemEffect : ScriptableObject
                 }
             }
 
+            board.ReportItemCollected(item.ItemId);
             board.SetItemId(column, row, "");
             board.SetSpecialItemId(column, row, "");
             board.Items[column, row] = null;

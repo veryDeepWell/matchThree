@@ -25,6 +25,7 @@ public class Item : MonoBehaviour
     private bool _positionSetExplicitly;
     private bool _usingTouchInput;
     private Transform _cachedTransform;
+    private bool _bonusPlacementHandled;
 
     public bool IsMoving => _isMoving;
     public float MoveDuration => _moveDuration;
@@ -59,6 +60,13 @@ public class Item : MonoBehaviour
         if (_isMoving || Board == null || Board.IsProcessing || _cachedTransform == null)
             return;
 
+        GameplayFlowController gameplayFlow = FindFirstObjectByType<GameplayFlowController>();
+        if (gameplayFlow != null && gameplayFlow.HandleBonusCellClick(this))
+        {
+            _bonusPlacementHandled = true;
+            return;
+        }
+
         _camera ??= Camera.main;
         if (_camera == null)
             return;
@@ -68,6 +76,11 @@ public class Item : MonoBehaviour
 
     private void OnMouseUp()
     {
+        if (_bonusPlacementHandled)
+        {
+            _bonusPlacementHandled = false;
+            return;
+        }
         if (_usingTouchInput || Input.touchCount > 0)
             return;
 

@@ -1,9 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Board : MonoBehaviour
 {
+    public event Action<string, int> ItemsCollected;
+
     [Header("Board Settings")]
     [SerializeField] private bool _useRandomLevel = false;
     [SerializeField] private LevelData _testLevel;
@@ -44,6 +47,14 @@ public class Board : MonoBehaviour
     {
         _bombTriggerX = x;
         _bombTriggerY = y;
+    }
+
+    public void ReportItemCollected(string itemId, int amount = 1)
+    {
+        if (string.IsNullOrEmpty(itemId) || amount <= 0)
+            return;
+
+        ItemsCollected?.Invoke(itemId, amount);
     }
 
     public (int x, int y) GetBombTriggerPosition() => (_bombTriggerX, _bombTriggerY);
