@@ -137,12 +137,28 @@ public class SpecialItem : MonoBehaviour, ISpecialItem
         if (_spriteRenderer == null)
             _spriteRenderer = GetComponent<SpriteRenderer>();
 
-        if (_spriteRenderer == null || _definition == null)
+        if (_spriteRenderer == null)
             return;
 
-        _spriteRenderer.sprite = _definition.Icon;
-        _spriteRenderer.color = _definition.Color;
-        _spriteRenderer.enabled = _spriteRenderer.sprite != null;
+        Sprite sprite = _definition != null ? _definition.Icon : null;
+        Color color = _definition != null ? _definition.Color : Color.white;
+
+        // Definition may be missing after a reimport, or colour may have been
+        // saved with alpha 0 (old bomb asset). Keep the special visible.
+        if (sprite == null)
+        {
+            var registry = FindObjectOfType<ItemHandler>()?.GetRegistry();
+            registry?.Initialize();
+            var bombDef = registry?.Get("bomb");
+            sprite = bombDef != null ? bombDef.Icon : null;
+        }
+
+        if (color.a < 0.1f)
+            color.a = 1f;
+
+        _spriteRenderer.sprite = sprite;
+        _spriteRenderer.color = color;
+        _spriteRenderer.enabled = sprite != null;
         _spriteRenderer.sortingOrder = 5;
     }
 }

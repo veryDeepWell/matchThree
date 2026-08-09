@@ -18,6 +18,14 @@ public class LineSweeperEffect : SpecialItemEffect
     public SweeperMode Mode => _mode;
     public int Width => _width;
 
+    public static LineSweeperEffect Create(SweeperMode mode, int width = 1)
+    {
+        var effect = ScriptableObject.CreateInstance<LineSweeperEffect>();
+        effect._mode = mode;
+        effect._width = Mathf.Max(1, width);
+        return effect;
+    }
+
     public override void Execute(Board board, int column, int row)
     {
         if (board == null) return;

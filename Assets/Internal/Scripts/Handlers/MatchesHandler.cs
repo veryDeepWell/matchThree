@@ -57,6 +57,41 @@ public class MatchesHandler : MonoBehaviour
         StartCoroutine(DropItemsCoroutine(board));
     }
 
+    /// <summary>
+    /// Called after a special combination has already cleared cells synchronously
+    /// (magnet, dual-bomb, wide sweeper, etc.). Forces gravity + refill, then runs
+    /// the normal match/cascade loop so the board doesn't stay with holes.
+    /// </summary>
+    public void ProcessAfterClear(Board board)
+    {
+        if (board == null || _isProcessing)
+            return;
+
+        StartCoroutine(ProcessAfterClearCoroutine(board));
+    }
+
+    private IEnumerator ProcessAfterClearCoroutine(Board board)
+    {
+        _isProcessing = true;
+
+        try
+        {
+            yield return StartCoroutine(DrainSpecialItemQueue(board));
+            yield return StartCoroutine(DropItemsCoroutine(board));
+            yield return new WaitForSeconds(_dropDelay + _postDropDelay);
+
+            yield return StartCoroutine(CascadeLoop(board, -1, -1));
+
+            var generator = FindObjectOfType<ItemGenerator>();
+            generator?.EnsurePlayableBoard(board);
+        }
+        finally
+        {
+            _isProcessing = false;
+            board.ResetHintTimer();
+        }
+    }
+
     private IEnumerator ProcessTurnCoroutine(Board board)
     {
         _isProcessing = true;
@@ -76,39 +111,7 @@ public class MatchesHandler : MonoBehaviour
             if (initialSpecialTrigger)
                 yield return StartCoroutine(DropItemsCoroutine(board));
 
-            bool continueCycle = true;
-
-            while (continueCycle)
-            {
-                var matches = FindMatches(board);
-
-                if (matches.Count == 0)
-                {
-                    continueCycle = false;
-                    continue;
-                }
-
-                CheckForSpecialItems(board, matches, swapColumn, swapRow);
-                DamageSpecialCellsAroundMatches(board, matches);
-                RemoveItems(board, matches);
-
-                yield return new WaitForSeconds(_matchDelay);
-
-                yield return StartCoroutine(DropItemsCoroutine(board));
-                yield return new WaitForSeconds(_dropDelay + _postDropDelay);
-
-                bool cascadeSpecialTrigger = board.HasQueuedSpecialItems;
-                yield return StartCoroutine(DrainSpecialItemQueue(board));
-
-                if (cascadeSpecialTrigger)
-                {
-                    yield return StartCoroutine(DropItemsCoroutine(board));
-                    yield return new WaitForSeconds(_dropDelay + _postDropDelay);
-                }
-
-                swapColumn = -1;
-                swapRow = -1;
-            }
+            yield return StartCoroutine(CascadeLoop(board, swapColumn, swapRow));
 
             var generator = FindObjectOfType<ItemGenerator>();
             generator?.EnsurePlayableBoard(board);
@@ -117,6 +120,51 @@ public class MatchesHandler : MonoBehaviour
         {
             _isProcessing = false;
             board.ResetHintTimer();
+        }
+    }
+
+    private IEnumerator CascadeLoop(Board board, int swapColumn, int swapRow)
+    {
+        bool continueCycle = true;
+
+        while (continueCycle)
+        {
+            var matches = FindMatches(board);
+
+            if (matches.Count == 0)
+            {
+                continueCycle = false;
+                continue;
+            }
+
+            try
+            {
+                CheckForSpecialItems(board, matches, swapColumn, swapRow);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[MatchesHandler] CheckForSpecialItems failed: {e.Message}");
+            }
+
+            DamageSpecialCellsAroundMatches(board, matches);
+            RemoveItems(board, matches);
+
+            yield return new WaitForSeconds(_matchDelay);
+
+            yield return StartCoroutine(DropItemsCoroutine(board));
+            yield return new WaitForSeconds(_dropDelay + _postDropDelay);
+
+            bool cascadeSpecialTrigger = board.HasQueuedSpecialItems;
+            yield return StartCoroutine(DrainSpecialItemQueue(board));
+
+            if (cascadeSpecialTrigger)
+            {
+                yield return StartCoroutine(DropItemsCoroutine(board));
+                yield return new WaitForSeconds(_dropDelay + _postDropDelay);
+            }
+
+            swapColumn = -1;
+            swapRow = -1;
         }
     }
 
@@ -310,7 +358,9 @@ public class MatchesHandler : MonoBehaviour
         board.Items[fromColumn, fromRow] = null;
         board.Items[fromColumn, toRow] = item;
         board.SetItemId(fromColumn, fromRow, "");
-        board.SetItemId(fromColumn, toRow, item.ItemId);
+        board.SetItemId(fromColumn, toRow, item.ItemId ?? "");
+        board.SetSpecialItemId(fromColumn, fromRow, "");
+        board.SetSpecialItemId(fromColumn, toRow, item.SpecialItemId ?? "");
 
         // Обновляем координаты предмета
         item.Column = fromColumn;
@@ -396,7 +446,9 @@ public class MatchesHandler : MonoBehaviour
         board.Items[fromColumn, fromRow] = null;
         board.Items[toColumn, toRow] = item;
         board.SetItemId(fromColumn, fromRow, "");
-        board.SetItemId(toColumn, toRow, item.ItemId);
+        board.SetItemId(toColumn, toRow, item.ItemId ?? "");
+        board.SetSpecialItemId(fromColumn, fromRow, "");
+        board.SetSpecialItemId(toColumn, toRow, item.SpecialItemId ?? "");
 
         item.Column = toColumn;
         item.Row = toRow;
@@ -501,11 +553,13 @@ public class MatchesHandler : MonoBehaviour
             int row = index / board.Width;
 
             var item = board.Items[column, row];
+            // Keep newly-created specials that replaced a matched cell.
             if (item == null || !string.IsNullOrEmpty(item.SpecialItemId))
                 continue;
 
             board.GetSpecialCell(column, row)?.ClearOccupant(item);
             board.SetItemId(column, row, "");
+            board.SetSpecialItemId(column, row, "");
             board.Items[column, row] = null;
             Destroy(item.gameObject);
         }
@@ -766,6 +820,25 @@ public class MatchesHandler : MonoBehaviour
 
     private void CreateSpecialAt(Board board, int column, int row, string specialId)
     {
-        FindObjectOfType<ItemGenerator>()?.ReplaceWithSpecial(board, column, row, specialId);
+        try
+        {
+            var generator = FindObjectOfType<ItemGenerator>();
+            if (generator == null) return;
+
+            generator.ReplaceWithSpecial(board, column, row, specialId);
+
+            // If the requested special failed to spawn (missing definition/effect),
+            // fall back to a bomb so the match still produces something.
+            var item = board.Items[column, row];
+            if (item == null || string.IsNullOrEmpty(item.SpecialItemId))
+            {
+                if (specialId != "bomb")
+                    generator.ReplaceWithSpecial(board, column, row, "bomb");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[MatchesHandler] Failed to create special '{specialId}' at ({column},{row}): {e.Message}");
+        }
     }
 }

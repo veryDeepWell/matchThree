@@ -93,10 +93,19 @@ public class ItemGenerator : MonoBehaviour
         if (oldItem != null && !string.IsNullOrEmpty(oldItem.SpecialItemId))
             return;
 
+        // Verify the special can actually be created BEFORE destroying the old item.
+        var effect = _specialItemHandler.GetEffect(specialId);
+        if (effect == null)
+        {
+            Debug.LogWarning($"[ItemGenerator] No effect for '{specialId}', special not created.");
+            return;
+        }
+
         if (oldItem != null)
         {
             board.Items[column, row] = null;
             board.SetItemId(column, row, "");
+            board.SetSpecialItemId(column, row, "");
             Destroy(oldItem.gameObject);
         }
 
@@ -184,6 +193,28 @@ public class ItemGenerator : MonoBehaviour
         var specialItem = item.GetComponent<SpecialItem>();
         specialItem?.SetBoard(board);
         specialItem?.SetGridPosition(column, row);
+
+        // Guarantee the special is visible (old bomb def had alpha 0).
+        var renderer = itemObject.GetComponent<SpriteRenderer>();
+        if (renderer != null)
+        {
+            if (renderer.sprite == null)
+            {
+                var bombDef = _itemHandler?.GetRegistry()?.Get("bomb");
+                if (bombDef != null && bombDef.Icon != null)
+                    renderer.sprite = bombDef.Icon;
+            }
+
+            var c = renderer.color;
+            if (c.a < 0.1f)
+            {
+                c.a = 1f;
+                renderer.color = c;
+            }
+
+            renderer.enabled = renderer.sprite != null;
+            renderer.sortingOrder = 5;
+        }
 
         CreateSpecialCellAt(board, column, row, tile);
     }

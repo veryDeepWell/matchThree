@@ -19,7 +19,36 @@ public class SpecialItemHandler : MonoBehaviour
         EnsureEffectDictionary();
         if (string.IsNullOrEmpty(id)) return null;
 
-        return _effectsById.TryGetValue(id.ToLowerInvariant(), out var effect) ? effect : null;
+        string key = id.ToLowerInvariant();
+        if (_effectsById.TryGetValue(key, out var effect) && effect != null)
+            return effect;
+
+        // Runtime fallback so the game keeps working even if ScriptableObject
+        // assets lost their script references after a reimport.
+        effect = CreateRuntimeEffect(key);
+        if (effect != null)
+            _effectsById[key] = effect;
+
+        return effect;
+    }
+
+    private static SpecialItemEffect CreateRuntimeEffect(string id)
+    {
+        switch (id)
+        {
+            case "bomb":
+                return ScriptableObject.CreateInstance<BombEffect>();
+            case "sweeper_h":
+                return LineSweeperEffect.Create(SweeperMode.Horizontal);
+            case "sweeper_v":
+                return LineSweeperEffect.Create(SweeperMode.Vertical);
+            case "sweeper_cross":
+                return LineSweeperEffect.Create(SweeperMode.Cross);
+            case "magnet":
+                return ScriptableObject.CreateInstance<MagnetEffect>();
+            default:
+                return null;
+        }
     }
 
     public GameObject CreateSpecialItem(string id, Vector2 position, Transform parent)
@@ -33,17 +62,15 @@ public class SpecialItemHandler : MonoBehaviour
             return null;
         }
 
-        if (definition == null || definition.Category != ItemCategory.Special)
-        {
-            Debug.LogError($"[SpecialItemHandler] No Special ItemDefinition found for id '{id}'.");
-            return null;
-        }
-
         if (_specialItemPrefab == null)
         {
             Debug.LogError("[SpecialItemHandler] Special item prefab is not assigned.");
             return null;
         }
+
+        // Definition is preferred for visuals, but we can still spawn without it.
+        if (definition == null)
+            Debug.LogWarning($"[SpecialItemHandler] No ItemDefinition for '{id}', spawning with effect only.");
 
         var itemObject = Instantiate(_specialItemPrefab, position, Quaternion.identity, parent);
         itemObject.name = $"Special_{id}";

@@ -347,8 +347,13 @@ public class Item : MonoBehaviour
         }
         else
         {
-            // Combination already queued the resulting effect(s).
-            Board.CheckMatches();
+            // Combination already cleared cells synchronously — force gravity
+            // + cascade, otherwise holes stay on the board forever.
+            var matchesHandler = Object.FindObjectOfType<MatchesHandler>();
+            if (matchesHandler != null)
+                matchesHandler.ProcessAfterClear(Board);
+            else
+                Board.CheckMatches();
         }
     }
 
