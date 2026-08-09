@@ -41,11 +41,11 @@ public class GameLoader : MonoBehaviour
             if (savedLevel != null && runningLevel.Board != null)
             {
                 _board.RestoreSnapshot(runningLevel.Board, savedLevel);
-                Debug.Log($"[GameLoader] Restored saved level: {runningLevel.LevelName}");
+                Debug.Log($"[GameLoader] Восстановлен сохранённый уровень: {runningLevel.LevelName}");
                 return;
             }
 
-            Debug.LogWarning("[GameLoader] Saved level could not be restored. Starting a configured level instead.");
+            Debug.LogWarning("[GameLoader] Сохранённый уровень не удалось восстановить. Вместо этого запускается настроенный уровень.");
         }
 
         // 5. Незавершённой попытки нет — загружаем текущий открытый уровень или Inspector fallback.
@@ -64,7 +64,7 @@ public class GameLoader : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[GameLoader] Failed to load level!");
+            Debug.LogError("[GameLoader] Не удалось загрузить уровень!");
         }
     }
 }

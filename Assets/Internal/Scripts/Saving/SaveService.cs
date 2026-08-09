@@ -8,6 +8,7 @@ using UnityEngine;
 public sealed class SaveService : MonoBehaviour
 {
     private const int CurrentSaveVersion = 1;
+    private const int LifeRestoreIntervalSeconds = 15 * 60;
     private const string SaveFileName = "player-save.json";
     private const string BackupFileName = "player-save.backup.json";
     private const string TemporaryFileName = "player-save.tmp.json";
@@ -195,6 +196,63 @@ public sealed class SaveService : MonoBehaviour
         Data.RunningLevel = null;
         if (saveImmediately)
             SaveNow(SaveReason.Manual);
+    }
+
+    public void CompleteRunningLevel()
+    {
+        if (Data == null || Data.RunningLevel == null)
+        {
+            Debug.LogWarning("[SaveService] There is no running level to complete.");
+            return;
+        }
+
+        string completedLevelName = Data.RunningLevel.LevelName;
+
+        if (!string.IsNullOrWhiteSpace(completedLevelName))
+        {
+            if (!Data.LevelProgress.CompletedLevelNames.Contains(completedLevelName))
+                Data.LevelProgress.CompletedLevelNames.Add(completedLevelName);
+
+            Data.Victory = new VictorySaveData
+            {
+                CompletedLevelName = completedLevelName,
+                PostLevelAdCompleted = false
+            };
+        }
+
+        // Победная попытка закончена и больше не должна предлагаться кнопкой «Продолжить».
+        Data.RunningLevel = null;
+        SaveNow(SaveReason.LevelVictory);
+    }
+
+    public void FinishRunningLevelWithDefeat()
+    {
+        if (Data == null || Data.RunningLevel == null)
+        {
+            Debug.LogWarning("[SaveService] There is no running level to finish with defeat.");
+            return;
+        }
+
+        if (Data.RunningLevel.Status != LevelSessionStatus.Defeat)
+        {
+            Debug.LogWarning("[SaveService] A level can lose a life only after final defeat.");
+            return;
+        }
+
+        if (Data.Economy.Lives > 0)
+        {
+            Data.Economy.Lives--;
+
+            if (Data.Economy.NextLifeRestoreUtcSeconds == 0)
+            {
+                long currentUtcSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                Data.Economy.NextLifeRestoreUtcSeconds = currentUtcSeconds + LifeRestoreIntervalSeconds;
+            }
+        }
+
+        // После окончательного поражения продолжать эту попытку уже нельзя.
+        Data.RunningLevel = null;
+        SaveNow(SaveReason.LevelDefeat);
     }
 
     public void SaveNow(SaveReason reason = SaveReason.Manual)

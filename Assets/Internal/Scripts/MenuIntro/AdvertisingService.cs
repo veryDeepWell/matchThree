@@ -82,7 +82,10 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
         }
 
         // Сохраняем мета-прогресс и текущее поле перед переходом во внешнее рекламное окно.
-        SaveService.Instance?.CaptureCurrentBoard(SaveReason.BeforeAdvertisement);
+        SaveService saveService = SaveService.Instance;
+        if (saveService != null)
+            saveService.CaptureCurrentBoard(SaveReason.BeforeAdvertisement);
+
         PlayerPrefs.Save();
 
         pendingRewardId = rewardId;
@@ -108,6 +111,10 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
             return false;
         }
 
+        SaveService saveService = SaveService.Instance;
+        if (saveService != null)
+            saveService.CaptureCurrentBoard(SaveReason.BeforeAdvertisement);
+
         PlayerPrefs.Save();
         interstitialRequested = true;
         pendingInterstitialClosed = onClosed;
@@ -128,7 +135,6 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
 
         reward.Invoke();
         SaveService.Instance?.CaptureCurrentBoard(SaveReason.AfterAdvertisement);
-        SaveService.Instance?.CaptureCurrentBoard(SaveReason.BeforeAdvertisement);
         PlayerPrefs.Save();
 
         Debug.Log($"Rewarded-реклама успешно завершена: {pendingRewardId}");
@@ -169,7 +175,10 @@ public sealed class AdvertisingService : MonoBehaviour          //универс
         pendingInterstitialClosed = null;
         interstitialRequested = false;
 
-        SaveService.Instance?.CaptureCurrentBoard(SaveReason.AfterAdvertisement);
+        SaveService saveService = SaveService.Instance;
+        if (saveService != null)
+            saveService.CaptureCurrentBoard(SaveReason.AfterAdvertisement);
+
         PlayerPrefs.Save();
         callback?.Invoke(wasShown);
     }
