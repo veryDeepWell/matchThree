@@ -1,62 +1,56 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class LevelManager : MonoBehaviour
 {
-    [SerializeField] private List<LevelData> levels = new List<LevelData>();
-    
-    public int lastLevel;
+    [SerializeField, FormerlySerializedAs("levels")] private List<LevelData> _levels = new List<LevelData>();
+    [SerializeField, FormerlySerializedAs("lastLevel")] private int _lastLevel;
+
+    public int LastLevel => _lastLevel;
 
     public LevelData LoadLevel(int levelIndex)
     {
-        if (levels == null || levels.Count == 0)
+        if (_levels == null || _levels.Count == 0)
         {
-            Debug.LogError($"Level list is empty! Can't load level {levelIndex}");
-            return null;
-        }
-        
-        if (levelIndex < 0 || levelIndex >= levels.Count)
-        {
-            Debug.LogError($"Level {levelIndex} not found! Total levels: {levels.Count}");
+            Debug.LogError($"[LevelManager] Level list is empty. Cannot load level {levelIndex}.");
             return null;
         }
 
-        LevelData levelToLoad = levels[levelIndex];
-        
-        if (levelToLoad == null)
+        if (levelIndex < 0 || levelIndex >= _levels.Count)
         {
-            Debug.LogError($"Level at index {levelIndex} is null!");
+            Debug.LogError($"[LevelManager] Level {levelIndex} not found. Total levels: {_levels.Count}.");
             return null;
         }
 
-        Debug.Log($"Level loaded: {levelToLoad.name}");
-        lastLevel = levelIndex;
-        return levelToLoad;
+        var level = _levels[levelIndex];
+        if (level == null)
+        {
+            Debug.LogError($"[LevelManager] Level at index {levelIndex} is null.");
+            return null;
+        }
+
+        _lastLevel = levelIndex;
+        return level;
     }
-    
+
     public LevelData LoadLevel(string levelName)
     {
-        if (levels == null || levels.Count == 0)
+        if (_levels == null || _levels.Count == 0)
         {
-            Debug.LogError("Level list is empty!");
+            Debug.LogError("[LevelManager] Level list is empty.");
             return null;
         }
-        
-        foreach (LevelData level in levels)
+
+        foreach (var level in _levels)
         {
             if (level != null && level.name == levelName)
-            {
-                Debug.Log($"Level loaded: {level.name}");
                 return level;
-            }
         }
-        
-        Debug.LogError($"Level '{levelName}' not found!");
+
+        Debug.LogError($"[LevelManager] Level '{levelName}' not found.");
         return null;
     }
-    
-    public int GetLevelCount()
-    {
-        return levels?.Count ?? 0;
-    }
+
+    public int GetLevelCount() => _levels?.Count ?? 0;
 }

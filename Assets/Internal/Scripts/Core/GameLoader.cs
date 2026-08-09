@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [DefaultExecutionOrder(-999)]
 public class GameLoader : MonoBehaviour
@@ -15,27 +15,18 @@ public class GameLoader : MonoBehaviour
 
     private void Awake()
     {
-        // 1. Находим всё, что не привязано в инспекторе
-        if (_itemHandler == null) _itemHandler = FindObjectOfType<ItemHandler>();
-        if (_itemGenerator == null) _itemGenerator = FindObjectOfType<ItemGenerator>();
-        if (_matchesHandler == null) _matchesHandler = FindObjectOfType<MatchesHandler>();
-        if (_levelManager == null) _levelManager = FindObjectOfType<LevelManager>();
-        if (_board == null) _board = FindObjectOfType<Board>();
+        ResolveReferences();
+        if (!ValidateReferences())
+            return;
 
-        // 2. Проверяем что всё найдено
-        if (_itemHandler == null) Debug.LogError("[GameLoader] ItemHandler not found!");
-        if (_itemGenerator == null) Debug.LogError("[GameLoader] ItemGenerator not found!");
-        if (_matchesHandler == null) Debug.LogError("[GameLoader] MatchesHandler not found!");
-        if (_levelManager == null) Debug.LogError("[GameLoader] LevelManager not found!");
-        if (_board == null) Debug.LogError("[GameLoader] Board not found!");
-
-        // 3. Инициализируем в правильном порядке
         _itemHandler.ForceInitialize();
         _itemGenerator.ForceInitialize(_itemHandler);
-        
-        // 4. Сначала пробуем продолжить сохранённую попытку.
+
         SaveService saveService = SaveService.Instance;
-        if (saveService != null && saveService.TryConsumeContinueRequest(out RunningLevelSaveData runningLevel))
+
+        // Сначала пробуем продолжить попытку, выбранную кнопкой «Продолжить» в меню.
+        if (saveService != null &&
+            saveService.TryConsumeContinueRequest(out RunningLevelSaveData runningLevel))
         {
             LevelData savedLevel = _levelManager.LoadLevel(runningLevel.LevelName);
             if (savedLevel != null && runningLevel.Board != null)
@@ -45,26 +36,61 @@ public class GameLoader : MonoBehaviour
                 return;
             }
 
-            Debug.LogWarning("[GameLoader] Сохранённый уровень не удалось восстановить. Вместо этого запускается настроенный уровень.");
+            Debug.LogWarning("[GameLoader] Сохранённый уровень не удалось восстановить. Запускается настроенный уровень.");
         }
 
-        // 5. Незавершённой попытки нет — загружаем текущий открытый уровень или Inspector fallback.
-        LevelData level = null;
-        string currentLevelName = saveService?.Data?.LevelProgress?.CurrentLevelName;
-        if (!string.IsNullOrWhiteSpace(currentLevelName))
-            level = _levelManager.LoadLevel(currentLevelName);
-
+        LevelData level = LoadCurrentLevel(saveService);
         if (level == null)
-            level = _levelManager.LoadLevel(_levelIndex);
+        {
+            Debug.LogError("[GameLoader] Failed to load level.");
+            return;
+        }
 
-        if (level != null)
+        _board.ForceLoadLevel(level);
+        if (saveService != null)
+            saveService.BeginLevel(level, _board);
+    }
+
+    private LevelData LoadCurrentLevel(SaveService saveService)
+    {
+        string currentLevelName = null;
+
+        if (saveService != null)
         {
-            _board.ForceLoadLevel(level);
-            saveService?.BeginLevel(level, _board);
+            if (saveService.Data != null)
+            {
+                if (saveService.Data.LevelProgress != null)
+                    currentLevelName = saveService.Data.LevelProgress.CurrentLevelName;
+            }
         }
-        else
+
+        if (!string.IsNullOrWhiteSpace(currentLevelName))
         {
-            Debug.LogError("[GameLoader] Не удалось загрузить уровень!");
+            LevelData currentLevel = _levelManager.LoadLevel(currentLevelName);
+            if (currentLevel != null)
+                return currentLevel;
         }
+
+        return _levelManager.LoadLevel(_levelIndex);
+    }
+
+    private void ResolveReferences()
+    {
+        _itemHandler ??= FindObjectOfType<ItemHandler>();
+        _itemGenerator ??= FindObjectOfType<ItemGenerator>();
+        _matchesHandler ??= FindObjectOfType<MatchesHandler>();
+        _levelManager ??= FindObjectOfType<LevelManager>();
+        _board ??= FindObjectOfType<Board>();
+    }
+
+    private bool ValidateReferences()
+    {
+        bool isValid = true;
+        if (_itemHandler == null) { Debug.LogError("[GameLoader] ItemHandler not found."); isValid = false; }
+        if (_itemGenerator == null) { Debug.LogError("[GameLoader] ItemGenerator not found."); isValid = false; }
+        if (_matchesHandler == null) { Debug.LogError("[GameLoader] MatchesHandler not found."); isValid = false; }
+        if (_levelManager == null) { Debug.LogError("[GameLoader] LevelManager not found."); isValid = false; }
+        if (_board == null) { Debug.LogError("[GameLoader] Board not found."); isValid = false; }
+        return isValid;
     }
 }

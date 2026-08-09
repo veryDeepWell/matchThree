@@ -15,85 +15,133 @@ public class LevelData : ScriptableObject
     public BoardData ToBoardData()
     {
         var data = new BoardData(Width, Height);
-        int total = Width * Height;
+        int cellCount = Width * Height;
 
-        if (Items != null && Items.Length == total)
-            System.Array.Copy(Items, data.Items, total);
-        if (ActiveCells != null && ActiveCells.Length == total)
-            System.Array.Copy(ActiveCells, data.ActiveCells, total);
-        if (SpecialItems != null && SpecialItems.Length == total)
-            System.Array.Copy(SpecialItems, data.SpecialItems, total);
-        if (SpecialCells != null && SpecialCells.Length == total)
-            System.Array.Copy(SpecialCells, data.SpecialCells, total);
-
+        CopyIfValid(Items, data.Items, cellCount);
+        CopyIfValid(ActiveCells, data.ActiveCells, cellCount);
+        CopyIfValid(SpecialItems, data.SpecialItems, cellCount);
+        CopyIfValid(SpecialCells, data.SpecialCells, cellCount);
         return data;
     }
 
     public void FromBoardData(BoardData data)
     {
+        if (data == null || !data.IsStructurallyValid()) return;
+
         Width = data.Width;
         Height = data.Height;
-        int total = Width * Height;
+        int cellCount = Width * Height;
 
-        Items = new string[total];
-        ActiveCells = new bool[total];
-        SpecialItems = new string[total];
-        SpecialCells = new int[total];
+        Items = new string[cellCount];
+        ActiveCells = new bool[cellCount];
+        SpecialItems = new string[cellCount];
+        SpecialCells = new int[cellCount];
 
-        System.Array.Copy(data.Items, Items, total);
-        System.Array.Copy(data.ActiveCells, ActiveCells, total);
-        System.Array.Copy(data.SpecialItems, SpecialItems, total);
-        System.Array.Copy(data.SpecialCells, SpecialCells, total);
+        System.Array.Copy(data.Items, Items, cellCount);
+        System.Array.Copy(data.ActiveCells, ActiveCells, cellCount);
+        System.Array.Copy(data.SpecialItems, SpecialItems, cellCount);
+        System.Array.Copy(data.SpecialCells, SpecialCells, cellCount);
     }
 
-    public void Initialize(int w, int h)
+    public void EnsureArrays()
     {
-        Width = w;
-        Height = h;
-        int total = w * h;
-        Items = new string[total];
-        ActiveCells = new bool[total];
-        SpecialItems = new string[total];
-        SpecialCells = new int[total];
-
-        for (int i = 0; i < total; i++)
-        {
-            ActiveCells[i] = true;
-            Items[i] = "";
-            SpecialItems[i] = "";
-            SpecialCells[i] = 0;
-        }
+        int cellCount = Mathf.Max(1, Width * Height);
+        Items = EnsureStringArray(Items, cellCount);
+        ActiveCells = EnsureBoolArray(ActiveCells, cellCount);
+        SpecialItems = EnsureStringArray(SpecialItems, cellCount);
+        SpecialCells = EnsureIntArray(SpecialCells, cellCount);
     }
 
-    public bool IsActive(int x, int y)
+    public void Initialize(int width, int height)
     {
-        if (ActiveCells == null) return false;
-        int idx = y * Width + x;
-        if (idx < 0 || idx >= ActiveCells.Length) return false;
-        return ActiveCells[idx];
+        Width = Mathf.Max(1, width);
+        Height = Mathf.Max(1, height);
+
+        int cellCount = Width * Height;
+        Items = new string[cellCount];
+        ActiveCells = new bool[cellCount];
+        SpecialItems = new string[cellCount];
+        SpecialCells = new int[cellCount];
+
+        for (int index = 0; index < cellCount; index++)
+            ActiveCells[index] = true;
     }
 
-    public string GetItem(int x, int y)
+
+
+    public bool IsActive(int column, int row)
     {
-        if (Items == null) return "";
-        int idx = y * Width + x;
-        if (idx < 0 || idx >= Items.Length) return "";
-        return Items[idx];
+        if (!IsValid(column, row) || ActiveCells == null)
+            return false;
+
+        int index = row * Width + column;
+        return index < ActiveCells.Length && ActiveCells[index];
     }
 
-    public void SetItem(int x, int y, string id)
+    public string GetItem(int column, int row)
     {
-        if (Items == null) return;
-        int idx = y * Width + x;
-        if (idx >= 0 && idx < Items.Length)
-            Items[idx] = id;
+        if (!IsValid(column, row) || Items == null)
+            return string.Empty;
+
+        int index = row * Width + column;
+        return index < Items.Length ? Items[index] ?? string.Empty : string.Empty;
     }
 
-    public void SetActive(int x, int y, bool active)
+    public void SetItem(int column, int row, string itemId)
     {
-        if (ActiveCells == null) return;
-        int idx = y * Width + x;
-        if (idx >= 0 && idx < ActiveCells.Length)
-            ActiveCells[idx] = active;
+        if (!IsValid(column, row) || Items == null)
+            return;
+
+        int index = row * Width + column;
+        if (index < Items.Length)
+            Items[index] = itemId ?? string.Empty;
+    }
+
+    public void SetActive(int column, int row, bool active)
+    {
+        if (!IsValid(column, row) || ActiveCells == null)
+            return;
+
+        int index = row * Width + column;
+        if (index < ActiveCells.Length)
+            ActiveCells[index] = active;
+    }
+
+    private static string[] EnsureStringArray(string[] source, int length)
+    {
+        var result = new string[length];
+        if (source != null)
+            System.Array.Copy(source, result, Mathf.Min(source.Length, length));
+        return result;
+    }
+
+    private static bool[] EnsureBoolArray(bool[] source, int length)
+    {
+        var result = new bool[length];
+        for (int index = 0; index < length; index++)
+            result[index] = true;
+
+        if (source != null)
+            System.Array.Copy(source, result, Mathf.Min(source.Length, length));
+        return result;
+    }
+
+    private static int[] EnsureIntArray(int[] source, int length)
+    {
+        var result = new int[length];
+        if (source != null)
+            System.Array.Copy(source, result, Mathf.Min(source.Length, length));
+        return result;
+    }
+
+    private bool IsValid(int column, int row)
+    {
+        return column >= 0 && column < Width && row >= 0 && row < Height;
+    }
+
+    private static void CopyIfValid<T>(T[] source, T[] destination, int expectedLength)
+    {
+        if (source != null && source.Length == expectedLength)
+            System.Array.Copy(source, destination, expectedLength);
     }
 }

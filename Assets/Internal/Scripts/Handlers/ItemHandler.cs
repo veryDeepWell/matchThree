@@ -1,154 +1,134 @@
-﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemHandler : MonoBehaviour
 {
-    [Header("Registry")]
+    [Header("References")]
     [SerializeField] private ItemRegistry _registry;
     [SerializeField] private GameObject _itemPrefab;
-    
-    private Dictionary<string, GameObject> _prefabCache;
-    private bool _isInitialized = false;
-    
+
+    private Dictionary<string, GameObject> _prefabById;
+    private bool _isInitialized;
+
     public ItemRegistry GetRegistry() => _registry;
-    
+
     public void ForceInitialize()
     {
-        if (_isInitialized)
-        {
-            // Если уже инициализированы — пересоздаём кеш (на случай если спрайты добавили позже)
-            RebuildCache();
-            return;
-        }
-        
         if (_registry == null)
         {
-            Debug.LogError("ItemHandler: No ItemRegistry assigned!");
+            Debug.LogError("[ItemHandler] ItemRegistry is not assigned.");
             return;
         }
-        
+
         _registry.Initialize();
-        BuildPrefabCache();
+        RebuildCache();
         _isInitialized = true;
-        
-        Debug.Log($"[ItemHandler] Initialized with {_prefabCache?.Count ?? 0} prefabs");
     }
-    
-    private void BuildPrefabCache()
-    {
-        _prefabCache = new Dictionary<string, GameObject>();
-        
-        foreach (var def in _registry.GetNormalItems())
-        {
-            if (def == null || string.IsNullOrEmpty(def.Id)) continue;
-            
-            var go = Instantiate(_itemPrefab);
-            go.name = def.Id;
-            
-            var sr = go.GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                sr.sprite = def.Icon;
-                sr.color = def.Color;
-                sr.sortingOrder = 1;
-            }
-            
-            var item = go.GetComponent<Item>();
-            if (item != null)
-            {
-                item.ItemId = def.Id;
-                item.SpecialItemId = "";
-            }
-            
-            go.SetActive(false);
-            _prefabCache[def.Id] = go;
-        }
-    }
-    
-    // Пересоздаём кеш без перезагрузки всего
+
     public void RebuildCache()
     {
-        if (_registry == null)
+        if (_registry == null || _itemPrefab == null)
         {
-            Debug.LogError("ItemHandler: No ItemRegistry assigned!");
+            Debug.LogError("[ItemHandler] Registry or item prefab is missing.");
             return;
         }
-        
-        // Удаляем старые префабы
-        if (_prefabCache != null)
+
+        if (_prefabById != null)
         {
-            foreach (var kvp in _prefabCache)
+            foreach (var prefab in _prefabById.Values)
             {
-                if (kvp.Value != null)
-                    DestroyImmediate(kvp.Value);
+                if (prefab != null)
+                {
+                    if (Application.isPlaying)
+                        Destroy(prefab);
+                    else
+                        DestroyImmediate(prefab);
+                }
             }
-            _prefabCache.Clear();
         }
-        
-        _registry.Initialize();
-        BuildPrefabCache();
-        
-        Debug.Log($"[ItemHandler] Cache rebuilt with {_prefabCache?.Count ?? 0} prefabs");
-    }
-    
-    public List<GameObject> GetItemPrefabs()
-    {
-        if (_prefabCache == null)
+
+        _prefabById = new Dictionary<string, GameObject>();
+        foreach (var definition in _registry.GetNormalItems())
         {
-            BuildPrefabCache();
+            if (definition == null || string.IsNullOrEmpty(definition.Id)) continue;
+
+            var prefab = Instantiate(_itemPrefab);
+            prefab.name = definition.Id;
+            prefab.SetActive(false);
+
+            var item = prefab.GetComponent<Item>();
+            if (item != null)
+            {
+                item.ItemId = definition.Id;
+                item.SpecialItemId = "";
+            }
+
+            ApplyVisual(prefab, definition);
+            _prefabById[definition.Id] = prefab;
         }
-        return new List<GameObject>(_prefabCache.Values);
     }
-    
+
     public GameObject CreateItem(string id, Vector2 position, Transform parent)
     {
-        // Если кеш пустой — пересоздаём
-        if (_prefabCache == null || _prefabCache.Count == 0)
+        EnsureInitialized();
+        if (string.IsNullOrEmpty(id) || !_prefabById.TryGetValue(id, out var prefab))
         {
-            BuildPrefabCache();
-        }
-        
-        if (!_prefabCache.ContainsKey(id))
-        {
-            Debug.LogError($"ItemHandler: Item with id '{id}' not found! Available: {string.Join(", ", _prefabCache.Keys)}");
+            Debug.LogError($"[ItemHandler] Item with id '{id}' was not found.");
             return null;
         }
-        
-        var prefab = _prefabCache[id];
-        var go = Instantiate(prefab, position, Quaternion.identity, parent);
-        go.SetActive(true);
-        
-        var item = go.GetComponent<Item>();
+
+        var itemObject = Instantiate(prefab, position, Quaternion.identity, parent);
+        itemObject.SetActive(true);
+        ApplyVisual(itemObject, _registry.Get(id));
+
+        var item = itemObject.GetComponent<Item>();
         if (item != null)
         {
             item.ItemId = id;
             item.SpecialItemId = "";
-            
-            // ОБНОВЛЯЕМ СПРАЙТ ИЗ РЕЕСТРА (на случай если префаб старый)
-            var def = _registry.Get(id);
-            if (def != null)
-            {
-                var sr = go.GetComponent<SpriteRenderer>();
-                if (sr != null)
-                {
-                    sr.sprite = def.Icon;
-                    sr.color = def.Color;
-                }
-            }
         }
-        
-        return go;
+
+        return itemObject;
     }
-    
+
     public Sprite GetSprite(string id)
     {
-        var def = _registry.Get(id);
-        return def != null ? def.Icon : null;
+        var definition = _registry != null ? _registry.Get(id) : null;
+        return definition != null ? definition.Icon : null;
     }
-    
+
     public ItemDefinition GetDefinition(string id)
     {
-        return _registry.Get(id);
+        return _registry != null ? _registry.Get(id) : null;
+    }
+
+    public List<GameObject> GetItemPrefabs()
+    {
+        EnsureInitialized();
+        return _prefabById != null ? new List<GameObject>(_prefabById.Values) : new List<GameObject>();
+    }
+
+    public void ApplyVisual(Item item, string id)
+    {
+        if (item == null) return;
+        ApplyVisual(item.gameObject, _registry != null ? _registry.Get(id) : null);
+    }
+
+    private void EnsureInitialized()
+    {
+        if (!_isInitialized || _prefabById == null || _prefabById.Count == 0)
+            ForceInitialize();
+    }
+
+    private static void ApplyVisual(GameObject itemObject, ItemDefinition definition)
+    {
+        if (itemObject == null || definition == null) return;
+
+        var renderer = itemObject.GetComponent<SpriteRenderer>();
+        if (renderer == null) return;
+
+        renderer.sprite = definition.Icon;
+        renderer.color = definition.Color;
+        renderer.sortingOrder = 1;
     }
 }

@@ -1,271 +1,386 @@
-﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class ItemGenerator : MonoBehaviour
 {
-    [Header("Prefabs")]
+    [Header("References")]
     [SerializeField] private GameObject _tilePrefab;
+    [SerializeField] private ItemHandler _itemHandler;
+    [SerializeField] private SpecialItemHandler _specialItemHandler;
+    [SerializeField] private SpecialCellHandler _specialCellHandler;
 
-    private ItemHandler _itemHandler;
-    private List<string> _availableItemIds;
-    private bool _isInitialized = false;
+    private List<string> _availableItemIds = new List<string>();
+    private bool _isInitialized;
 
-    public void ForceInitialize(ItemHandler handler)
+    public GameObject GetTilePrefab() => _tilePrefab;
+
+    public void ForceInitialize(ItemHandler itemHandler)
     {
-        if (_isInitialized) return;
+        if (itemHandler != null)
+            _itemHandler = itemHandler;
 
-        _itemHandler = handler;
-        if (_itemHandler != null)
+        if (_itemHandler == null)
         {
-            // Загружаем реестр не через Resources, а через ItemHandler
-            var registry = _itemHandler.GetRegistry();
-            if (registry != null)
-            {
-                _availableItemIds = new List<string>();
-                foreach (var def in registry.GetNormalItems())
-                {
-                    if (def != null && !string.IsNullOrEmpty(def.Id))
-                        _availableItemIds.Add(def.Id);
-                }
-                _isInitialized = true;
-                Debug.Log($"[ItemGenerator] Initialized with {_availableItemIds?.Count ?? 0} item types");
-            }
-            else
-            {
-                Debug.LogError("[ItemGenerator] Registry not found in ItemHandler!");
-            }
+            Debug.LogError("[ItemGenerator] ItemHandler is not assigned.");
+            return;
         }
-        else
+
+        var registry = _itemHandler.GetRegistry();
+        if (registry == null)
         {
-            Debug.LogError("[ItemGenerator] ItemHandler is null!");
+            Debug.LogError("[ItemGenerator] ItemRegistry is missing.");
+            return;
         }
+
+        registry.Initialize();
+        _availableItemIds.Clear();
+
+        foreach (var definition in registry.GetNormalItems())
+        {
+            if (definition != null && !string.IsNullOrEmpty(definition.Id))
+                _availableItemIds.Add(definition.Id);
+        }
+
+        _specialItemHandler ??= FindObjectOfType<SpecialItemHandler>();
+        _specialCellHandler ??= FindObjectOfType<SpecialCellHandler>();
+        _isInitialized = _availableItemIds.Count > 0;
+
+        if (!_isInitialized)
+            Debug.LogError("[ItemGenerator] No normal item definitions are available.");
     }
 
     public void GenerateItems(Board board)
-{
-    if (!_isInitialized)
     {
-        Debug.LogError("[ItemGenerator] Not initialized! Call ForceInitialize first.");
-        return;
-    }
+        if (!ValidateGeneration(board)) return;
 
-    if (board?.Data == null)
-    {
-        Debug.LogError("[ItemGenerator] Board or Board.Data is null!");
-        return;
-    }
-
-    if (_availableItemIds == null || _availableItemIds.Count == 0)
-    {
-        Debug.LogError("[ItemGenerator] No item types available!");
-        return;
-    }
-
-    var data = board.Data;
-    int w = data.Width;
-    int h = data.Height;
-
-    for (int x = 0; x < w; x++)
-    {
-        for (int y = 0; y < h; y++)
+        var data = board.Data;
+        for (int column = 0; column < board.Width; column++)
         {
-            Vector2 pos = board.GetWorldPosition(x, y);
-            GameObject tile = Instantiate(_tilePrefab, pos, Quaternion.identity, transform);
-            tile.name = $"Tile({x},{y})";
-
-            if (!data.IsActive(x, y))
+            for (int row = 0; row < board.Height; row++)
             {
-                board.Items[x, y] = null;
-                var sr = tile.GetComponent<SpriteRenderer>();
-                if (sr) sr.color = new Color(0.15f, 0.15f, 0.15f, 0.5f);
-                continue;
+                GenerateCell(board, column, row);
             }
-
-            string itemId = data.GetItem(x, y);
-            if (string.IsNullOrEmpty(itemId))
-            {
-                int idx = Random.Range(0, _availableItemIds.Count);
-                itemId = _availableItemIds[idx];
-                data.SetItem(x, y, itemId);
-            }
-
-            GameObject go = _itemHandler.CreateItem(itemId, pos, tile.transform);
-            if (go == null)
-            {
-                Debug.LogError($"ItemGenerator: Failed to create item '{itemId}' at ({x},{y})");
-                board.Items[x, y] = null;
-                continue;
-            }
-            
-            go.name = $"Item({x},{y})";
-
-            var item = go.GetComponent<Item>();
-            if (item)
-            {
-                item.Column = x;
-                item.Row = y;
-                item.Board = board;
-                item.ItemId = itemId;
-            }
-
-            board.Items[x, y] = item;
         }
+
+        ClearInitialMatches(board);
+
+        if (!MatchValidator.HasPossibleMoves(data))
+            ReshuffleBoard(board);
     }
 
-    ClearInitialMatches(board);
-
-    if (!MatchValidator.HasPossibleMoves(data))
+    public void CreateSpecialItem(Board board, int column, int row, string specialId)
     {
-        Debug.Log("No possible moves! Reshuffling...");
-        ReshuffleBoard(board);
+        ReplaceWithSpecial(board, column, row, specialId);
     }
-}
+
+    public void ReplaceWithSpecial(Board board, int column, int row, string specialId)
+    {
+        if (board == null || board.Data == null || !board.IsCellActive(column, row))
+            return;
+
+        if (string.IsNullOrEmpty(specialId))
+            return;
+
+        _specialItemHandler ??= FindObjectOfType<SpecialItemHandler>();
+        if (_specialItemHandler == null)
+        {
+            Debug.LogError("[ItemGenerator] SpecialItemHandler is missing.");
+            return;
+        }
+
+        var oldItem = board.Items[column, row];
+        if (oldItem != null && !string.IsNullOrEmpty(oldItem.SpecialItemId))
+            return;
+
+        // Verify the special can actually be created BEFORE destroying the old item.
+        var effect = _specialItemHandler.GetEffect(specialId);
+        if (effect == null)
+        {
+            Debug.LogWarning($"[ItemGenerator] No effect for '{specialId}', special not created.");
+            return;
+        }
+
+        if (oldItem != null)
+        {
+            board.Items[column, row] = null;
+            board.SetItemId(column, row, "");
+            board.SetSpecialItemId(column, row, "");
+            Destroy(oldItem.gameObject);
+        }
+
+        board.SetSpecialItemId(column, row, specialId);
+        CreateSpecialItemAt(board, column, row, specialId);
+    }
+
+    private void GenerateCell(Board board, int column, int row)
+    {
+        var tile = GetOrCreateTile(board, column, row);
+        if (!board.IsCellActive(column, row))
+        {
+            board.Items[column, row] = null;
+            board.SetItemId(column, row, "");
+            board.SetSpecialItemId(column, row, "");
+            board.Data.SetSpecialCell(column, row, 0);
+            var renderer = tile.GetComponent<SpriteRenderer>();
+            if (renderer != null)
+                renderer.color = new Color(0.15f, 0.15f, 0.15f, 0.5f);
+            return;
+        }
+
+        string specialItemId = board.Data.GetSpecialItem(column, row);
+        if (!string.IsNullOrEmpty(specialItemId))
+        {
+            CreateSpecialItemAt(board, column, row, specialItemId);
+            return;
+        }
+
+        CreateNormalItemAt(board, column, row, tile);
+        CreateSpecialCellAt(board, column, row, tile);
+    }
+
+    private void CreateNormalItemAt(Board board, int column, int row, GameObject tile)
+    {
+        string itemId = board.Data.GetItem(column, row);
+        if (string.IsNullOrEmpty(itemId))
+        {
+            itemId = GetRandomNormalItemId();
+            board.SetItemId(column, row, itemId);
+        }
+
+        if (string.IsNullOrEmpty(itemId)) return;
+
+        var itemObject = _itemHandler.CreateItem(itemId, board.GetWorldPosition(column, row), tile.transform);
+        var item = itemObject != null ? itemObject.GetComponent<Item>() : null;
+        if (item == null)
+        {
+            Debug.LogError($"[ItemGenerator] Failed to create item '{itemId}' at ({column},{row}).");
+            return;
+        }
+
+        item.name = $"Item({column},{row})";
+        item.Column = column;
+        item.Row = row;
+        item.Board = board;
+        item.ItemId = itemId;
+        item.SpecialItemId = "";
+        board.Items[column, row] = item;
+    }
+
+    private void CreateSpecialItemAt(Board board, int column, int row, string specialId)
+    {
+        _specialItemHandler ??= FindObjectOfType<SpecialItemHandler>();
+        if (_specialItemHandler == null) return;
+
+        var tile = GetOrCreateTile(board, column, row);
+        var itemObject = _specialItemHandler.CreateSpecialItem(specialId, board.GetWorldPosition(column, row), tile.transform);
+        var item = itemObject != null ? itemObject.GetComponent<Item>() : null;
+        if (item == null)
+        {
+            board.SetSpecialItemId(column, row, "");
+            Debug.LogError($"[ItemGenerator] Failed to create special item '{specialId}' at ({column},{row}).");
+            return;
+        }
+
+        item.Column = column;
+        item.Row = row;
+        item.Board = board;
+        item.ItemId = "";
+        item.SpecialItemId = specialId;
+        item.SnapToPosition(column, row);
+        board.Items[column, row] = item;
+
+        var specialItem = item.GetComponent<SpecialItem>();
+        specialItem?.SetBoard(board);
+        specialItem?.SetGridPosition(column, row);
+
+        // Guarantee the special is visible (old bomb def had alpha 0).
+        var renderer = itemObject.GetComponent<SpriteRenderer>();
+        if (renderer != null)
+        {
+            if (renderer.sprite == null)
+            {
+                var bombDef = _itemHandler?.GetRegistry()?.Get("bomb");
+                if (bombDef != null && bombDef.Icon != null)
+                    renderer.sprite = bombDef.Icon;
+            }
+
+            var c = renderer.color;
+            if (c.a < 0.1f)
+            {
+                c.a = 1f;
+                renderer.color = c;
+            }
+
+            renderer.enabled = renderer.sprite != null;
+            renderer.sortingOrder = 5;
+        }
+
+        CreateSpecialCellAt(board, column, row, tile);
+    }
+
+    private void CreateSpecialCellAt(Board board, int column, int row, GameObject tile)
+    {
+        int typeIndex = board.Data.GetSpecialCell(column, row);
+        if (typeIndex <= 0) return;
+
+        _specialCellHandler ??= FindObjectOfType<SpecialCellHandler>();
+        if (_specialCellHandler == null) return;
+
+        var cellObject = _specialCellHandler.CreateCell(typeIndex, board.GetWorldPosition(column, row), tile.transform);
+        var cell = _specialCellHandler.InitializeCell(cellObject, typeIndex, board, column, row);
+        if (cell == null) return;
+
+        board.SetSpecialCell(column, row, cell);
+        cell.AttachItem(board.Items[column, row]);
+    }
 
     private void ClearInitialMatches(Board board)
     {
-        bool hasMatches = true;
-        int attempts = 0;
-        var handler = FindObjectOfType<MatchesHandler>();
+        var matchesHandler = FindObjectOfType<MatchesHandler>();
+        if (matchesHandler == null) return;
 
-        while (hasMatches && attempts < 100)
+        for (int attempt = 0; attempt < 100; attempt++)
         {
-            attempts++;
-            hasMatches = false;
-            var matches = handler?.FindMatches(board);
+            var matches = matchesHandler.FindMatches(board);
+            if (matches.Count == 0) return;
 
-            if (matches != null && matches.Count > 0)
-            {
-                hasMatches = true;
-                foreach (int idx in matches)
-                {
-                    int x = idx % board.Data.Width;
-                    int y = idx / board.Data.Width;
-                    ReplaceItem(board, x, y);
-                }
-            }
+            foreach (int index in matches)
+                ReplaceRandomNormalItem(board, index % board.Width, index / board.Width);
         }
     }
 
-    private void ReplaceItem(Board board, int x, int y)
+    private void ReplaceRandomNormalItem(Board board, int column, int row)
     {
-        var data = board.Data;
-        int idx = data.GetIndex(x, y);
-        if (!data.ActiveCells[idx]) return;
+        var oldItem = board.Items[column, row];
+        if (oldItem == null || !string.IsNullOrEmpty(oldItem.SpecialItemId)) return;
 
-        var old = board.Items[x, y];
-        if (old)
-        {
-            var parent = old.transform.parent;
-            Vector2 pos = board.GetWorldPosition(x, y);
-            DestroyImmediate(old.gameObject);
+        string newId = GetRandomNormalItemId();
+        if (string.IsNullOrEmpty(newId)) return;
 
-            int randomIdx = Random.Range(0, _availableItemIds.Count);
-            string newId = _availableItemIds[randomIdx];
+        var tile = GetOrCreateTile(board, column, row);
+        Destroy(oldItem.gameObject);
+        board.Items[column, row] = null;
+        board.SetItemId(column, row, newId);
+        CreateNormalItemAt(board, column, row, tile);
 
-            data.SetItem(x, y, newId);
+        var cell = board.GetSpecialCell(column, row);
+        cell?.AttachItem(board.Items[column, row]);
+    }
 
-            var go = _itemHandler.CreateItem(newId, pos, parent);
-            var item = go.GetComponent<Item>();
-            item.Column = x;
-            item.Row = y;
-            item.Board = board;
-            item.ItemId = newId;
-            board.Items[x, y] = item;
-        }
+    public void EnsurePlayableBoard(Board board)
+    {
+        if (board == null || board.Data == null)
+            return;
+
+        if (!MatchValidator.HasPossibleMoves(board.Data))
+            ReshuffleBoard(board);
     }
 
     private void ReshuffleBoard(Board board)
     {
         var data = board.Data;
-        int w = data.Width;
-        int h = data.Height;
+        var movableItems = new List<string>();
 
-        // Сохраняем специальные предметы и ячейки
-        var specialItems = new Dictionary<int, string>();
-        var specialCells = new Dictionary<int, SpecialCell>();
-
-        for (int x = 0; x < w; x++)
+        for (int column = 0; column < board.Width; column++)
         {
-            for (int y = 0; y < h; y++)
+            for (int row = 0; row < board.Height; row++)
             {
-                int idx = data.GetIndex(x, y);
-                if (!data.ActiveCells[idx]) continue;
+                if (!data.IsActive(column, row))
+                    continue;
 
-                string specialId = data.GetSpecialItem(x, y);
-                if (!string.IsNullOrEmpty(specialId))
-                    specialItems[idx] = specialId;
+                // Special cells are obstacles/containers. Their occupants must
+                // stay where they are and never participate in reshuffling.
+                if (data.GetSpecialCell(column, row) > 0)
+                    continue;
 
-                var cell = board.GetSpecialCell(x, y);
-                if (cell != null)
-                    specialCells[idx] = cell;
+                var item = board.Items[column, row];
+                if (item != null && string.IsNullOrEmpty(item.SpecialItemId))
+                    movableItems.Add(item.ItemId);
             }
         }
 
-        // Собираем все обычные предметы в список
-        List<string> items = new List<string>();
-        for (int x = 0; x < w; x++)
+        if (movableItems.Count < 2)
+            return;
+
+        for (int attempt = 0; attempt < 100; attempt++)
         {
-            for (int y = 0; y < h; y++)
+            Shuffle(movableItems);
+            int itemIndex = 0;
+
+            for (int column = 0; column < board.Width; column++)
             {
-                int idx = data.GetIndex(x, y);
-                if (!data.ActiveCells[idx]) continue;
-                if (specialItems.ContainsKey(idx)) continue;
-                if (specialCells.ContainsKey(idx)) continue;
-
-                string id = data.GetItem(x, y);
-                if (!string.IsNullOrEmpty(id))
-                    items.Add(id);
-            }
-        }
-
-        // Перемешиваем
-        for (int i = items.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (items[i], items[j]) = (items[j], items[i]);
-        }
-
-        // Раскладываем обратно
-        int index = 0;
-        for (int x = 0; x < w; x++)
-        {
-            for (int y = 0; y < h; y++)
-            {
-                int idx = data.GetIndex(x, y);
-                if (!data.ActiveCells[idx]) continue;
-                if (specialItems.ContainsKey(idx)) continue;
-                if (specialCells.ContainsKey(idx)) continue;
-
-                if (index < items.Count)
+                for (int row = 0; row < board.Height; row++)
                 {
-                    string newId = items[index];
-                    data.SetItem(x, y, newId);
+                    if (!data.IsActive(column, row) ||
+                        data.GetSpecialCell(column, row) > 0)
+                        continue;
 
-                    var item = board.Items[x, y];
-                    if (item != null)
-                    {
-                        item.ItemId = newId;
-                        var handler = FindObjectOfType<ItemHandler>();
-                        if (handler != null)
-                        {
-                            var sr = item.GetComponent<SpriteRenderer>();
-                            if (sr != null)
-                            {
-                                var sprite = handler.GetSprite(newId);
-                                if (sprite != null) sr.sprite = sprite;
-                            }
-                        }
-                    }
-                    index++;
+                    var item = board.Items[column, row];
+                    if (item == null || !string.IsNullOrEmpty(item.SpecialItemId))
+                        continue;
+
+                    string newId = movableItems[itemIndex++];
+                    item.ItemId = newId;
+                    data.SetItem(column, row, newId);
+                    _itemHandler.ApplyVisual(item, newId);
                 }
             }
+
+            if (MatchValidator.HasPossibleMoves(data))
+                return;
         }
 
-        if (!MatchValidator.HasPossibleMoves(data))
+        Debug.LogWarning("[ItemGenerator] Failed to find a reshuffle with a possible move after 100 attempts.");
+    }
+
+    private bool ValidateGeneration(Board board)
+    {
+        if (!_isInitialized)
         {
-            ReshuffleBoard(board);
+            Debug.LogError("[ItemGenerator] Not initialized. Call ForceInitialize first.");
+            return false;
+        }
+
+        if (board == null || board.Data == null)
+        {
+            Debug.LogError("[ItemGenerator] Board or Board.Data is null.");
+            return false;
+        }
+
+        if (_tilePrefab == null)
+        {
+            Debug.LogError("[ItemGenerator] Tile prefab is not assigned.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private GameObject GetOrCreateTile(Board board, int column, int row)
+    {
+        string tileName = $"Tile({column},{row})";
+        var tile = board.transform.Find(tileName);
+        if (tile != null) return tile.gameObject;
+
+        var tileObject = Instantiate(_tilePrefab, board.GetWorldPosition(column, row), Quaternion.identity, board.transform);
+        tileObject.name = tileName;
+        return tileObject;
+    }
+
+    private string GetRandomNormalItemId()
+    {
+        return _availableItemIds.Count == 0
+            ? ""
+            : _availableItemIds[Random.Range(0, _availableItemIds.Count)];
+    }
+
+    private static void Shuffle(List<string> values)
+    {
+        for (int index = values.Count - 1; index > 0; index--)
+        {
+            int swapIndex = Random.Range(0, index + 1);
+            (values[index], values[swapIndex]) = (values[swapIndex], values[index]);
         }
     }
 
