@@ -38,12 +38,18 @@ Mobile controller
 Fix bombs
 Cheat menu
 
-BUGS
-Items don't generate
-
 DONE
 Fix bombs
 Fix editor
 Fix animations
 Mobile controller
+Special cells
+More special items
+
+======================================================
+
+#### RUSH 4
+PLANNED
+VFX
+Sounds
 */
