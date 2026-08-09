@@ -198,7 +198,7 @@ MonoBehaviour:
   _testLevel: {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
   _itemGenerator: {fileID: 295793230}
   _matchesHandler: {fileID: 620468259}
-  _offset: {x: -3, y: -3}
+  _offset: {x: -3.5, y: -4}
   _cellSize: 1
   _hintDelay: 8
   _hintDistance: 0.12
