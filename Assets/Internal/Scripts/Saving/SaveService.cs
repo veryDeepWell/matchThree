@@ -129,6 +129,61 @@ public sealed class SaveService : MonoBehaviour
         SaveNow(SaveReason.LevelStarted);
     }
 
+    public void RepairRunningLevelRules(LevelData level)
+    {
+        if (level == null || level.GoalData == null || Data == null || Data.RunningLevel == null)
+            return;
+
+        RunningLevelSaveData runningLevel = Data.RunningLevel;
+        bool changed = false;
+
+        if (runningLevel.RemainingTime <= 0f && runningLevel.Status == LevelSessionStatus.InProgress)
+        {
+            runningLevel.RemainingTime = Mathf.Max(1, level.GoalData.TimeLimit);
+            changed = true;
+        }
+
+        if (runningLevel.Goals == null || runningLevel.Goals.Count == 0)
+        {
+            runningLevel.Goals = new List<GoalProgressSaveData>();
+            if (level.GoalData.Goals != null)
+            {
+                foreach (LevelGoal goal in level.GoalData.Goals)
+                {
+                    if (goal == null || string.IsNullOrEmpty(goal.TargetItemId))
+                        continue;
+
+                    runningLevel.Goals.Add(new GoalProgressSaveData
+                    {
+                        TargetItemId = goal.TargetItemId,
+                        RequiredCount = Mathf.Max(1, goal.RequiredCount),
+                        CurrentCount = 0
+                    });
+                }
+            }
+            changed = true;
+        }
+
+        if (runningLevel.GoldReward == 0 && level.GoalData.GoldReward > 0)
+        {
+            runningLevel.GoldReward = level.GoalData.GoldReward;
+            changed = true;
+        }
+        if (runningLevel.CrystalReward == 0 && level.GoalData.CrystalReward > 0)
+        {
+            runningLevel.CrystalReward = level.GoalData.CrystalReward;
+            changed = true;
+        }
+
+        if (!changed)
+            return;
+
+        runningLevel.ExtraTimeSeconds = Mathf.Max(1, level.GoalData.ExtraTimeSeconds);
+        runningLevel.ExtraTimeGoldCost = Mathf.Max(0, level.GoalData.ExtraTimeGoldCost);
+        runningLevel.AllowRepeatedExtraTime = level.GoalData.AllowRepeatedExtraTime;
+        SaveNow(SaveReason.Manual);
+    }
+
     public bool GrantVictoryRewards()
     {
         if (Data == null || Data.RunningLevel == null || Data.RunningLevel.VictoryRewardsGranted)

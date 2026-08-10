@@ -25,6 +25,8 @@ public sealed class GameplayFlowController : MonoBehaviour
     private GameObject _goalPanelTemplate;
     private TMP_Text _timerText;
     private TMP_Text _goldContinuePriceText;
+    private TMP_Text _victoryGoldText;
+    private TMP_Text _victoryCrystalText;
     private Board _board;
     private MatchesHandler _matchesHandler;
     private float _remainingTime;
@@ -223,6 +225,7 @@ public sealed class GameplayFlowController : MonoBehaviour
         if (saveService != null)
             saveService.GrantVictoryRewards();
 
+        UpdateVictoryRewardTexts();
         SetOnlyResultPanel(_winPanel);
         Time.timeScale = 0f;
         SaveStatusAndBoard(LevelSessionStatus.Victory, SaveReason.LevelVictory);
@@ -305,6 +308,7 @@ public sealed class GameplayFlowController : MonoBehaviour
             _remainingTime = runningLevel.RemainingTime;
             UpdateTimerText(runningLevel.RemainingTime);
             UpdateContinuePriceText(runningLevel.ExtraTimeGoldCost);
+            UpdateVictoryRewardTexts();
         }
 
         switch (status)
@@ -571,6 +575,18 @@ public sealed class GameplayFlowController : MonoBehaviour
             _goldContinuePriceText.text = Mathf.Max(0, price).ToString();
     }
 
+    private void UpdateVictoryRewardTexts()
+    {
+        RunningLevelSaveData runningLevel = GetRunningLevel();
+        if (runningLevel == null)
+            return;
+
+        if (_victoryGoldText != null)
+            _victoryGoldText.text = Mathf.Max(0, runningLevel.GoldReward).ToString();
+        if (_victoryCrystalText != null)
+            _victoryCrystalText.text = Mathf.Max(0, runningLevel.CrystalReward).ToString();
+    }
+
     private RunningLevelSaveData GetRunningLevel()
     {
         SaveService saveService = SaveService.Instance;
@@ -677,6 +693,11 @@ public sealed class GameplayFlowController : MonoBehaviour
         if (_goalBoardPanel != null)
             _goalPanelTemplate = FindGameObject(_goalBoardPanel.transform, "GoalPanel");
 
+        GameObject victoryGoldPanel = FindGameObject(_winPanel != null ? _winPanel.transform : null, "PrizePanel1");
+        GameObject victoryCrystalPanel = FindGameObject(_winPanel != null ? _winPanel.transform : null, "PrizePanel2");
+        _victoryGoldText = FindTextInPanel(victoryGoldPanel, "PrizeNumberText (TMP)");
+        _victoryCrystalText = FindTextInPanel(victoryCrystalPanel, "PrizeNumberText (TMP)");
+
         Transform timerTransform = FindDescendant(transform, "TimerText (TMP)");
         if (timerTransform != null)
             _timerText = timerTransform.GetComponent<TMP_Text>();
@@ -688,6 +709,15 @@ public sealed class GameplayFlowController : MonoBehaviour
             if (priceTransform != null)
                 _goldContinuePriceText = priceTransform.GetComponent<TMP_Text>();
         }
+    }
+
+    private static TMP_Text FindTextInPanel(GameObject panel, string textObjectName)
+    {
+        if (panel == null)
+            return null;
+
+        Transform textTransform = FindDescendant(panel.transform, textObjectName);
+        return textTransform != null ? textTransform.GetComponent<TMP_Text>() : null;
     }
 
     private void DisableDecorativeRaycasts()

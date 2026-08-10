@@ -31,6 +31,7 @@ public class GameLoader : MonoBehaviour
             LevelData savedLevel = _levelManager.LoadLevel(runningLevel.LevelName);
             if (savedLevel != null && runningLevel.Board != null)
             {
+                saveService.RepairRunningLevelRules(savedLevel);
                 _board.RestoreSnapshot(runningLevel.Board);
                 Debug.Log($"[GameLoader] Восстановлен сохранённый уровень: {runningLevel.LevelName}");
                 return;
