@@ -10,75 +10,75 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d90e7a3ca4849a947b50ecac8430335d, type: 3}
-  m_Name: Level_02
+  m_Name: Level_03
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   Width: 8
   Height: 8
   Items:
-  - blue
-  - red
   - red
   - blue
   - red
-  - red
-  - green
   - yellow
   - yellow
+  - red
   - green
   - green
+  - blue
   - red
-  - red
+  - blue
+  - green
+  - blue
   - yellow
+  - yellow
+  - red
+  - green
   - blue
   - red
   - green
   - red
-  - green
-  - green
-  - yellow
-  - red
-  - red
-  - yellow
-  - red
-  - red
-  - blue
-  - red
-  - red
-  - yellow
-  - green
-  - yellow
-  - green
-  - green
-  - blue
-  - yellow
-  - red
-  - yellow
-  - green
-  - blue
-  - green
-  - red
-  - green
-  - red
-  - green
-  - red
-  - red
-  - blue
   - blue
   - red
   - yellow
+  - blue
+  - blue
   - yellow
   - green
+  - yellow
+  - red
+  - red
   - yellow
   - blue
   - green
   - red
   - blue
+  - blue
+  - red
   - yellow
   - green
+  - blue
+  - yellow
+  - blue
+  - red
+  - blue
+  - green
+  - green
+  - red
+  - blue
+  - red
+  - green
+  - green
+  - green
+  - yellow
+  - red
+  - green
+  - red
+  - green
+  - red
   - red
   - yellow
   - yellow
-  - green
+  - red
+  - red
   ActiveCells: 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
   SpecialItems:
   - 
@@ -147,10 +147,7 @@ MonoBehaviour:
   - 
   SpecialCells: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   GoalData:
-    Goals:
-    - TargetItemId: red
-      RequiredCount: 10
-      CurrentCount: 0
+    Goals: []
     TimeLimit: 60
     GoldReward: 200
     CrystalReward: 10

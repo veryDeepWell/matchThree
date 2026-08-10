@@ -10,7 +10,7 @@ public class LevelData : ScriptableObject
     public bool[] ActiveCells;
     public string[] SpecialItems;
     public int[] SpecialCells;
-    public LevelGoalData GoalData;
+    public LevelGoalData GoalData = new LevelGoalData();
 
     public BoardData ToBoardData()
     {

@@ -94,6 +94,14 @@ public sealed class SaveService : MonoBehaviour
             return;
         }
 
+        if (level.GoalData == null)
+        {
+            Debug.LogError($"[SaveService] Level '{level.name}' has no LevelGoalData. The running level was not created.");
+            Data.RunningLevel = null;
+            SaveNow(SaveReason.Manual);
+            return;
+        }
+
         var goals = new List<GoalProgressSaveData>();
         if (level.GoalData?.Goals != null)
         {

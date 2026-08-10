@@ -1,8 +1,7 @@
 using System;
-using UnityEngine;
 
-[CreateAssetMenu(fileName = "LevelGoalData", menuName = "Game/Level Goal Data")]
-public sealed class LevelGoalData : ScriptableObject
+[Serializable]
+public sealed class LevelGoalData
 {
     public LevelGoal[] Goals = Array.Empty<LevelGoal>();
     public int TimeLimit = 60;

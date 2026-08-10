@@ -1,30 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-78172017291830040
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: Level_01 Rules
-  m_EditorClassIdentifier: Assembly-CSharp::LevelGoalData
-  Goals:
-  - TargetItemId: blue
-    RequiredCount: 20
-    CurrentCount: 0
-  - TargetItemId: red
-    RequiredCount: 10
-    CurrentCount: 0
-  TimeLimit: 300
-  GoldReward: 200
-  CrystalReward: 10
-  ExtraTimeSeconds: 120
-  ExtraTimeGoldCost: 1000
-  AllowRepeatedExtraTime: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -171,4 +146,17 @@ MonoBehaviour:
   - 
   - 
   SpecialCells: 00000000000000000000000003000000030000000000000000000000040000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000002000000020000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-  GoalData: {fileID: -78172017291830040}
+  GoalData:
+    Goals:
+    - TargetItemId: blue
+      RequiredCount: 20
+      CurrentCount: 0
+    - TargetItemId: red
+      RequiredCount: 10
+      CurrentCount: 0
+    TimeLimit: 300
+    GoldReward: 200
+    CrystalReward: 10
+    ExtraTimeSeconds: 120
+    ExtraTimeGoldCost: 1000
+    AllowRepeatedExtraTime: 0

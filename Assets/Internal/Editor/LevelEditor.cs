@@ -22,13 +22,12 @@ public class LevelEditorWindow : EditorWindow
 
     private Texture2D _missingTexture;
     private ItemRegistry _registry;
-    private SpecialCellHandler _cellHandler;
 
     private GUIStyle _paletteButtonStyle;
     private GUIStyle _gridCellStyle;
 
     private const int PaletteButtonSize = 48;
-    private const float GridCellSize = 58f;
+    private float _gridCellSize = 46f;
 
     [MenuItem("Tools/Level Editor")]
     public static void ShowWindow()
@@ -39,7 +38,6 @@ public class LevelEditorWindow : EditorWindow
     private void OnEnable()
     {
         LoadRegistry();
-        LoadCellHandler();
         BuildItemLists();
         LoadSprites();
         LoadTextures();
@@ -68,10 +66,13 @@ public class LevelEditorWindow : EditorWindow
             {
                 padding = new RectOffset(0, 0, 0, 0),
                 margin = new RectOffset(1, 1, 1, 1),
-                fixedWidth = GridCellSize,
-                fixedHeight = GridCellSize
+                fixedWidth = _gridCellSize,
+                fixedHeight = _gridCellSize
             };
         }
+
+        _gridCellStyle.fixedWidth = _gridCellSize;
+        _gridCellStyle.fixedHeight = _gridCellSize;
     }
 
     private void LoadRegistry()
@@ -90,20 +91,6 @@ public class LevelEditorWindow : EditorWindow
         }
 
         _registry.Initialize();
-    }
-
-    private void LoadCellHandler()
-    {
-        _cellHandler = FindFirstObjectByType<SpecialCellHandler>();
-        if (_cellHandler != null) return;
-
-        string[] guids = AssetDatabase.FindAssets("t:SpecialCellHandler");
-        if (guids.Length == 0) return;
-
-        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-        if (prefab != null)
-            _cellHandler = prefab.GetComponent<SpecialCellHandler>();
     }
 
     private void BuildItemLists()
@@ -218,6 +205,7 @@ public class LevelEditorWindow : EditorWindow
             DrawSelectedInfo();
             DrawPalette();
             DrawHelpBox();
+            DrawGridViewSettings();
             DrawGrid();
             DrawControls();
             DrawSaveButton();
@@ -232,6 +220,22 @@ public class LevelEditorWindow : EditorWindow
         }
     }
 
+    private void DrawGridViewSettings()
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Grid Cell Size", GUILayout.Width(90));
+        _gridCellSize = EditorGUILayout.Slider(_gridCellSize, 24f, 80f);
+        if (GUILayout.Button("Fit", GUILayout.Width(45)))
+        {
+            float availableWidth = Mathf.Max(200f, position.width - 75f);
+            _gridCellSize = Mathf.Clamp(
+                availableWidth / Mathf.Max(1, _currentLevel.Width),
+                24f,
+                80f);
+        }
+        EditorGUILayout.EndHorizontal();
+    }
+
     private void DrawLevelSelector()
     {
         EditorGUILayout.LabelField("Level Editor", EditorStyles.boldLabel);
@@ -239,6 +243,13 @@ public class LevelEditorWindow : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         _currentLevel = (LevelData)EditorGUILayout.ObjectField("Level Data", _currentLevel, typeof(LevelData), false);
+        if (GUILayout.Button("Refresh", GUILayout.Width(70)))
+        {
+            LoadRegistry();
+            BuildItemLists();
+            LoadSprites();
+            Repaint();
+        }
         if (GUILayout.Button("Create New", GUILayout.Width(100)))
             CreateNewLevel();
         EditorGUILayout.EndHorizontal();
@@ -274,7 +285,7 @@ public class LevelEditorWindow : EditorWindow
         }
 
         LevelGoalData rules = _currentLevel.GoalData;
-        Undo.RecordObject(rules, "Edit Level Rules");
+        Undo.RecordObject(_currentLevel, "Edit Level Rules");
         rules.TimeLimit = Mathf.Max(1, EditorGUILayout.IntField("Time Limit (seconds)", rules.TimeLimit));
         rules.GoldReward = Mathf.Max(0, EditorGUILayout.IntField("Gold Reward", rules.GoldReward));
         rules.CrystalReward = Mathf.Max(0, EditorGUILayout.IntField("Crystal Reward", rules.CrystalReward));
@@ -320,7 +331,7 @@ public class LevelEditorWindow : EditorWindow
         }
 
         rules.Goals = goals.ToArray();
-        EditorUtility.SetDirty(rules);
+        EditorUtility.SetDirty(_currentLevel);
     }
 
     private void DrawSelectedInfo()
@@ -547,7 +558,7 @@ public class LevelEditorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal();
         GUILayout.Space(30);
         for (int x = 0; x < width; x++)
-            GUILayout.Label(x.ToString(), GUILayout.Width(GridCellSize));
+            GUILayout.Label(x.ToString(), GUILayout.Width(_gridCellSize));
         EditorGUILayout.EndHorizontal();
 
         for (int y = height - 1; y >= 0; y--)
@@ -574,7 +585,7 @@ public class LevelEditorWindow : EditorWindow
                 else
                     bgColor = new Color(0.35f, 0.35f, 0.35f);
 
-                Rect cellRect = GUILayoutUtility.GetRect(GridCellSize, GridCellSize, _gridCellStyle);
+                Rect cellRect = GUILayoutUtility.GetRect(_gridCellSize, _gridCellSize, _gridCellStyle);
                 EditorGUI.DrawRect(cellRect, bgColor);
 
                 // Base item is drawn first.
@@ -587,8 +598,8 @@ public class LevelEditorWindow : EditorWindow
                         Rect spriteRect = new Rect(
                             cellRect.x + padding,
                             cellRect.y + padding,
-                            GridCellSize - padding * 2,
-                            GridCellSize - padding * 2
+                            _gridCellSize - padding * 2,
+                            _gridCellSize - padding * 2
                         );
                         DrawSprite(spriteRect, sprite);
                     }
@@ -603,7 +614,7 @@ public class LevelEditorWindow : EditorWindow
                     Sprite specialItemSprite = GetSpecialItemSprite(currentSpecialItemId);
                     if (specialItemSprite != null)
                     {
-                        float size = GridCellSize * 0.38f;
+                        float size = _gridCellSize * 0.38f;
                         Rect spriteRect = new Rect(
                             cellRect.x + 2f,
                             cellRect.y + 2f,
@@ -621,9 +632,9 @@ public class LevelEditorWindow : EditorWindow
                     Sprite sprite = GetSpecialCellSprite(cellId);
                     if (sprite != null)
                     {
-                        float size = GridCellSize * 0.42f;
+                        float size = _gridCellSize * 0.42f;
                         Rect spriteRect = new Rect(
-                            cellRect.x + GridCellSize - size - 2f,
+                            cellRect.x + _gridCellSize - size - 2f,
                             cellRect.y + 2f,
                             size,
                             size
@@ -647,9 +658,9 @@ public class LevelEditorWindow : EditorWindow
 
     private string GetSpecialCellIdByIndex(int index)
     {
-        if (_cellHandler == null || _registry == null) return "";
+        if (_registry == null) return "";
         
-        var cellData = _cellHandler.GetCellData(index);
+        var cellData = GetSpecialCellDataByIndex(index);
         if (cellData == null) return "";
         
         // Ищем ItemDefinition, у которого CellData совпадает
@@ -666,8 +677,12 @@ public class LevelEditorWindow : EditorWindow
 
     private SpecialCellData GetSpecialCellDataByIndex(int index)
     {
-        if (_cellHandler == null) return null;
-        return _cellHandler.GetCellData(index);
+        if (_registry == null || index <= 0) return null;
+        var definitions = _registry.GetSpecialCells();
+        int definitionIndex = index - 1;
+        return definitionIndex < definitions.Count && definitions[definitionIndex] != null
+            ? definitions[definitionIndex].CellData
+            : null;
     }
 
     // ============ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С LevelData ============
@@ -764,10 +779,9 @@ public class LevelEditorWindow : EditorWindow
 
                 var definition = _registry.Get(_selectedSpecialCellId);
                 if (definition != null &&
-                    definition.Category == ItemCategory.SpecialCell &&
-                    _cellHandler != null)
+                    definition.Category == ItemCategory.SpecialCell)
                 {
-                    int typeIndex = _cellHandler.GetAllCellData().IndexOf(definition.CellData) + 1;
+                    int typeIndex = _registry.GetSpecialCells().IndexOf(definition) + 1;
                     if (typeIndex > 0)
                         SetCellSpecialCell(x, y, typeIndex);
                 }
@@ -935,12 +949,8 @@ public class LevelEditorWindow : EditorWindow
         if (level == null || level.GoalData != null)
             return;
 
-        var rules = CreateInstance<LevelGoalData>();
-        rules.name = level.name + " Rules";
-        AssetDatabase.AddObjectToAsset(rules, level);
-        level.GoalData = rules;
+        level.GoalData = new LevelGoalData();
         EditorUtility.SetDirty(level);
-        EditorUtility.SetDirty(rules);
         AssetDatabase.SaveAssets();
     }
 
@@ -1108,8 +1118,6 @@ public class LevelEditorWindow : EditorWindow
     {
         if (_currentLevel == null) return;
         EditorUtility.SetDirty(_currentLevel);
-        if (_currentLevel.GoalData != null)
-            EditorUtility.SetDirty(_currentLevel.GoalData);
         AssetDatabase.SaveAssets();
         Debug.Log($"Level saved: {_currentLevel.name}");
     }
