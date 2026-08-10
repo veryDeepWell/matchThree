@@ -18,23 +18,23 @@ MonoBehaviour:
   - red
   - blue
   - red
+  - blue
+  - yellow
+  - red
+  - green
+  - green
+  - blue
+  - red
+  - blue
+  - yellow
+  - blue
   - yellow
   - yellow
   - red
   - green
-  - green
   - blue
   - red
-  - blue
-  - green
-  - blue
   - yellow
-  - yellow
-  - red
-  - green
-  - blue
-  - red
-  - green
   - red
   - blue
   - red
@@ -42,40 +42,40 @@ MonoBehaviour:
   - blue
   - blue
   - yellow
-  - green
-  - yellow
-  - red
   - red
   - yellow
-  - blue
-  - green
-  - red
-  - blue
-  - blue
-  - red
-  - yellow
-  - green
-  - blue
-  - yellow
-  - blue
-  - red
-  - blue
-  - green
-  - green
-  - red
-  - blue
-  - red
-  - green
-  - green
-  - green
-  - yellow
-  - red
-  - green
-  - red
-  - green
   - red
   - red
   - yellow
+  - yellow
+  - green
+  - red
+  - blue
+  - red
+  - red
+  - yellow
+  - green
+  - green
+  - yellow
+  - blue
+  - blue
+  - red
+  - green
+  - green
+  - red
+  - green
+  - red
+  - blue
+  - red
+  - yellow
+  - blue
+  - red
+  - green
+  - red
+  - green
+  - red
+  - green
+  - green
   - yellow
   - red
   - red
@@ -147,7 +147,10 @@ MonoBehaviour:
   - 
   SpecialCells: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   GoalData:
-    Goals: []
+    Goals:
+    - TargetItemId: yellow
+      RequiredCount: 10
+      CurrentCount: 0
     TimeLimit: 60
     GoldReward: 200
     CrystalReward: 10
