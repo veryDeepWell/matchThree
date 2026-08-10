@@ -195,7 +195,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Board
   _useRandomLevel: 0
-  _testLevel: {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
+  _testLevel: {fileID: 11400000, guid: 392fb143ff7672d4eac155068299f6bf, type: 2}
   _itemGenerator: {fileID: 295793230}
   _matchesHandler: {fileID: 620468259}
   _offset: {x: -3.5, y: -4}
@@ -362,7 +362,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelManager
   _levels:
   - {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
-  _lastLevel: 0
+  - {fileID: 11400000, guid: 392fb143ff7672d4eac155068299f6bf, type: 2}
+  _lastLevel: 1
 --- !u!1 &616996648
 GameObject:
   m_ObjectHideFlags: 0
