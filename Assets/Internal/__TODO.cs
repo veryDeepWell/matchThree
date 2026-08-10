@@ -52,4 +52,6 @@ More special items
 PLANNED
 VFX
 Sounds
+New levels
+YandexGames card
 */
