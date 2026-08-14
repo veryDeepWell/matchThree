@@ -225,6 +225,8 @@ public sealed class GameplayFlowController : MonoBehaviour
         if (saveService != null)
             saveService.GrantVictoryRewards();
 
+        PlayLevelResultFx(won: true);
+
         UpdateVictoryRewardTexts();
         SetOnlyResultPanel(_winPanel);
         Time.timeScale = 0f;
@@ -247,9 +249,34 @@ public sealed class GameplayFlowController : MonoBehaviour
 
     public void ShowFinalDefeat()
     {
+        PlayLevelResultFx(won: false);
+
         SetOnlyResultPanel(_losePanel);
         Time.timeScale = 0f;
         SaveStatusAndBoard(LevelSessionStatus.Defeat, SaveReason.LevelDefeat);
+    }
+
+    private void PlayLevelResultFx(bool won)
+    {
+        var catalog = FindFirstObjectByType<MatchesHandler>()?.FxCatalog
+                      ?? SoundManager.GetCatalog();
+        if (catalog == null)
+            return;
+
+        if (won)
+        {
+            FxPlayer.PlaySfx2D(catalog.levelWinSfx);
+            if (catalog.rewardSfx != null)
+                FxPlayer.PlaySfx2D(catalog.rewardSfx);
+            if (_winPanel != null)
+                FxPlayer.PlayVfx(catalog.levelWinVfx, _winPanel.transform.position);
+        }
+        else
+        {
+            FxPlayer.PlaySfx2D(catalog.levelLoseSfx);
+            if (_losePanel != null)
+                FxPlayer.PlayVfx(catalog.levelLoseVfx, _losePanel.transform.position);
+        }
     }
 
     private void GrantExtraTime()
@@ -781,6 +808,7 @@ public sealed class GameplayFlowController : MonoBehaviour
             return;
         }
 
+        button.onClick.AddListener(() => SoundManager.PlayButtonClick());
         button.onClick.AddListener(action);
     }
 

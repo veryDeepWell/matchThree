@@ -452,6 +452,7 @@ MonoBehaviour:
   _postDropDelay: 0.2
   _specialItemTriggerDelay: 0.3
   _bombExplosionDelay: 0.2
+  _fxCatalog: {fileID: 11400000, guid: d0305769a444c104584f4f2c525bc6f9, type: 2}
 --- !u!1001 &875467347
 PrefabInstance:
   m_ObjectHideFlags: 0

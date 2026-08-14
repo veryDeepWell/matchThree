@@ -261,11 +261,26 @@ public class Item : MonoBehaviour
         if (!thisIsSpecial && !otherIsSpecial &&
             !WouldCreateMatch(otherItem, targetColumn, targetRow))
         {
+            PlayCatalogSfx(invalid: true);
             StartCoroutine(PlayRejectedSwap(otherItem));
             return;
         }
 
+        PlayCatalogSfx(invalid: false);
         StartCoroutine(Swap(otherItem, targetColumn, targetRow));
+    }
+
+    private void PlayCatalogSfx(bool invalid)
+    {
+        // Read serialized catalog from MatchesHandler only (plain field, no SoundManager).
+        var catalog = FindObjectOfType<MatchesHandler>()?.FxCatalog;
+        if (catalog == null)
+            catalog = SoundManager.GetCatalog();
+        if (catalog == null)
+            return;
+
+        var clip = invalid ? catalog.invalidSwapSfx : catalog.swapSfx;
+        FxPlayer.PlaySfx(clip, transform.position);
     }
 
     private bool WouldCreateMatch(Item otherItem, int targetColumn, int targetRow)

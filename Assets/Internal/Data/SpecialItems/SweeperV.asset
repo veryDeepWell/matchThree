@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SweeperV
   m_EditorClassIdentifier: Assembly-CSharp::LineSweeperEffect
   ActivationEffect: {fileID: 0}
-  ActivationSound: {fileID: 0}
+  ActivationSound: {fileID: 8300000, guid: 5327d2eda92e0dc4f877233017178b28, type: 3}
   TriggerOtherSpecialItems: 1
   _mode: 1
   _width: 1

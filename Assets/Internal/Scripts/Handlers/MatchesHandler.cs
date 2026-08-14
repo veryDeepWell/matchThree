@@ -11,7 +11,12 @@ public class MatchesHandler : MonoBehaviour
     [SerializeField] private float _specialItemTriggerDelay = 0.3f;
     [SerializeField] private float _bombExplosionDelay = 0.3f;
 
+    [Header("FX")]
+    [Tooltip("Shared VFX/SFX catalogue. Leave empty or leave individual slots empty to disable.")]
+    [SerializeField] private GameFxCatalog _fxCatalog;
+
     private bool _isProcessing;
+    private ItemHandler _itemHandler;
 
     public bool IsProcessing => _isProcessing;
     public float GetBombExplosionDelay() => _bombExplosionDelay;
@@ -548,6 +553,8 @@ public class MatchesHandler : MonoBehaviour
     private void RemoveItems(Board board, HashSet<int> matches)
     {
         var collectedItems = new Dictionary<string, int>();
+        _itemHandler ??= FindObjectOfType<ItemHandler>();
+        var registry = _itemHandler != null ? _itemHandler.GetRegistry() : null;
 
         foreach (int index in matches)
         {
@@ -566,6 +573,27 @@ public class MatchesHandler : MonoBehaviour
                     collectedItems[collectedItemId] = 0;
                 collectedItems[collectedItemId]++;
             }
+
+            Vector3 fxPosition = item.transform.position;
+
+            GameObject destroyVfx = null;
+            AudioClip destroySfx = null;
+            if (registry != null && !string.IsNullOrEmpty(collectedItemId))
+            {
+                var def = registry.Get(collectedItemId);
+                if (def != null)
+                {
+                    destroyVfx = def.DestroyVfx;
+                    destroySfx = def.DestroySfx;
+                }
+            }
+
+            if (destroyVfx == null && _fxCatalog != null)
+                destroyVfx = _fxCatalog.matchDestroyVfx;
+            if (destroySfx == null && _fxCatalog != null)
+                destroySfx = _fxCatalog.matchDestroySfx;
+
+            FxPlayer.Play(destroyVfx, destroySfx, fxPosition);
 
             board.GetSpecialCell(column, row)?.ClearOccupant(item);
             board.SetItemId(column, row, "");
@@ -840,18 +868,24 @@ public class MatchesHandler : MonoBehaviour
 
             generator.ReplaceWithSpecial(board, column, row, specialId);
 
-            // If the requested special failed to spawn (missing definition/effect),
-            // fall back to a bomb so the match still produces something.
             var item = board.Items[column, row];
             if (item == null || string.IsNullOrEmpty(item.SpecialItemId))
             {
                 if (specialId != "bomb")
                     generator.ReplaceWithSpecial(board, column, row, "bomb");
+                item = board.Items[column, row];
             }
+
+            if (item != null && _fxCatalog != null)
+                FxPlayer.Play(_fxCatalog.specialSpawnVfx, _fxCatalog.specialSpawnSfx, item.transform.position);
         }
         catch (System.Exception e)
         {
             Debug.LogError($"[MatchesHandler] Failed to create special '{specialId}' at ({column},{row}): {e.Message}");
         }
     }
+
+    public GameFxCatalog FxCatalog => _fxCatalog;
 }
+
+

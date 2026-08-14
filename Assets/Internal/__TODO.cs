@@ -32,7 +32,7 @@ Special cells
 PLANNED
 Special cells
 More special items
-VFX
+VFX (architecture done — assign assets via Tools/FX Studio)
 Fix editor
 Mobile controller
 Fix bombs
@@ -51,7 +51,7 @@ More special items
 #### RUSH 4
 PLANNED
 VFX
-Sounds
+Sounds (architecture done — assign assets via Tools/FX Studio)
 New levels
 YandexGames card
 */

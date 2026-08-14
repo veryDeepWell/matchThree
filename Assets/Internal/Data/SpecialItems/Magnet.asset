@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Magnet
   m_EditorClassIdentifier: Assembly-CSharp::MagnetEffect
   ActivationEffect: {fileID: 0}
-  ActivationSound: {fileID: 0}
+  ActivationSound: {fileID: 8300000, guid: ea90561d20429404d9de9cbd2dad69b6, type: 3}
   TriggerOtherSpecialItems: 1

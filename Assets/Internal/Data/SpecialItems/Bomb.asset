@@ -12,9 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f431bfde7664728987594b112578325, type: 3}
   m_Name: Bomb
   m_EditorClassIdentifier: Assembly-CSharp::BombEffect
-  Icon: {fileID: 528661489, guid: e1d79143fb5afc344aeb0ec4e89291a1, type: 3}
-  Color: {r: 1, g: 1, b: 1, a: 1}
   ActivationEffect: {fileID: 0}
-  ActivationSound: {fileID: 0}
+  ActivationSound: {fileID: 8300000, guid: b044f111048deb742a3f8ba68df57f03, type: 3}
   TriggerOtherSpecialItems: 0
   _radius: 1

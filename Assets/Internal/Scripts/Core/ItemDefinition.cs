@@ -12,6 +12,10 @@ public class ItemDefinition : ScriptableObject
     public Sprite Icon;
     public Color Color = Color.white;
 
+    [Header("FX")]
+    public GameObject DestroyVfx;
+    public AudioClip DestroySfx;
+
     [Header("Category")]
     public ItemCategory Category;
 

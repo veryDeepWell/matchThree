@@ -95,11 +95,9 @@ public class SpecialCell : MonoBehaviour
 
     private void DestroyCell()
     {
-        if (_data.breakEffect != null)
-            Instantiate(_data.breakEffect, transform.position, Quaternion.identity);
-
-        if (_data.breakSound != null)
-            AudioSource.PlayClipAtPoint(_data.breakSound, transform.position);
+        // Null-safe: only plays if the fields are assigned on SpecialCellData.
+        if (_data != null)
+            FxPlayer.Play(_data.breakEffect, _data.breakSound, transform.position);
 
         if (_board != null)
         {

@@ -95,11 +95,8 @@ public class SpecialItem : MonoBehaviour, ISpecialItem
             _row = item.Row;
         }
 
-        if (_effect.ActivationEffect != null)
-            Instantiate(_effect.ActivationEffect, transform.position, Quaternion.identity);
-
-        if (_effect.ActivationSound != null)
-            AudioSource.PlayClipAtPoint(_effect.ActivationSound, transform.position);
+        // Null-safe: only plays if assigned on the SpecialItemEffect asset.
+        FxPlayer.Play(_effect.ActivationEffect, _effect.ActivationSound, transform.position);
 
         var matchesHandler = FindObjectOfType<MatchesHandler>();
         float delay = matchesHandler != null
