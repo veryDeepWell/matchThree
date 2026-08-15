@@ -360,10 +360,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8efa0f2badd7f14ea041c7a01213625, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelManager
+  _catalog: {fileID: 11400000, guid: 66b08c06e08443e49ae96ee6761e6677, type: 2}
   _levels:
   - {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
   - {fileID: 11400000, guid: 392fb143ff7672d4eac155068299f6bf, type: 2}
-  _lastLevel: 1
+  - {fileID: 11400000, guid: 35b53c5439a112d4282e631505607526, type: 2}
+  _lastLevel: 3
 --- !u!1 &616996648
 GameObject:
   m_ObjectHideFlags: 0
@@ -468,6 +470,10 @@ PrefabInstance:
     - target: {fileID: 2060607938021575208, guid: 1c33b1cce6371444a9073ba1de21fb54, type: 3}
       propertyPath: m_Name
       value: GameplayCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 6887674528514599723, guid: 1c33b1cce6371444a9073ba1de21fb54, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7983887479469433649, guid: 1c33b1cce6371444a9073ba1de21fb54, type: 3}
       propertyPath: m_Pivot.x

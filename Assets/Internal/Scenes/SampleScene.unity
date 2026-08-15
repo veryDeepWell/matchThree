@@ -248,6 +248,9 @@ MonoBehaviour:
   _matchesHandler: {fileID: 1133386713}
   _offset: {x: 0, y: 0}
   _cellSize: 1
+  _hintDelay: 8
+  _hintDistance: 0.12
+  _hintDuration: 0.18
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -467,9 +470,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8efa0f2badd7f14ea041c7a01213625, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelManager
-  levels:
+  _levels:
   - {fileID: 11400000, guid: 4b743e6acbe5c7b4ab853f4c079e082b, type: 2}
-  lastLevel: 0
+  - {fileID: 11400000, guid: 392fb143ff7672d4eac155068299f6bf, type: 2}
+  - {fileID: 11400000, guid: 35b53c5439a112d4282e631505607526, type: 2}
+  _lastLevel: 3
 --- !u!1 &1133386711
 GameObject:
   m_ObjectHideFlags: 0
@@ -514,7 +519,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5dbc75926134257be12e7df0daf0098, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchesHandler
-  _moveDuration: 0.15
+  _matchDelay: 0.15
+  _dropDelay: 0.08
+  _postDropDelay: 0.12
+  _specialItemTriggerDelay: 0.3
+  _bombExplosionDelay: 0.3
+  _fxCatalog: {fileID: 0}
 --- !u!1 &1917519481
 GameObject:
   m_ObjectHideFlags: 0
@@ -560,6 +570,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemGenerator
   _tilePrefab: {fileID: 170917415711285555, guid: d4dfcd7ac21749c4baf2aa47c398a3fe, type: 3}
+  _itemHandler: {fileID: 0}
+  _specialItemHandler: {fileID: 0}
+  _specialCellHandler: {fileID: 0}
 --- !u!1 &2109019610
 GameObject:
   m_ObjectHideFlags: 0
@@ -604,9 +617,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d818826628054bccb81b15688ad1a844, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpecialItemHandler
-  _allEffects: []
+  _registry: {fileID: 0}
   _specialItemPrefab: {fileID: 0}
-  _cellDataList: []
 --- !u!1001 &5387545644756795869
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -132,16 +132,16 @@ public sealed class GameplayFlowController : MonoBehaviour
 
     public void CompleteLevelAndReturnToMainMenu()
     {
-        CompleteCurrentLevel();
+        CompleteCurrentLevel(out _);
         Time.timeScale = 1f;
         SceneManager.LoadScene(mainMenuSceneName);
     }
 
     public void CompleteLevelAndRestart()
     {
-        CompleteCurrentLevel();
+        bool hasNextLevel = CompleteCurrentLevel(out _);
         Time.timeScale = 1f;
-        SceneManager.LoadScene(battleSceneName);
+        SceneManager.LoadScene(hasNextLevel ? battleSceneName : mainMenuSceneName);
     }
 
     public void RestartLevel()
@@ -660,13 +660,25 @@ public sealed class GameplayFlowController : MonoBehaviour
             saveService.SaveNow(reason);
     }
 
-    private static void CompleteCurrentLevel()
+    private bool CompleteCurrentLevel(out LevelData nextLevel)
     {
+        nextLevel = null;
         SaveService saveService = SaveService.Instance;
         if (saveService == null)
-            return;
+            return false;
 
-        saveService.CompleteRunningLevel();
+        RunningLevelSaveData runningLevel = saveService.Data != null
+            ? saveService.Data.RunningLevel
+            : null;
+        string completedLevelName = runningLevel != null ? runningLevel.LevelName : string.Empty;
+
+        LevelManager levelManager = FindFirstObjectByType<LevelManager>();
+        bool hasNextLevel = levelManager != null &&
+                            levelManager.TryGetNextLevel(completedLevelName, out nextLevel);
+
+        int nextLevelNumber = hasNextLevel ? levelManager.GetLevelNumber(nextLevel.name) : 0;
+        saveService.CompleteRunningLevel(hasNextLevel ? nextLevel.name : null, nextLevelNumber);
+        return hasNextLevel;
     }
 
     private void UpdateTimerText(float seconds)
