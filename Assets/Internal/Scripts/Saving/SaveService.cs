@@ -295,6 +295,63 @@ public sealed class SaveService : MonoBehaviour
         return true;
     }
 
+    public void GrantBonus(string bonusId, int amount = 1)
+    {
+        if (string.IsNullOrWhiteSpace(bonusId) || amount <= 0)
+            return;
+
+        GetOrCreateBonus(bonusId).Count += amount;
+        SaveNow(SaveReason.RewardGranted);
+    }
+
+    public bool TryBuyBonus(string bonusId, int goldPrice)
+    {
+        if (string.IsNullOrWhiteSpace(bonusId) || goldPrice < 0 ||
+            Data == null || Data.Economy == null || Data.Economy.Gold < goldPrice)
+            return false;
+
+        // Списание и выдача записываются одним сохранением: при сбое игрок
+        // не останется без золота и без купленного бонуса.
+        Data.Economy.Gold -= goldPrice;
+        GetOrCreateBonus(bonusId).Count++;
+        SaveNow(SaveReason.BonusPurchased);
+        return true;
+    }
+
+    public void GrantLife(int amount = 1)
+    {
+        if (amount <= 0 || Data == null || Data.Economy == null)
+            return;
+
+        Data.Economy.Lives = Mathf.Min(MaximumLives, Data.Economy.Lives + amount);
+        if (Data.Economy.Lives >= MaximumLives)
+            Data.Economy.NextLifeRestoreUtcSeconds = 0;
+        SaveNow(SaveReason.RewardGranted);
+    }
+
+    public void RestoreAllLives()
+    {
+        if (Data == null || Data.Economy == null)
+            return;
+
+        Data.Economy.Lives = MaximumLives;
+        Data.Economy.NextLifeRestoreUtcSeconds = 0;
+        SaveNow(SaveReason.RewardGranted);
+    }
+
+    public bool TryBuyLife(int goldPrice)
+    {
+        if (goldPrice < 0 || Data == null || Data.Economy == null ||
+            Data.Economy.Lives > 0 || Data.Economy.Gold < goldPrice)
+            return false;
+
+        Data.Economy.Gold -= goldPrice;
+        Data.Economy.Lives = MaximumLives;
+        Data.Economy.NextLifeRestoreUtcSeconds = 0;
+        SaveNow(SaveReason.LifePurchased);
+        return true;
+    }
+
     public void SetAllGameplayBonuses(int count)
     {
         string[] bonusIds = { "bomb", "sweeper_h", "sweeper_cross", "magnet", "sweeper_v" };

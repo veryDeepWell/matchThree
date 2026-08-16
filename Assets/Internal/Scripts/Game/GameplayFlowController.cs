@@ -10,6 +10,7 @@ using YG;
 public sealed class GameplayFlowController : MonoBehaviour
 {
     private const string ExtraTimeRewardId = "extra_time";
+    private const int BonusGoldPrice = 1500;
 
     [Header("Scene settings")]
     [SerializeField] private string mainMenuSceneName = "MainMenu";
@@ -23,6 +24,9 @@ public sealed class GameplayFlowController : MonoBehaviour
     private GameObject _backgroundPanel;
     private GameObject _goalBoardPanel;
     private GameObject _goalPanelTemplate;
+    private GameObject _bonusOfferPanel;
+    private TMP_Text _bonusOfferTitleText;
+    private TMP_Text _bonusOfferSubtitleText;
     private TMP_Text _timerText;
     private TMP_Text _goldContinuePriceText;
     private TMP_Text _victoryGoldText;
@@ -33,6 +37,7 @@ public sealed class GameplayFlowController : MonoBehaviour
     private readonly List<GoalUiEntry> _goalUiEntries = new List<GoalUiEntry>();
     private readonly List<BonusUiEntry> _bonusUiEntries = new List<BonusUiEntry>();
     private string _selectedBonusId = string.Empty;
+    private string _offeredBonusId = string.Empty;
 
     private sealed class GoalUiEntry
     {
@@ -147,11 +152,72 @@ public sealed class GameplayFlowController : MonoBehaviour
     public void RestartLevel()
     {
         SaveService saveService = SaveService.Instance;
+        if (saveService != null && saveService.Data != null && saveService.Data.Economy != null &&
+            saveService.Data.Economy.Lives <= 0)
+        {
+            LifeOfferController.TryShow(RestartLevelAfterLifeGranted);
+            return;
+        }
+
+        RestartLevelAfterLifeGranted();
+    }
+
+    private void RestartLevelAfterLifeGranted()
+    {
+        SaveService saveService = SaveService.Instance;
         if (saveService != null)
             saveService.FinishRunningLevelWithDefeat();
 
         Time.timeScale = 1f;
         SceneManager.LoadScene(battleSceneName);
+    }
+
+    public void BuyOfferedBonusForGold()
+    {
+        if (string.IsNullOrEmpty(_offeredBonusId))
+            return;
+
+        SaveService saveService = SaveService.Instance;
+        if (saveService == null || !saveService.TryBuyBonus(_offeredBonusId, BonusGoldPrice))
+        {
+            Debug.LogWarning($"[GameplayFlow] Недостаточно золота. Для бонуса нужно {BonusGoldPrice}.");
+            return;
+        }
+
+        CloseBonusOffer();
+    }
+
+    public void WatchAdForOfferedBonus()
+    {
+        if (string.IsNullOrEmpty(_offeredBonusId) || AdvertisingService.Instance == null)
+            return;
+
+        string bonusId = _offeredBonusId;
+        bool started = AdvertisingService.Instance.ShowRewarded(
+            $"gameplay_bonus_{bonusId}",
+            () => SaveService.Instance?.GrantBonus(bonusId),
+            HandleBonusAdvertisementClosed);
+        if (!started)
+            Debug.LogWarning("[GameplayFlow] Не удалось запустить рекламу за бонус.");
+    }
+
+    public void CloseBonusOffer()
+    {
+        _offeredBonusId = string.Empty;
+        SetPanelActive(_bonusOfferPanel, false);
+        SetPanelActive(_backgroundPanel, false);
+        SetPanelActive(_userUiPanel, true);
+
+        if (GetSavedStatus() == LevelSessionStatus.InProgress)
+            Time.timeScale = 1f;
+
+        RefreshBonusInventory();
+    }
+
+    private void HandleBonusAdvertisementClosed(bool rewardGranted)
+    {
+        CloseBonusOffer();
+        RestoreGameplayStateAfterAdvertisement();
     }
 
     public void FinishDefeatAndReturnToMainMenu()
@@ -549,11 +615,51 @@ public sealed class GameplayFlowController : MonoBehaviour
     {
         if (_selectedBonusId == bonusId)
             _selectedBonusId = string.Empty;
-        else if (string.IsNullOrEmpty(_selectedBonusId) && SaveService.Instance != null &&
-                 SaveService.Instance.GetBonusCount(bonusId) > 0)
-            _selectedBonusId = bonusId;
+        else if (string.IsNullOrEmpty(_selectedBonusId) && SaveService.Instance != null)
+        {
+            if (SaveService.Instance.GetBonusCount(bonusId) > 0)
+                _selectedBonusId = bonusId;
+            else
+                OpenBonusOffer(bonusId);
+        }
 
         RefreshBonusInventory();
+    }
+
+    private void OpenBonusOffer(string bonusId)
+    {
+        if (_bonusOfferPanel == null)
+        {
+            Debug.LogWarning("[GameplayFlow] BonusOfferPanel не найдена.");
+            return;
+        }
+
+        _offeredBonusId = bonusId;
+        string titleName = GetBonusDisplayName(bonusId, true);
+        string subtitleName = GetBonusDisplayName(bonusId, false);
+        if (_bonusOfferTitleText != null)
+            _bonusOfferTitleText.text = $"У ТЕБЯ ЗАКОНЧИЛИСЬ\n{titleName}";
+        if (_bonusOfferSubtitleText != null)
+            _bonusOfferSubtitleText.text = $"получить ещё {subtitleName}";
+
+        SetPanelActive(_bonusOfferPanel, true);
+        SetPanelActive(_backgroundPanel, true);
+        SetPanelActive(_userUiPanel, false);
+        Time.timeScale = 0f;
+        SaveCurrentBoard(SaveReason.LevelPaused);
+    }
+
+    private static string GetBonusDisplayName(string bonusId, bool title)
+    {
+        switch (bonusId)
+        {
+            case "bomb": return title ? "БОМБЫ" : "бомбу";
+            case "magnet": return title ? "МАГНИТЫ" : "магнит";
+            case "sweeper_h": return title ? "ГОРИЗОНТАЛЬНЫЕ СВИПЕРЫ" : "горизонтальный свипер";
+            case "sweeper_v": return title ? "ВЕРТИКАЛЬНЫЕ СВИПЕРЫ" : "вертикальный свипер";
+            case "sweeper_cross": return title ? "КРЕСТОВЫЕ СВИПЕРЫ" : "крестовой свипер";
+            default: return title ? "БОНУСЫ" : "бонус";
+        }
     }
 
     private void CancelBonusSelection()
@@ -591,7 +697,7 @@ public sealed class GameplayFlowController : MonoBehaviour
             if (entry.Button != null)
             {
                 bool anotherBonusSelected = !string.IsNullOrEmpty(_selectedBonusId) && !selected;
-                entry.Button.interactable = !anotherBonusSelected && (count > 0 || selected);
+                entry.Button.interactable = !anotherBonusSelected;
             }
         }
     }
@@ -694,6 +800,7 @@ public sealed class GameplayFlowController : MonoBehaviour
 
     private void SetOnlyResultPanel(GameObject activePanel)
     {
+        SetPanelActive(_bonusOfferPanel, false);
         SetPanelActive(_pausePanel, false);
         SetPanelActive(_continueOfferPanel, activePanel == _continueOfferPanel);
         SetPanelActive(_losePanel, activePanel == _losePanel);
@@ -729,6 +836,9 @@ public sealed class GameplayFlowController : MonoBehaviour
         _userUiPanel = FindGameObject(transform, "UserUIPanel");
         _backgroundPanel = FindGameObject(transform, "BackgroundPanel");
         _goalBoardPanel = FindGameObject(transform, "GoalBoardPanel");
+        _bonusOfferPanel = FindGameObject(transform, "BonusOfferPanel");
+        _bonusOfferTitleText = FindTextInPanel(_bonusOfferPanel, "TitleText (TMP)");
+        _bonusOfferSubtitleText = FindTextInPanel(_bonusOfferPanel, "SubtitleText (TMP)");
         if (_goalBoardPanel != null)
             _goalPanelTemplate = FindGameObject(_goalBoardPanel.transform, "GoalPanel");
 
@@ -765,6 +875,7 @@ public sealed class GameplayFlowController : MonoBehaviour
         DisableDecorativeRaycasts(_continueOfferPanel);
         DisableDecorativeRaycasts(_losePanel);
         DisableDecorativeRaycasts(_winPanel);
+        DisableDecorativeRaycasts(_bonusOfferPanel);
     }
 
     private static void DisableDecorativeRaycasts(GameObject panel)
@@ -802,6 +913,10 @@ public sealed class GameplayFlowController : MonoBehaviour
         AddButtonListener(_continueOfferPanel, "AdvertisingContinueButton", WatchAdForExtraTime);
         AddButtonListener(_continueOfferPanel, "GoldContinueButton", BuyExtraTimeForGold);
         AddButtonListener(_continueOfferPanel, "CloseThisPanelButton", DeclineExtraTime);
+
+        AddButtonListener(_bonusOfferPanel, "AdvertisingBonusButton", WatchAdForOfferedBonus);
+        AddButtonListener(_bonusOfferPanel, "GoldBonusButton", BuyOfferedBonusForGold);
+        AddButtonListener(_bonusOfferPanel, "CloseThisPanelButton", CloseBonusOffer);
 
         AddButtonListener(_losePanel, "RestartLevelButton", RestartLevel);
         AddButtonListener(_losePanel, "MainMenuButton", FinishDefeatAndReturnToMainMenu);

@@ -22,6 +22,8 @@ public enum SaveReason
     RewardGranted,
     CosmeticPurchased,
     CosmeticEquipped,
+    BonusPurchased,
+    LifePurchased,
     LevelVictory,
     LevelDefeat,
     ApplicationPaused,
