@@ -16,69 +16,69 @@ MonoBehaviour:
   Height: 8
   Items:
   - red
-  - blue
-  - red
-  - blue
-  - yellow
   - red
   - green
-  - green
-  - blue
-  - red
-  - blue
   - yellow
   - blue
-  - yellow
-  - yellow
-  - red
-  - green
-  - blue
-  - red
-  - yellow
-  - red
-  - blue
-  - red
-  - yellow
-  - blue
-  - blue
-  - yellow
-  - red
-  - yellow
-  - red
-  - red
-  - yellow
-  - yellow
-  - green
-  - red
-  - blue
-  - red
-  - red
-  - yellow
-  - green
-  - green
-  - yellow
-  - blue
-  - blue
-  - red
-  - green
-  - green
-  - red
-  - green
-  - red
-  - blue
-  - red
-  - yellow
-  - blue
-  - red
-  - green
-  - red
-  - green
-  - red
-  - green
   - green
   - yellow
   - red
   - red
+  - yellow
+  - blue
+  - blue
+  - yellow
+  - yellow
+  - red
+  - blue
+  - yellow
+  - yellow
+  - blue
+  - green
+  - red
+  - yellow
+  - blue
+  - yellow
+  - blue
+  - red
+  - green
+  - green
+  - blue
+  - blue
+  - yellow
+  - red
+  - green
+  - yellow
+  - green
+  - blue
+  - red
+  - yellow
+  - yellow
+  - blue
+  - blue
+  - blue
+  - red
+  - yellow
+  - red
+  - green
+  - red
+  - yellow
+  - red
+  - yellow
+  - blue
+  - red
+  - blue
+  - yellow
+  - blue
+  - blue
+  - blue
+  - green
+  - red
+  - red
+  - yellow
+  - green
+  - green
+  - yellow
   ActiveCells: 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
   SpecialItems:
   - 
@@ -149,11 +149,11 @@ MonoBehaviour:
   GoalData:
     Goals:
     - TargetItemId: yellow
-      RequiredCount: 10
+      RequiredCount: 14
       CurrentCount: 0
-    TimeLimit: 60
-    GoldReward: 200
-    CrystalReward: 10
+    TimeLimit: 284
+    GoldReward: 220
+    CrystalReward: 11
     ExtraTimeSeconds: 120
-    ExtraTimeGoldCost: 1000
+    ExtraTimeGoldCost: 860
     AllowRepeatedExtraTime: 0

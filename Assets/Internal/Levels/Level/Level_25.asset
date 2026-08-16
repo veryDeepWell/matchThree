@@ -10,75 +10,75 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d90e7a3ca4849a947b50ecac8430335d, type: 3}
-  m_Name: Level_01
+  m_Name: Level_25
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   Width: 8
   Height: 8
   Items:
+  - green
+  - red
   - yellow
+  - blue
+  - green
+  - red
+  - yellow
+  - blue
+  - red
+  - yellow
+  - blue
+  - green
+  - yellow
+  - green
+  - red
+  - blue
+  - blue
+  - red
+  - green
+  - blue
+  - yellow
+  - green
+  - red
+  - red
+  - green
+  - blue
+  - blue
+  - yellow
+  - blue
+  - red
+  - green
+  - red
+  - red
+  - green
+  - green
+  - blue
+  - blue
+  - yellow
+  - blue
+  - green
+  - green
+  - blue
+  - blue
+  - green
+  - green
+  - blue
+  - green
+  - blue
+  - red
   - yellow
   - blue
   - red
   - green
   - green
   - red
-  - green
-  - green
-  - red
-  - green
   - yellow
   - yellow
   - green
-  - green
-  - blue
-  - yellow
-  - red
-  - yellow
-  - red
-  - yellow
-  - red
   - yellow
   - blue
   - red
   - blue
   - yellow
-  - blue
-  - green
-  - blue
-  - blue
-  - red
   - yellow
-  - yellow
-  - red
-  - green
-  - red
-  - red
-  - yellow
-  - green
-  - red
-  - red
-  - blue
-  - red
-  - yellow
-  - green
-  - green
-  - yellow
-  - yellow
-  - red
-  - red
-  - yellow
-  - blue
-  - yellow
-  - green
-  - yellow
-  - blue
-  - yellow
-  - red
-  - red
-  - blue
-  - green
-  - yellow
-  - blue
   ActiveCells: 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
   SpecialItems:
   - 
@@ -145,18 +145,21 @@ MonoBehaviour:
   - 
   - 
   - 
-  SpecialCells: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  SpecialCells: 00000000000000000400000000000000000000000000000000000000000000000100000000000000000000000000000002000000000000000200000003000000000000000000000003000000000000000000000003000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000040000000300000003000000020000000000000000000000020000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000100000000000000040000000200000000000000
   GoalData:
     Goals:
     - TargetItemId: blue
-      RequiredCount: 15
+      RequiredCount: 34
       CurrentCount: 0
-    - TargetItemId: red
-      RequiredCount: 8
+    - TargetItemId: yellow
+      RequiredCount: 24
       CurrentCount: 0
-    TimeLimit: 300
-    GoldReward: 230
-    CrystalReward: 12
+    - TargetItemId: green
+      RequiredCount: 18
+      CurrentCount: 0
+    TimeLimit: 88
+    GoldReward: 96
+    CrystalReward: 5
     ExtraTimeSeconds: 120
-    ExtraTimeGoldCost: 820
+    ExtraTimeGoldCost: 1300
     AllowRepeatedExtraTime: 0

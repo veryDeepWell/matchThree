@@ -15,70 +15,70 @@ MonoBehaviour:
   Width: 8
   Height: 8
   Items:
-  - yellow
   - red
   - red
   - yellow
-  - green
-  - blue
-  - green
-  - blue
-  - green
-  - blue
-  - yellow
-  - blue
   - red
   - yellow
-  - red
-  - green
-  - red
-  - green
-  - yellow
-  - green
-  - yellow
-  - yellow
-  - green
-  - green
-  - green
-  - blue
-  - red
-  - yellow
-  - green
-  - green
-  - yellow
-  - yellow
-  - blue
-  - red
-  - green
-  - red
   - red
   - blue
-  - red
-  - red
   - yellow
   - blue
   - blue
   - green
-  - red
-  - red
-  - yellow
-  - yellow
-  - blue
-  - green
-  - yellow
-  - red
-  - yellow
-  - green
   - green
   - red
   - blue
+  - red
+  - green
+  - yellow
+  - blue
+  - red
+  - yellow
+  - blue
+  - red
+  - blue
+  - blue
+  - red
+  - yellow
+  - green
+  - green
+  - red
+  - red
+  - green
+  - blue
+  - green
+  - red
+  - yellow
+  - red
+  - green
+  - green
+  - red
+  - yellow
+  - yellow
+  - green
+  - red
+  - yellow
+  - red
+  - red
+  - blue
+  - red
+  - yellow
   - blue
   - yellow
   - red
   - yellow
   - blue
-  - green
+  - red
+  - red
+  - red
   - yellow
+  - green
+  - red
+  - green
+  - red
+  - red
+  - blue
   ActiveCells: 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
   SpecialItems:
   - 
@@ -148,12 +148,12 @@ MonoBehaviour:
   SpecialCells: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   GoalData:
     Goals:
-    - TargetItemId: red
-      RequiredCount: 10
+    - TargetItemId: green
+      RequiredCount: 12
       CurrentCount: 0
-    TimeLimit: 60
-    GoldReward: 200
-    CrystalReward: 10
+    TimeLimit: 292
+    GoldReward: 225
+    CrystalReward: 11
     ExtraTimeSeconds: 120
-    ExtraTimeGoldCost: 1000
+    ExtraTimeGoldCost: 840
     AllowRepeatedExtraTime: 0

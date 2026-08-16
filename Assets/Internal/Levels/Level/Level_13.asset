@@ -10,32 +10,53 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d90e7a3ca4849a947b50ecac8430335d, type: 3}
-  m_Name: Level_01
+  m_Name: Level_13
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   Width: 8
   Height: 8
   Items:
-  - yellow
-  - yellow
-  - blue
   - red
-  - green
+  - yellow
   - green
   - red
   - green
-  - green
-  - red
-  - green
-  - yellow
   - yellow
   - green
   - green
   - blue
+  - blue
   - yellow
+  - red
+  - green
+  - blue
+  - green
+  - yellow
+  - green
+  - blue
+  - green
+  - blue
   - red
   - yellow
   - red
+  - blue
+  - green
   - yellow
+  - red
+  - green
+  - green
+  - yellow
+  - green
+  - green
+  - red
+  - red
+  - green
+  - red
+  - yellow
+  - blue
+  - blue
+  - yellow
+  - red
+  - blue
   - red
   - yellow
   - blue
@@ -44,41 +65,20 @@ MonoBehaviour:
   - yellow
   - blue
   - green
-  - blue
-  - blue
-  - red
-  - yellow
-  - yellow
   - red
   - green
   - red
   - red
-  - yellow
   - green
   - red
   - red
-  - blue
-  - red
-  - yellow
   - green
-  - green
-  - yellow
-  - yellow
-  - red
-  - red
-  - yellow
   - blue
   - yellow
-  - green
   - yellow
   - blue
-  - yellow
-  - red
-  - red
   - blue
-  - green
   - yellow
-  - blue
   ActiveCells: 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
   SpecialItems:
   - 
@@ -145,18 +145,18 @@ MonoBehaviour:
   - 
   - 
   - 
-  SpecialCells: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  SpecialCells: 00000000000000000000000000000000000000000000000000000000000000000300000000000000000000000300000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000002000000
   GoalData:
     Goals:
     - TargetItemId: blue
-      RequiredCount: 15
+      RequiredCount: 18
       CurrentCount: 0
-    - TargetItemId: red
-      RequiredCount: 8
+    - TargetItemId: green
+      RequiredCount: 14
       CurrentCount: 0
-    TimeLimit: 300
-    GoldReward: 230
-    CrystalReward: 12
+    TimeLimit: 204
+    GoldReward: 170
+    CrystalReward: 9
     ExtraTimeSeconds: 120
-    ExtraTimeGoldCost: 820
+    ExtraTimeGoldCost: 1060
     AllowRepeatedExtraTime: 0
