@@ -49,7 +49,7 @@ public class GameLoader : MonoBehaviour
 
         _board.ForceLoadLevel(level);
         if (saveService != null)
-            saveService.BeginLevel(level, _board);
+            saveService.BeginLevel(level, _board, _levelManager.GetLevelNumber(level.name));
     }
 
     private LevelData LoadCurrentLevel(SaveService saveService)

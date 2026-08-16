@@ -86,7 +86,7 @@ public sealed class SaveService : MonoBehaviour
         return runningLevel != null;
     }
 
-    public void BeginLevel(LevelData level, Board board)
+    public void BeginLevel(LevelData level, Board board, int levelNumber = 1)
     {
         if (level == null || board == null)
         {
@@ -120,6 +120,7 @@ public sealed class SaveService : MonoBehaviour
         }
 
         Data.LevelProgress.CurrentLevelName = level.name;
+        Data.LevelProgress.CurrentLevelNumber = Mathf.Max(1, levelNumber);
         Data.RunningLevel = new RunningLevelSaveData
         {
             LevelName = level.name,
@@ -198,6 +199,14 @@ public sealed class SaveService : MonoBehaviour
             return false;
 
         RunningLevelSaveData level = Data.RunningLevel;
+        if (Data.LevelProgress != null && Data.LevelProgress.IsReplayMode)
+        {
+            level.VictoryRewardsGranted = true;
+            level.Status = LevelSessionStatus.Victory;
+            SaveNow(SaveReason.LevelVictory);
+            return false;
+        }
+
         Data.Economy.Gold += Mathf.Max(0, level.GoldReward);
         Data.Economy.Crystals += Mathf.Max(0, level.CrystalReward);
         level.VictoryRewardsGranted = true;
@@ -214,6 +223,59 @@ public sealed class SaveService : MonoBehaviour
         Data.Economy.Gold -= amount;
         SaveNow(SaveReason.RewardGranted);
         return true;
+    }
+
+    public CosmeticSaveData GetCosmetic(string cosmeticId)
+    {
+        if (Data == null || Data.MacroProgress == null || Data.MacroProgress.Cosmetics == null)
+            return null;
+
+        return Data.MacroProgress.Cosmetics.Find(item => item.CosmeticId == cosmeticId);
+    }
+
+    public bool TryPurchaseCosmetic(string cosmeticId, int crystalPrice)
+    {
+        if (string.IsNullOrWhiteSpace(cosmeticId) || crystalPrice < 0 ||
+            Data == null || Data.Economy == null || Data.MacroProgress == null)
+            return false;
+
+        CosmeticSaveData cosmetic = GetOrCreateCosmetic(cosmeticId);
+        if (cosmetic.Purchased)
+            return true;
+
+        if (Data.Economy.Crystals < crystalPrice)
+            return false;
+
+        // Списание и покупка меняются до единственной записи файла, поэтому
+        // сохранение не сможет содержать только половину этой операции.
+        Data.Economy.Crystals -= crystalPrice;
+        cosmetic.Purchased = true;
+        SaveNow(SaveReason.CosmeticPurchased);
+        return true;
+    }
+
+    public bool EquipCosmetic(string cosmeticId)
+    {
+        CosmeticSaveData selected = GetCosmetic(cosmeticId);
+        if (selected == null || !selected.Purchased)
+            return false;
+
+        foreach (CosmeticSaveData cosmetic in Data.MacroProgress.Cosmetics)
+            cosmetic.Equipped = cosmetic == selected;
+
+        SaveNow(SaveReason.CosmeticEquipped);
+        return true;
+    }
+
+    private CosmeticSaveData GetOrCreateCosmetic(string cosmeticId)
+    {
+        CosmeticSaveData cosmetic = GetCosmetic(cosmeticId);
+        if (cosmetic != null)
+            return cosmetic;
+
+        cosmetic = new CosmeticSaveData { CosmeticId = cosmeticId };
+        Data.MacroProgress.Cosmetics.Add(cosmetic);
+        return cosmetic;
     }
 
     public int GetBonusCount(string bonusId)
@@ -372,7 +434,19 @@ public sealed class SaveService : MonoBehaviour
             SaveNow(SaveReason.Manual);
     }
 
-    public void CompleteRunningLevel()
+    public void SelectLevelForReplay(LevelData level, int levelNumber)
+    {
+        if (Data == null || level == null || levelNumber < 1)
+            return;
+
+        Data.LevelProgress.CurrentLevelName = level.name;
+        Data.LevelProgress.CurrentLevelNumber = levelNumber;
+        Data.LevelProgress.IsReplayMode = true;
+        Data.RunningLevel = null;
+        SaveNow(SaveReason.Manual);
+    }
+
+    public void CompleteRunningLevel(string nextLevelName = null, int nextLevelNumber = 0)
     {
         if (Data == null || Data.RunningLevel == null)
         {
@@ -381,6 +455,13 @@ public sealed class SaveService : MonoBehaviour
         }
 
         string completedLevelName = Data.RunningLevel.LevelName;
+
+        if (Data.LevelProgress.IsReplayMode)
+        {
+            Data.RunningLevel = null;
+            SaveNow(SaveReason.LevelVictory);
+            return;
+        }
 
         if (!string.IsNullOrWhiteSpace(completedLevelName))
         {
@@ -392,6 +473,17 @@ public sealed class SaveService : MonoBehaviour
                 CompletedLevelName = completedLevelName,
                 PostLevelAdCompleted = false
             };
+        }
+
+        if (string.IsNullOrWhiteSpace(nextLevelName))
+        {
+            Data.LevelProgress.AllAvailableLevelsCompleted = true;
+        }
+        else
+        {
+            Data.LevelProgress.CurrentLevelName = nextLevelName;
+            Data.LevelProgress.CurrentLevelNumber = Mathf.Max(1, nextLevelNumber);
+            Data.LevelProgress.AllAvailableLevelsCompleted = false;
         }
 
         // Победная попытка закончена и больше не должна предлагаться кнопкой «Продолжить».
@@ -516,6 +608,8 @@ public sealed class SaveService : MonoBehaviour
         data.LevelProgress ??= new LevelProgressSaveData();
         data.LevelProgress.CurrentLevelName ??= string.Empty;
         data.LevelProgress.CompletedLevelNames ??= new List<string>();
+        if (data.LevelProgress.CurrentLevelNumber <= 0)
+            data.LevelProgress.CurrentLevelNumber = Mathf.Max(1, data.LevelProgress.CompletedLevelNames.Count + 1);
         data.MacroProgress ??= new MacroProgressSaveData();
         data.MacroProgress.Cosmetics ??= new List<CosmeticSaveData>();
 

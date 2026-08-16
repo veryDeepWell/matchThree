@@ -74,12 +74,22 @@ public sealed class EconomyUiPresenter : MonoBehaviour
         SetAllTexts("GoldText (TMP)", economy.Gold.ToString());
         SetAllTexts("CristalText (TMP)", economy.Crystals.ToString());
         SetAllTexts("LifeText (TMP)", economy.Lives.ToString());
+        UpdateLevelNumber(saveService.Data.LevelProgress);
         UpdateLifeTimer(economy);
 
         // Восстановленная жизнь должна сохраниться, иначе после перезапуска
         // игры игрок снова увидит старое количество жизней.
         if (livesChanged)
             saveService.SaveNow(SaveReason.Manual);
+    }
+
+    private static void UpdateLevelNumber(LevelProgressSaveData levelProgress)
+    {
+        if (levelProgress == null)
+            return;
+
+        int levelNumber = Math.Max(1, levelProgress.CurrentLevelNumber);
+        SetAllTexts("LeavelNumberText (TMP)", $"Уровень {levelNumber}");
     }
 
     private static void UpdateLifeTimer(EconomySaveData economy)

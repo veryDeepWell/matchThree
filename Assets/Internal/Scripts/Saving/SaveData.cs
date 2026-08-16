@@ -20,6 +20,8 @@ public enum SaveReason
     ContinueOffer,
     ExtraTimeGranted,
     RewardGranted,
+    CosmeticPurchased,
+    CosmeticEquipped,
     LevelVictory,
     LevelDefeat,
     ApplicationPaused,
@@ -61,6 +63,9 @@ public sealed class BonusInventoryItemSaveData
 public sealed class LevelProgressSaveData
 {
     public string CurrentLevelName = string.Empty;
+    public int CurrentLevelNumber = 1;
+    public bool AllAvailableLevelsCompleted;
+    public bool IsReplayMode;
     public List<string> CompletedLevelNames = new List<string>();
 }
 
