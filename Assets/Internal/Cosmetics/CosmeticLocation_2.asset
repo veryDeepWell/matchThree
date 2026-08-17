@@ -22,7 +22,7 @@ MonoBehaviour:
     CrystalPrice: 12
     ShopIcon: {fileID: 21300000, guid: 7d389dbbfb8fbac43890023a06dd562e, type: 3}
     LocationSprite: {fileID: 21300000, guid: 7d389dbbfb8fbac43890023a06dd562e, type: 3}
-    AnchoredPosition: {x: 239.62244, y: 80.12904}
+    AnchoredPosition: {x: 234.5884, y: 80.12904}
     Size: {x: 200, y: 200}
     Rotation: 0
     SortingOrder: 0
@@ -31,7 +31,7 @@ MonoBehaviour:
     CrystalPrice: 60
     ShopIcon: {fileID: 992850534, guid: 6c9840ee5256698488187cb3bfba7d78, type: 3}
     LocationSprite: {fileID: 0}
-    AnchoredPosition: {x: -250.1188, y: -151.54848}
+    AnchoredPosition: {x: -277.30286, y: -163.74197}
     Size: {x: 400, y: 500}
     Rotation: 0
     SortingOrder: 1
@@ -40,7 +40,7 @@ MonoBehaviour:
     CrystalPrice: 6
     ShopIcon: {fileID: 389870810, guid: e1d79143fb5afc344aeb0ec4e89291a1, type: 3}
     LocationSprite: {fileID: 0}
-    AnchoredPosition: {x: 352.386, y: -170.70966}
+    AnchoredPosition: {x: 352.38605, y: -221.22572}
     Size: {x: 58.4, y: 109.8}
     Rotation: 0
     SortingOrder: 2
