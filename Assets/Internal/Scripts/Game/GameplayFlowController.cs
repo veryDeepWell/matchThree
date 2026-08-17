@@ -68,6 +68,14 @@ public sealed class GameplayFlowController : MonoBehaviour
         _matchesHandler = FindFirstObjectByType<MatchesHandler>();
         if (_board != null)
             _board.ItemsCollected += HandleItemsCollected;
+
+        // Ensure SoundManager has the same catalog as MatchesHandler.
+        if (SoundManager.Instance != null && _matchesHandler != null && _matchesHandler.FxCatalog != null)
+            SoundManager.Instance.Catalog = _matchesHandler.FxCatalog;
+
+        // Wire click SFX on every UI button in this scene hierarchy.
+        UiClickSound.WireAllButtons(transform.root);
+
         ApplySavedState();
         BuildGoalPanels();
         BuildBonusInventory();

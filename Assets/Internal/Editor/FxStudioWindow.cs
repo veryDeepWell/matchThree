@@ -41,6 +41,8 @@ public class FxStudioWindow : EditorWindow
     {
         new CatalogSlot("Match Destroy", nameof(GameFxCatalog.matchDestroySfx), isVfx: false),
         new CatalogSlot("Special Spawn", nameof(GameFxCatalog.specialSpawnSfx), isVfx: false),
+        new CatalogSlot("Special Activate", nameof(GameFxCatalog.specialActivateSfx), isVfx: false),
+        new CatalogSlot("Cell Break", nameof(GameFxCatalog.cellBreakSfx), isVfx: false),
         new CatalogSlot("Swap", nameof(GameFxCatalog.swapSfx), isVfx: false),
         new CatalogSlot("Invalid Swap", nameof(GameFxCatalog.invalidSwapSfx), isVfx: false),
         new CatalogSlot("Item Land", nameof(GameFxCatalog.itemLandSfx), isVfx: false),
@@ -54,6 +56,8 @@ public class FxStudioWindow : EditorWindow
     {
         new CatalogSlot("Match Destroy", nameof(GameFxCatalog.matchDestroyVfx), isVfx: true),
         new CatalogSlot("Special Spawn", nameof(GameFxCatalog.specialSpawnVfx), isVfx: true),
+        new CatalogSlot("Special Activate", nameof(GameFxCatalog.specialActivateVfx), isVfx: true),
+        new CatalogSlot("Cell Break", nameof(GameFxCatalog.cellBreakVfx), isVfx: true),
         new CatalogSlot("Level Win", nameof(GameFxCatalog.levelWinVfx), isVfx: true),
         new CatalogSlot("Level Lose", nameof(GameFxCatalog.levelLoseVfx), isVfx: true),
     };
