@@ -95,9 +95,13 @@ public class SpecialCell : MonoBehaviour
 
     private void DestroyCell()
     {
-        // Null-safe: only plays if the fields are assigned on SpecialCellData.
-        if (_data != null)
-            FxPlayer.Play(_data.breakEffect, _data.breakSound, transform.position);
+        // Per-cell override, then catalog fallback.
+        GameObject vfx = _data != null ? _data.breakEffect : null;
+        AudioClip sfx = _data != null ? _data.breakSound : null;
+        var catalog = SoundManager.GetCatalog();
+        if (vfx == null && catalog != null) vfx = catalog.cellBreakVfx;
+        if (sfx == null && catalog != null) sfx = catalog.cellBreakSfx;
+        FxPlayer.Play(vfx, sfx, transform.position);
 
         if (_board != null)
         {

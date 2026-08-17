@@ -12,16 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0ffee02a2b3c4d5e6f708192a3b4c5d, type: 3}
   m_Name: FxCatalog
   m_EditorClassIdentifier: Assembly-CSharp::GameFxCatalog
-  matchDestroyVfx: {fileID: 0}
+  matchDestroyVfx: {fileID: 3501351955827086951, guid: 15cf9d4fe5db3c041adc931abfc55a57, type: 3}
   matchDestroySfx: {fileID: 8300000, guid: 6b70c9a2f61562244af5c516ea928f3d, type: 3}
-  specialSpawnVfx: {fileID: 0}
-  specialSpawnSfx: {fileID: 0}
+  specialSpawnVfx: {fileID: 1692922522867398101, guid: 94f23deb87827b94fb8e490f1d8ff28d, type: 3}
+  specialSpawnSfx: {fileID: 8300000, guid: 38f72421012c1c5418402849f22f0ecd, type: 3}
+  specialActivateVfx: {fileID: 7657743440919354615, guid: 2b55f0d7279077b4cb6e9febb4782cd5, type: 3}
+  specialActivateSfx: {fileID: 0}
+  cellBreakVfx: {fileID: 5163578393610675678, guid: cd49fef1cc7f7df46a8b5de278aa9605, type: 3}
+  cellBreakSfx: {fileID: 0}
   swapSfx: {fileID: 8300000, guid: 25d95fa6ffa3c6542bf3fbf80fae9de3, type: 3}
   invalidSwapSfx: {fileID: 8300000, guid: b78dcc47c423b8f40bcd1332f8318def, type: 3}
   itemLandSfx: {fileID: 0}
-  levelWinSfx: {fileID: 8300000, guid: 5f75526235f28584380f1f3ea8deb1ff, type: 3}
+  levelWinSfx: {fileID: 8300000, guid: 9b6ec314fc863944dbae63614bc2ff26, type: 3}
   levelLoseSfx: {fileID: 8300000, guid: b07513e8496323b4192b0a0712b6c77d, type: 3}
-  levelWinVfx: {fileID: 0}
-  levelLoseVfx: {fileID: 0}
+  levelWinVfx: {fileID: 4855079840125904175, guid: b460ac5c1653ce540ba7f944e30e1bae, type: 3}
+  levelLoseVfx: {fileID: 8046684858311339578, guid: d9d31a47f01686a468f45c9fa6459cb7, type: 3}
   buttonClickSfx: {fileID: 8300000, guid: fd9b460551392054d891964374377ef7, type: 3}
   rewardSfx: {fileID: 8300000, guid: 26df61d99b8fc1747aa026f3b6fd027e, type: 3}
+  magnetLineMaterial: {fileID: 0}
+  magnetLineColor: {r: 0.6, g: 0.2, b: 1, a: 0.95}
+  magnetLineWidth: 0.08
+  magnetLineDuration: 0.35
+  musicTracks: []
+  musicShuffle: 0
+  musicCrossfadeSeconds: 1.25

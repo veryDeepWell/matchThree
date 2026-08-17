@@ -29,6 +29,11 @@ public sealed class LevelSelectionMenuController : MonoBehaviour
         controllerObject.AddComponent<LevelSelectionMenuController>();
     }
 
+    private void OnEnable()
+    {
+        UiClickSound.WireAllButtons(transform.root);
+    }
+
     private void Awake()
     {
         SceneManager.sceneLoaded += HandleSceneLoaded;

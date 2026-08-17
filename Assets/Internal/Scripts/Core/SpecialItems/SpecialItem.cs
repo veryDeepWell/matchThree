@@ -96,7 +96,14 @@ public class SpecialItem : MonoBehaviour, ISpecialItem
         }
 
         // Null-safe: only plays if assigned on the SpecialItemEffect asset.
-        FxPlayer.Play(_effect.ActivationEffect, _effect.ActivationSound, transform.position);
+        {
+            GameObject vfx = _effect.ActivationEffect;
+            AudioClip sfx = _effect.ActivationSound;
+            var catalog = SoundManager.GetCatalog();
+            if (vfx == null && catalog != null) vfx = catalog.specialActivateVfx;
+            if (sfx == null && catalog != null) sfx = catalog.specialActivateSfx;
+            FxPlayer.Play(vfx, sfx, transform.position);
+        }
 
         var matchesHandler = FindObjectOfType<MatchesHandler>();
         float delay = matchesHandler != null
