@@ -278,6 +278,93 @@ public sealed class SaveService : MonoBehaviour
         return cosmetic;
     }
 
+    public bool IsFurniturePurchased(string locationId, string furnitureId)
+    {
+        CosmeticLocationProgressSaveData progress = GetCosmeticLocationProgress(locationId);
+        return progress != null && progress.PurchasedFurnitureIds.Contains(furnitureId);
+    }
+
+    public bool TryPurchaseFurniture(string locationId, string furnitureId, int crystalPrice)
+    {
+        if (string.IsNullOrWhiteSpace(locationId) || string.IsNullOrWhiteSpace(furnitureId) ||
+            crystalPrice < 0 || Data?.Economy == null)
+            return false;
+
+        CosmeticLocationProgressSaveData progress = GetOrCreateCosmeticLocationProgress(locationId);
+        if (progress.PurchasedFurnitureIds.Contains(furnitureId))
+            return true;
+
+        if (Data.Economy.Crystals < crystalPrice)
+            return false;
+
+        Data.Economy.Crystals -= crystalPrice;
+        progress.PurchasedFurnitureIds.Add(furnitureId);
+        SaveNow(SaveReason.CosmeticPurchased);
+        return true;
+    }
+
+    public bool IsCosmeticLocationCompleted(string locationId)
+    {
+        CosmeticLocationProgressSaveData progress = GetCosmeticLocationProgress(locationId);
+        return progress != null && progress.CompletionRewardClaimed;
+    }
+
+    public bool TryCompleteCosmeticLocation(string locationId, CosmeticLocationReward reward)
+    {
+        if (string.IsNullOrWhiteSpace(locationId) || Data?.Economy == null)
+            return false;
+
+        CosmeticLocationProgressSaveData progress = GetOrCreateCosmeticLocationProgress(locationId);
+        if (progress.CompletionRewardClaimed)
+            return false;
+
+        progress.CompletionRewardClaimed = true;
+        if (reward != null)
+        {
+            Data.Economy.Gold += Mathf.Max(0, reward.Gold);
+            if (reward.Bonuses != null)
+            {
+                foreach (CosmeticBonusReward bonus in reward.Bonuses)
+                {
+                    if (bonus != null && !string.IsNullOrWhiteSpace(bonus.BonusId) && bonus.Count > 0)
+                        GetOrCreateBonus(bonus.BonusId).Count += bonus.Count;
+                }
+            }
+        }
+
+        SaveNow(SaveReason.CosmeticLocationCompleted);
+        return true;
+    }
+
+    public void SetCurrentCosmeticLocation(string locationId)
+    {
+        if (Data?.MacroProgress == null || string.IsNullOrWhiteSpace(locationId) ||
+            Data.MacroProgress.CurrentCosmeticLocationId == locationId)
+            return;
+
+        Data.MacroProgress.CurrentCosmeticLocationId = locationId;
+        SaveNow(SaveReason.CosmeticLocationChanged);
+    }
+
+    private CosmeticLocationProgressSaveData GetCosmeticLocationProgress(string locationId)
+    {
+        if (string.IsNullOrWhiteSpace(locationId) || Data?.MacroProgress?.CosmeticLocations == null)
+            return null;
+
+        return Data.MacroProgress.CosmeticLocations.Find(item => item.LocationId == locationId);
+    }
+
+    private CosmeticLocationProgressSaveData GetOrCreateCosmeticLocationProgress(string locationId)
+    {
+        CosmeticLocationProgressSaveData progress = GetCosmeticLocationProgress(locationId);
+        if (progress != null)
+            return progress;
+
+        progress = new CosmeticLocationProgressSaveData { LocationId = locationId };
+        Data.MacroProgress.CosmeticLocations.Add(progress);
+        return progress;
+    }
+
     public int GetBonusCount(string bonusId)
     {
         BonusInventoryItemSaveData bonus = FindBonus(bonusId);
@@ -359,6 +446,100 @@ public sealed class SaveService : MonoBehaviour
             GetOrCreateBonus(bonusId).Count = Mathf.Max(0, count);
 
         SaveNow(SaveReason.RewardGranted);
+    }
+
+    public void AddGoldForTesting(int amount)
+    {
+        if (Data?.Economy == null || amount <= 0)
+            return;
+        Data.Economy.Gold += amount;
+        SaveNow(SaveReason.Manual);
+    }
+
+    public void AddCrystalsForTesting(int amount)
+    {
+        if (Data?.Economy == null || amount <= 0)
+            return;
+        Data.Economy.Crystals += amount;
+        SaveNow(SaveReason.Manual);
+    }
+
+    public void SetLivesForTesting(int lives)
+    {
+        if (Data?.Economy == null)
+            return;
+        Data.Economy.Lives = Mathf.Clamp(lives, 0, MaximumLives);
+        Data.Economy.NextLifeRestoreUtcSeconds = 0;
+        SaveNow(SaveReason.Manual);
+    }
+
+    public void UnlockAllLevelsForTesting()
+    {
+        if (Data?.LevelProgress == null)
+            return;
+        Data.LevelProgress.AllAvailableLevelsCompleted = true;
+        SaveNow(SaveReason.Manual);
+    }
+
+    public bool ToggleLevelSelectionForTesting()
+    {
+        if (Data?.LevelProgress == null)
+            return false;
+
+        Data.LevelProgress.AllAvailableLevelsCompleted =
+            !Data.LevelProgress.AllAvailableLevelsCompleted;
+        SaveNow(SaveReason.Manual);
+        return Data.LevelProgress.AllAvailableLevelsCompleted;
+    }
+
+    public void SetLevelCheatsEnabled(bool enabled)
+    {
+        if (Data == null)
+            return;
+        Data.Testing ??= new TestingSaveData();
+        Data.Testing.LevelCheatsEnabled = enabled;
+        SaveNow(SaveReason.Manual);
+    }
+
+    public void ResetTestingProgress()
+    {
+        if (Data == null)
+            return;
+
+        Data.Economy ??= new EconomySaveData();
+        Data.Economy.Gold = 0;
+        Data.Economy.Crystals = 0;
+        Data.Economy.Lives = MaximumLives;
+        Data.Economy.NextLifeRestoreUtcSeconds = 0;
+        Data.Economy.Bonuses = new List<BonusInventoryItemSaveData>();
+        Data.MacroProgress = new MacroProgressSaveData();
+
+        string firstLevelName = string.Empty;
+        LevelCatalog levelCatalog = Resources.Load<LevelCatalog>(nameof(LevelCatalog));
+        if (levelCatalog != null && levelCatalog.Count > 0)
+        {
+            LevelData firstLevel = levelCatalog.GetLevel(0);
+            if (firstLevel != null)
+                firstLevelName = firstLevel.name;
+        }
+
+        Data.LevelProgress = new LevelProgressSaveData
+        {
+            CurrentLevelName = firstLevelName,
+            CurrentLevelNumber = 1,
+            AllAvailableLevelsCompleted = false,
+            IsReplayMode = false,
+            CompletedLevelNames = new List<string>()
+        };
+        Data.RunningLevel = null;
+        Data.Victory = null;
+        Data.PendingAd = null;
+
+        string[] bonusIds = { "bomb", "sweeper_h", "sweeper_cross", "magnet", "sweeper_v" };
+        foreach (string bonusId in bonusIds)
+            GetOrCreateBonus(bonusId).Count = 3;
+
+        SaveNow(SaveReason.Manual);
     }
 
     private BonusInventoryItemSaveData FindBonus(string bonusId)
@@ -668,7 +849,17 @@ public sealed class SaveService : MonoBehaviour
         if (data.LevelProgress.CurrentLevelNumber <= 0)
             data.LevelProgress.CurrentLevelNumber = Mathf.Max(1, data.LevelProgress.CompletedLevelNames.Count + 1);
         data.MacroProgress ??= new MacroProgressSaveData();
+        data.MacroProgress.CurrentCosmeticLocationId ??= string.Empty;
+        data.MacroProgress.CosmeticLocations ??= new List<CosmeticLocationProgressSaveData>();
+        foreach (CosmeticLocationProgressSaveData location in data.MacroProgress.CosmeticLocations)
+        {
+            if (location == null)
+                continue;
+            location.LocationId ??= string.Empty;
+            location.PurchasedFurnitureIds ??= new List<string>();
+        }
         data.MacroProgress.Cosmetics ??= new List<CosmeticSaveData>();
+        data.Testing ??= new TestingSaveData();
 
         if (data.RunningLevel != null)
         {

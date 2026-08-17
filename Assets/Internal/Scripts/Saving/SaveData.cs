@@ -22,6 +22,8 @@ public enum SaveReason
     RewardGranted,
     CosmeticPurchased,
     CosmeticEquipped,
+    CosmeticLocationChanged,
+    CosmeticLocationCompleted,
     BonusPurchased,
     LifePurchased,
     LevelVictory,
@@ -40,6 +42,13 @@ public sealed class MetaSaveData
     public MacroProgressSaveData MacroProgress = new MacroProgressSaveData();
     public PendingAdSaveData PendingAd;
     public VictorySaveData Victory;
+    public TestingSaveData Testing = new TestingSaveData();
+}
+
+[Serializable]
+public sealed class TestingSaveData
+{
+    public bool LevelCheatsEnabled;
 }
 
 [Serializable]
@@ -99,7 +108,19 @@ public sealed class GoalProgressSaveData
 [Serializable]
 public sealed class MacroProgressSaveData
 {
+    public string CurrentCosmeticLocationId = string.Empty;
+    public List<CosmeticLocationProgressSaveData> CosmeticLocations = new List<CosmeticLocationProgressSaveData>();
+
+    // Старый формат оставлен, чтобы уже созданные сохранения не сломались.
     public List<CosmeticSaveData> Cosmetics = new List<CosmeticSaveData>();
+}
+
+[Serializable]
+public sealed class CosmeticLocationProgressSaveData
+{
+    public string LocationId = string.Empty;
+    public List<string> PurchasedFurnitureIds = new List<string>();
+    public bool CompletionRewardClaimed;
 }
 
 [Serializable]

@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10000000000000000000000000000002, type: 3}
+  m_Name: CosmeticLocation_1
+  m_EditorClassIdentifier: 
+  LocationId: location_1
+  DisplayName: "\u043A\u0430\u043A \u0442\u044B \u0441\u044E\u0434\u0430 \u043F\u043E\u043F\u0430\u043B?"
+  Background: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
+  ReferenceSize: {x: 1820, y: 980}
+  Furniture:
+  - FurnitureId: location_1_furniture_1
+    DisplayName: "\u041F\u0440\u0435\u0434\u043C\u0435\u0442 1"
+    CrystalPrice: 100
+    ShopIcon: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    LocationSprite: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    AnchoredPosition: {x: -703.01227, y: 285.5671}
+    Size: {x: 300, y: 300}
+    Rotation: 0
+    SortingOrder: 0
+  - FurnitureId: location_1_furniture_2
+    DisplayName: "\u041F\u0440\u0435\u0434\u043C\u0435\u0442 2"
+    CrystalPrice: 100
+    ShopIcon: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    LocationSprite: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    AnchoredPosition: {x: 750.853, y: -302.4329}
+    Size: {x: 300, y: 300}
+    Rotation: 0
+    SortingOrder: 1
+  - FurnitureId: location_1_furniture_3
+    DisplayName: "\u041F\u0440\u0435\u0434\u043C\u0435\u0442 3"
+    CrystalPrice: 100
+    ShopIcon: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    LocationSprite: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    AnchoredPosition: {x: 26.529736, y: -32.616222}
+    Size: {x: 300, y: 300}
+    Rotation: 0
+    SortingOrder: 2
+  - FurnitureId: location_1_furniture_4
+    DisplayName: "\u041F\u0440\u0435\u0434\u043C\u0435\u0442 4"
+    CrystalPrice: 100
+    ShopIcon: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    LocationSprite: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    AnchoredPosition: {x: 434.3118, y: -10.609759}
+    Size: {x: 300, y: 300}
+    Rotation: 0
+    SortingOrder: 3
+  - FurnitureId: location_1_furniture_5
+    DisplayName: "\u041F\u0440\u0435\u0434\u043C\u0435\u0442 5"
+    CrystalPrice: 100
+    ShopIcon: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    LocationSprite: {fileID: 8477613148721345391, guid: 6eb4b683eae23af4a94f2f83e848bc7d, type: 3}
+    AnchoredPosition: {x: -428.89432, y: -49.825836}
+    Size: {x: 300, y: 300}
+    Rotation: 0
+    SortingOrder: 4
+  CompletionReward:
+    Gold: 0
+    Bonuses:
+    - BonusId: bomb
+      Count: 6
+    - BonusId: sweeper_cross
+      Count: 6
+    - BonusId: magnet
+      Count: 6

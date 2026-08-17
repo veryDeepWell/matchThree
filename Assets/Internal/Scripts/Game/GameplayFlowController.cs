@@ -25,6 +25,7 @@ public sealed class GameplayFlowController : MonoBehaviour
     private GameObject _goalBoardPanel;
     private GameObject _goalPanelTemplate;
     private GameObject _bonusOfferPanel;
+    private GameObject _cheatPanel;
     private TMP_Text _bonusOfferTitleText;
     private TMP_Text _bonusOfferSubtitleText;
     private TMP_Text _timerText;
@@ -77,11 +78,14 @@ public sealed class GameplayFlowController : MonoBehaviour
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         // Временные клавиши для тестирования, пока победа и поражение не связаны с целями и таймером.
-        if (Input.GetKeyDown(KeyCode.W))
-            DebugWin();
+        if (AreLevelCheatsEnabled())
+        {
+            if (Input.GetKeyDown(KeyCode.W))
+                DebugWin();
 
-        if (Input.GetKeyDown(KeyCode.L))
-            DebugLose();
+            if (Input.GetKeyDown(KeyCode.L))
+                DebugLose();
+        }
 #endif
 
         RunningLevelSaveData runningLevel = GetRunningLevel();
@@ -837,6 +841,8 @@ public sealed class GameplayFlowController : MonoBehaviour
         _backgroundPanel = FindGameObject(transform, "BackgroundPanel");
         _goalBoardPanel = FindGameObject(transform, "GoalBoardPanel");
         _bonusOfferPanel = FindGameObject(transform, "BonusOfferPanel");
+        _cheatPanel = FindGameObject(transform, "Cheat");
+        SetPanelActive(_cheatPanel, AreLevelCheatsEnabled());
         _bonusOfferTitleText = FindTextInPanel(_bonusOfferPanel, "TitleText (TMP)");
         _bonusOfferSubtitleText = FindTextInPanel(_bonusOfferPanel, "SubtitleText (TMP)");
         if (_goalBoardPanel != null)
@@ -858,6 +864,13 @@ public sealed class GameplayFlowController : MonoBehaviour
             if (priceTransform != null)
                 _goldContinuePriceText = priceTransform.GetComponent<TMP_Text>();
         }
+    }
+
+    private static bool AreLevelCheatsEnabled()
+    {
+        SaveService saveService = SaveService.Instance;
+        return saveService != null && saveService.Data != null && saveService.Data.Testing != null &&
+               saveService.Data.Testing.LevelCheatsEnabled;
     }
 
     private static TMP_Text FindTextInPanel(GameObject panel, string textObjectName)
