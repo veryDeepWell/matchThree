@@ -145,6 +145,6 @@ MonoBehaviour:
   row: 0
   board: {fileID: 0}
   _moveDuration: 0.15
-  _minSwipeDistance: 0.5
+  _minSwipeDistance: 0.2
   _itemType: 0
   _specialType: 0

@@ -485,7 +485,7 @@ public sealed class GameplayFlowController : MonoBehaviour
         ItemRegistry registry = itemHandler != null ? itemHandler.GetRegistry() : null;
         RectTransform templateRect = _goalPanelTemplate.GetComponent<RectTransform>();
         Vector2 templatePosition = templateRect != null ? templateRect.anchoredPosition : Vector2.zero;
-        float verticalStep = templateRect != null ? templateRect.rect.height : 100f;
+        float horizontalStep = templateRect != null ? templateRect.rect.width : 180f;
 
         for (int i = 0; i < runningLevel.Goals.Count; i++)
         {
@@ -499,7 +499,7 @@ public sealed class GameplayFlowController : MonoBehaviour
 
             RectTransform panelRect = panel.GetComponent<RectTransform>();
             if (panelRect != null)
-                panelRect.anchoredPosition = templatePosition + Vector2.down * verticalStep * i;
+                panelRect.anchoredPosition = templatePosition + Vector2.right * horizontalStep * i;
 
             Transform imageTransform = FindDescendant(panel.transform, "GoalImage");
             Image goalImage = imageTransform != null ? imageTransform.GetComponent<Image>() : null;

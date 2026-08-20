@@ -146,7 +146,7 @@ MonoBehaviour:
   Column: 0
   Board: {fileID: 0}
   _moveDuration: 0.15
-  _minSwipeDistance: 0.5
+  _minSwipeDistance: 0.2
   ItemId: 
   SpecialItemId: 
 --- !u!114 &8854217838985358605
