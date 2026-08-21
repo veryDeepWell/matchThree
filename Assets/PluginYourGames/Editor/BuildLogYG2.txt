@@ -1,3 +1,3 @@
-﻿Build path: C:/__ME/2_Projects/Pasha/1_matchThree/matchThree/Builds/v0.3/matchThree.exe
-Build number: 2
+﻿Build path: C:/__ME/2_Projects/Pasha/1_matchThree/matchThree/Builds/v1.0/matchThree.exe
+Build number: 3
 PluginYG version: 2.0092
